@@ -1,0 +1,81 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 40px;
+  background-color: #030712;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.logoText {
+  display: flex;
+  gap: 6px;
+  color: white;
+  text-transform: uppercase;
+  font-size: 24px;
+  letter-spacing: 2px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.logoText span {
+  color: #5CB3FF;
+  font-size: 24px;
+  letter-spacing: 2px;
+  font-weight: 400;
+}
+
+.navbar nav {
+  display: flex;
+  gap: 24px;
+}
+
+.itemLink {
+  color: #9ca3af;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.itemLink:hover {
+  color: #5CB3FF;
+}
+
+.btnAgendamento {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 4px;
+  background-color: #2563eb !important;
+  color: #fff;
+  font-family: Montserrat, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btngendamento:hover {
+  transform: translateY(-2px);
+  background-color: #05308e !important;
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+}

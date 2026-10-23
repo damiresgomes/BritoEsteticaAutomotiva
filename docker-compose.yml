@@ -1,0 +1,70 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: brito-mysql
+    restart: unless-stopped
+    # Evita o erro 1418 (ER_BINLOG_UNSAFE_ROUTINE) ao criar rotinas stored
+    # sem característica declarada. O dump já declara `DETERMINISTIC`/`READS SQL DATA`,
+    # mas isto protege criação futura de functions/triggers.
+    command: --log-bin-trust-function-creators=1
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/init:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./backend
+    container_name: backend_node
+    restart: always
+    ports:
+      -"3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: senhadificilpradedeu123
+      DB_NAME: meu_banco
+    depends_on:
+      - db
+    networks:
+      - rede-interna
+      - rede-externa
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_react
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - rede-externa
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - rede-interna
+      - rede-externa
+
+  networks:
+    rede-externa:
+      drive: bridge
+    rede-interna:
+      drive: bridge
+
+  volumes:
+    mysql_data:
