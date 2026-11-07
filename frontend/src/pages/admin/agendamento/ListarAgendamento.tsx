@@ -1,8 +1,25 @@
+import { Link } from 'react-router-dom'
+import styles from '../Usuario/styles.module.css'
+
 export default function ListarAgendamento () {
     return (
-        <>
-            <h1>Agendamentos</h1>
-            <p>Listagem de todos os agendamentos.</p>
-        </>
+        <div className={styles.wrapper}>
+            <div className={styles.headerSection}>
+                <span className={styles.breadcrumb}>// CADASTROS</span>
+                <h1 className={styles.title}>USUÁRIOS</h1>
+                
+                <div className={styles.tabsContainer}>
+                    <Link to="/admin/agendamento" className={styles.tabItem}>
+                        ☰ LISTAR AGENDAMENTOS
+                    </Link>
+                    <Link to="/admin/agendamento/cadastrar" className={styles.tabItem}>
+                        + CADASTRAR AGENDAMENTO
+                    </Link>
+                    <Link to="/admin/agendamento/excluir" className={styles.tabItem}>
+                        + EXCLUIR AGENDAMENTO
+                    </Link>
+                </div>
+            </div>
+        </div>
     )
 }

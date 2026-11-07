@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./styles.module.css";
 
 const ShieldIcon = () => (
@@ -56,11 +57,17 @@ const LoginIcon = () => (
 
 export default function LoginAdmin() {
   const [senha, setSenha] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: validar a senha / chamar sua API aqui
-    console.log("Senha enviada:", senha);
+
+    if (senha === "brito123") {
+      sessionStorage.setItem("brito-admin-token", "token-simulado-123");
+      navigate("/admin");
+    } else {
+      alert("Senha incorreta!");
+    }
   };
 
   return (
@@ -72,7 +79,7 @@ export default function LoginAdmin() {
         </span>
 
         <h1 className={styles.loginTitle}>
-          ENTRAR NO <span className="login-title-accent">PAINEL</span>
+          ENTRAR NO <span className={styles.loginTitleAccent}>PAINEL</span>
         </h1>
 
         <p className={styles.loginSubtitle}>
@@ -114,6 +121,7 @@ export default function LoginAdmin() {
         <p className={styles.loginHint}>
           Senha padrão de teste: <code>brito123</code>
         </p>
+        <a href="/" className={styles.voltar}> ← Voltar pro site</a>
       </section>
     </main>
   );

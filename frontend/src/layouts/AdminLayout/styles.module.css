@@ -1,0 +1,15 @@
+.adminShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #030712;
+}
+
+.adminMain {
+  flex: 1;
+  padding: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  color: #ffffff;
+}

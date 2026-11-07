@@ -1,12 +1,14 @@
 import { Link, Outlet } from 'react-router-dom'
-import PublicNavBar from '../../components/PublicNavBar'
+import PublicNavBar from '../../componentes/PublicoNavBar'
 import styles from './styles.module.css'
 
 export default function PublicLayout () {
     return (
         <div className={styles.container}>
             <PublicNavBar />
-            <Outlet />
+            <main>
+                <Outlet />
+            </main>
 
             <footer className={styles.rodape}>
                 <div>
