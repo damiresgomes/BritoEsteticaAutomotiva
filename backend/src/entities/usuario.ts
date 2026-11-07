@@ -1,11 +1,14 @@
-import { StatusAtivo } from "../types/usuario";
 import { Pessoa } from "./pessoa";
+
+export enum StatusAtivo {
+  SIM = "Sim",
+  NAO = "Não",
+}
 
 export class Usuario extends Pessoa {
     private _senhaHash: string;
     private _salario: number;
     private _ativo: StatusAtivo;
-
 
     constructor(id: number, nome: string, email: string, cpf: string, dataDeNascimento: string, telefone: string, senhaHash: string, salario: number, ativo: StatusAtivo) {
         super(id, nome, email, cpf, dataDeNascimento, telefone);
@@ -40,5 +43,4 @@ export class Usuario extends Pessoa {
     public override obterPapel(): string {
         return "Usuário";
     }
-
 }

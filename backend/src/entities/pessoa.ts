@@ -39,6 +39,7 @@ export abstract class Pessoa {
         return this._id;
     }
 
+
     public abstract obterPapel(): string;
 
 }

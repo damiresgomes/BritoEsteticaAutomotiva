@@ -3,59 +3,115 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
 import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
-import { UsuarioRepository } from "../repositories/usuarioRepository";
-import { LoginInput } from "../schemas/authSchema";
-import { StatusAtivo } from "../types/usuario";
+import {
+  buscarContaPorEmail,
+  buscarContaPorId,
+  criarClienteComConta,
+  emailEmUso,
+} from "../repositories/contaAcessoRepository";
+import { CadastroClienteInput, LoginInput } from "../schemas/authSchema";
 
 const HASH_FICTICIO = bcrypt.hashSync("senha-fantasia", 10);
 
-export class AuthService {
-  constructor(private readonly usuarioRepository: UsuarioRepository) {}
+function hashBcryptCompativel(hash: string): string {
+  return hash.startsWith("$2y$") ? `$2b$${hash.slice(4)}` : hash;
+}
 
-  async login({ email, senha }: LoginInput): Promise<{ token: string }> {
-    const usuario = await this.usuarioRepository.buscarPorEmail(email);
+function erroDeDuplicidade(erro: unknown): boolean {
+  return (
+    typeof erro === "object" &&
+    erro !== null &&
+    "code" in erro &&
+    erro.code === "ER_DUP_ENTRY"
+  );
+}
 
-    if (!usuario) {
-      await bcrypt.compare(senha, HASH_FICTICIO);
-      throw new AppError(401, "Dados inválidos!");
-    }
-
-    const senhaOk = await bcrypt.compare(senha, usuario.senha);
-
-    if (!senhaOk) {
-      throw new AppError(401, "Dados inválidos!");
-    }
-
-    if (usuario.ativo !== "Sim") {
-      throw new AppError(403, "Usuário inativo");
-    }
-
-    const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, jti: randomUUID() },
-      env.JWT_SECRET,
-      { expiresIn: "1h", algorithm: "HS256" }
-    );
-
-    return { token };
+export async function cadastrarCliente(dados: CadastroClienteInput): Promise<{ id: number }> {
+  if (await emailEmUso(dados.email)) {
+    throw new AppError(409, "E-mail já cadastrado");
   }
 
-  async buscarPerfil(id: number): Promise<{
-    id: number;
-    nome: string;
-    email: string;
-    ativo: StatusAtivo;
-  }> {
-    const usuario = await this.usuarioRepository.buscarPorId(id);
+  const senhaHash = await bcrypt.hash(dados.senha, 10);
 
-    if (!usuario) {
-      throw new AppError(404, "Usuário não encontrado");
+  try {
+    const { clienteId } = await criarClienteComConta({
+      nome: dados.nome,
+      email: dados.email,
+      senhaHash,
+      telefone: dados.telefone,
+    });
+
+    return { id: clienteId };
+  } catch (erro) {
+    if (erroDeDuplicidade(erro)) {
+      throw new AppError(409, "E-mail já cadastrado");
     }
 
-    return {
-      id: usuario.id,
-      nome: usuario.nome,
-      email: usuario.email,
-      ativo: usuario.ativo,
-    };
+    throw erro;
   }
+}
+
+export async function loginAuthService(
+  { email, senha }: LoginInput
+): Promise<{
+  token: string;
+  usuario: { id: number; nome: string; email: string; papel: "cliente" | "admin" };
+}> {
+  const conta = await buscarContaPorEmail(email);
+
+  if (!conta) {
+    await bcrypt.compare(senha, HASH_FICTICIO);
+    throw new AppError(401, "E-mail ou senha inválidos");
+  }
+
+  const senhaOk = await bcrypt.compare(senha, hashBcryptCompativel(conta.senhaHash));
+
+  if (!senhaOk) {
+    throw new AppError(401, "E-mail ou senha inválidos");
+  }
+
+  if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
+    throw new AppError(403, "Conta inativa");
+  }
+
+  const token = jwt.sign(
+    {
+      id: conta.id,
+      email: conta.email,
+      papel: conta.papel,
+      jti: randomUUID(),
+    },
+    env.JWT_SECRET,
+    { expiresIn: "1h", algorithm: "HS256" }
+  );
+
+  return {
+    token,
+    usuario: {
+      id: conta.id,
+      nome: conta.nome,
+      email: conta.email,
+      papel: conta.papel,
+    },
+  };
+}
+
+export async function buscarPerfilConta(id: number): Promise<{
+  id: number;
+  nome: string;
+  email: string;
+  papel: "cliente" | "admin";
+}> {
+  const conta = await buscarContaPorId(id);
+
+  if (!conta) {
+    throw new AppError(404, "Conta não encontrada");
+  }
+
+  return {
+    id: conta.id,
+    nome: conta.nome,
+    email: conta.email,
+    papel: conta.papel,
+  };
 }

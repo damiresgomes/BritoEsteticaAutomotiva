@@ -2,66 +2,105 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
-import { UsuarioRepository } from "../repositories/usuarioRepository";
-import { tokenRevogado } from "../services/revogacaoService";
+import { buscarContaPorId, PapelConta } from "../repositories/contaAcessoRepository";
+import { tokenExpirado } from "../services/revogacaoService";
 
-export interface TokenPayload {
+export interface Token {
   id: number;
   email: string;
+  papel: PapelConta;
   jti: string;
   exp?: number;
-  iat?: number;
+  clienteId?: number | null;
+  usuarioId?: number | null;
 }
 
 declare module "express-serve-static-core" {
   interface Request {
-    usuario?: TokenPayload;
+    usuario?: Token;
   }
 }
 
-const usuarioRepository = new UsuarioRepository();
+function payloadValido(payload: string | jwt.JwtPayload): payload is jwt.JwtPayload & {
+  id: number;
+  email: string;
+  papel: PapelConta;
+  jti: string;
+} {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    Number.isSafeInteger(payload.id) &&
+    typeof payload.email === "string" &&
+    (payload.papel === "cliente" || payload.papel === "admin") &&
+    typeof payload.jti === "string" &&
+    payload.jti.length > 0
+  );
+}
 
 export async function authMiddleware(
   request: Request,
   _response: Response,
   next: NextFunction
 ): Promise<void> {
-  const cabecalho = request.headers.authorization;
+  const [esquema, token, ...extra] = request.headers.authorization?.trim().split(/\s+/) ?? [];
 
-  if (!cabecalho?.startsWith("Bearer ")) {
+  if (esquema?.toLowerCase() !== "bearer" || !token || extra.length > 0) {
     throw new AppError(401, "Token não informado");
   }
 
-  const token = cabecalho.slice("Bearer ".length);
-
-  let payload: TokenPayload;
-
+  let payload: jwt.JwtPayload & {
+    id: number;
+    email: string;
+    papel: PapelConta;
+    jti: string;
+  };
   try {
-    payload = jwt.verify(token, env.JWT_SECRET, {
-      algorithms: ["HS256"],
-    }) as TokenPayload;
+    const verificado = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] });
+    if (!payloadValido(verificado)) {
+      throw new Error("Payload inválido");
+    }
+    payload = verificado;
   } catch {
     throw new AppError(401, "Token inválido ou expirado");
   }
 
-  if (!payload.jti) {
-    throw new AppError(401, "Token inválido ou expirado");
-  }
-
-  if (tokenRevogado(payload.jti)) {
+  if (tokenExpirado(payload.jti)) {
     throw new AppError(401, "Sessão encerrada. Faça login novamente.");
   }
 
-  const usuario = await usuarioRepository.buscarPorId(payload.id);
+  const conta = await buscarContaPorId(payload.id);
 
-  if (!usuario) {
-    throw new AppError(401, "Usuário não encontrado");
+  if (!conta || conta.email !== payload.email || conta.papel !== payload.papel) {
+    throw new AppError(401, "Sessão inválida. Faça login novamente.");
   }
 
-  if (usuario.ativo !== "Sim") {
-    throw new AppError(403, "Usuário inativo");
+  if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
+    throw new AppError(403, "Conta inativa");
   }
 
-  request.usuario = payload;
+  request.usuario = {
+    id: conta.id,
+    email: conta.email,
+    papel: conta.papel,
+    jti: payload.jti,
+    exp: payload.exp,
+    clienteId: conta.clienteId,
+    usuarioId: conta.usuarioId,
+  };
   next();
+}
+
+export function exigirPapel(papel: PapelConta) {
+  return (request: Request, _response: Response, next: NextFunction): void => {
+    if (!request.usuario) {
+      throw new AppError(401, "Token não informado");
+    }
+
+    if (request.usuario.papel !== papel) {
+      throw new AppError(403, "Você não tem permissão para acessar este recurso");
+    }
+
+    next();
+  };
 }

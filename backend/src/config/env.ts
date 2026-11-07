@@ -26,3 +26,4 @@ if (!resultado.success) {
 }
 
 export const env = resultado.data;
+

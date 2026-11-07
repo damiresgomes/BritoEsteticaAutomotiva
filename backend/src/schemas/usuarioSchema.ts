@@ -9,7 +9,7 @@ const emailSchema = z
   .max(100, "E-mail deve ter no máximo 100 caracteres")
   .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "E-mail é inválido");
 
-const senhaSchema = z
+export const senhaSchema = z
   .string({ error: "Senha é obrigatória" })
   .min(8, "A senha deve ter no mínimo 8 caracteres")
   .max(72, "A senha deve ter no máximo 72 caracteres")
@@ -43,4 +43,7 @@ export const cadastroUsuarioSchema = z.object({
   datanascimento: dataNascimentoSchema,
 });
 
+
 export type CadastroUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;
+
+export type AtualizacaoUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;

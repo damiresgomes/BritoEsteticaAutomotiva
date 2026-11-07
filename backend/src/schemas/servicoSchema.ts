@@ -23,4 +23,8 @@ export const cadastroServicoSchema = z.object({
   .positive("Categoria deve ser maior que zero"),
 });
 
+export const listarServicosQuerySchema = z.object({
+  categoria: z.coerce.number().int().positive().optional(),
+});
+
 export type CadastroServicoInput = z.infer<typeof cadastroServicoSchema>;

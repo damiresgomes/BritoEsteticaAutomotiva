@@ -1,23 +1,15 @@
 import { Router } from "express";
-import { UsuarioController } from "../controllers/usuarioController";
-import { UsuarioService } from "../services/usuarioService";
-import { UsuarioRepository } from "../repositories/usuarioRepository";
-import { authMiddleware } from "../middlewares/authMiddleware";
+import { cadastrarUsuarioController, listarUsuariosController, atualizarUsuarioController, buscarUsuarioPorIdController } from "../controllers/usuarioController";
 
 export function usuarioRoutes(): Router {
   const router = Router();
 
-  const usuarioRepository = new UsuarioRepository();
-  const usuarioService = new UsuarioService(usuarioRepository);
-  const usuarioController = new UsuarioController(usuarioService);
-
-  router.post("/cadastro", authMiddleware, (request, response) =>
-    usuarioController.cadastrarUsuario(request, response)
-  );
-
-  router.get("/listar", authMiddleware, (request, response) =>
-    usuarioController.listarUsuarios(request, response)
-  );
+  // Todas as rotas deste recurso são administrativas; o app exige papel admin.
+  router.post("/cadastro", cadastrarUsuarioController);
+  router.get("/listar", listarUsuariosController);
+  router.get("/:id", buscarUsuarioPorIdController);
+  router.get("/atualizar/:id", atualizarUsuarioController);
+  router.put("/atualizar/:id", atualizarUsuarioController);
 
   return router;
 }

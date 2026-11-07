@@ -1,42 +1,55 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { pool } from "../config/database";
-import { NovoUsuario, Usuario } from "../types/usuario";
+import { Usuario } from "../entities/usuario";
 
-interface UsuarioRow extends RowDataPacket, Usuario {}
+
+export interface NovoUsuario {
+  nome: string;
+  email: string;
+  senhaHash: string;
+  cpf: string;
+  salario: number;
+  datanascimento: string;
+}
+
+interface UsuarioRow extends RowDataPacket, Usuario { }
 
 const COLUNAS = "id, nome, email, senha, cpf, salario, datanascimento, ativo";
 
-export class UsuarioRepository {
-  async buscarPorEmail(email: string): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario WHERE email = ?`,
-      [email]
-    );
+export async function buscarPorEmail(email: string): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario WHERE email = ?`,
+    [email]
+  );
 
-    return usuarios[0] ?? null;
-  }
+  return usuarios[0] ?? null;
+}
 
-  async buscarPorCpf(cpf: string): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario
+export async function buscarPorCpf(cpf: string): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario
         WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?`,
-      [cpf]
-    );
+    [cpf]
+  );
 
-    return usuarios[0] ?? null;
-  }
+  return usuarios[0] ?? null;
+}
 
-  async buscarPorId(id: number): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario WHERE id = ?`,
-      [id]
-    );
+export async function buscarPorId(id: number): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario WHERE id = ?`,
+    [id]
+  );
 
-    return usuarios[0] ?? null;
-  }
+  return usuarios[0] ?? null;
+}
 
-  async criarUsuario(usuario: NovoUsuario): Promise<number> {
-    const [resultado] = await pool.execute<ResultSetHeader>(
+export async function criarUsuario(usuario: NovoUsuario): Promise<number> {
+  const conexao = await pool.getConnection();
+
+  try {
+    await conexao.beginTransaction();
+    const [resultado] = await conexao.execute<ResultSetHeader>(
       `INSERT INTO usuario
          (nome, email, senha, cpf, salario, datanascimento, ativo)
        VALUES (?, ?, ?, ?, ?, ?, 'Sim')`,
@@ -49,14 +62,103 @@ export class UsuarioRepository {
         usuario.datanascimento,
       ]
     );
-
-    return resultado.insertId;
-  }
-
-  async buscarTodos(): Promise<{ id: number; nome: string; email: string }[]> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT id, nome, email FROM usuario WHERE ativo = 'Sim'`
+    await conexao.execute(
+      `INSERT INTO contas_acesso (email, senha_hash, papel, ativo, usuario_id)
+       VALUES (?, ?, 'admin', 'Sim', ?)`,
+      [usuario.email, usuario.senhaHash, resultado.insertId]
     );
-    return usuarios;
+
+    await conexao.commit();
+    return resultado.insertId;
+  } catch (erro) {
+    await conexao.rollback();
+    throw erro;
+  } finally {
+    conexao.release();
+  }
+}
+
+export async function buscarTodos(): Promise<{ id: number; nome: string; email: string }[]> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT id, nome, email FROM usuario WHERE ativo = 'Sim'`
+  );
+  return usuarios;
+}
+
+export async function atualizarUsuario(id: number, dados: NovoUsuario): Promise<void> {
+  const conexao = await pool.getConnection();
+
+  try {
+    await conexao.beginTransaction();
+    const [contas] = await conexao.execute<RowDataPacket[]>(
+      `SELECT id FROM contas_acesso
+        WHERE usuario_id = ? AND papel = 'admin' FOR UPDATE`,
+      [id]
+    );
+    if (contas.length !== 1) {
+      throw new Error("Conta de acesso administrativa não encontrada");
+    }
+
+    await conexao.execute(
+      `UPDATE usuario
+          SET nome = ?, email = ?, senha = ?, cpf = ?, salario = ?, datanascimento = ?
+        WHERE id = ?`,
+      [
+        dados.nome,
+        dados.email,
+        dados.senhaHash,
+        dados.cpf,
+        dados.salario,
+        dados.datanascimento,
+        id,
+      ]
+    );
+    await conexao.execute(
+      `UPDATE contas_acesso
+          SET email = ?, senha_hash = ?
+        WHERE usuario_id = ? AND papel = 'admin'`,
+      [dados.email, dados.senhaHash, id]
+    );
+
+    await conexao.commit();
+  } catch (erro) {
+    await conexao.rollback();
+    throw erro;
+  } finally {
+    conexao.release();
+  }
+}
+
+export async function desativarUsuario(id: number): Promise<void> {
+  const conexao = await pool.getConnection();
+
+  try {
+    await conexao.beginTransaction();
+    const [contas] = await conexao.execute<RowDataPacket[]>(
+      `SELECT id FROM contas_acesso
+        WHERE usuario_id = ? AND papel = 'admin' FOR UPDATE`,
+      [id]
+    );
+    if (contas.length !== 1) {
+      throw new Error("Conta de acesso administrativa não encontrada");
+    }
+
+    await conexao.execute(
+      "UPDATE usuario SET ativo = 'Não' WHERE id = ?",
+      [id]
+    );
+    await conexao.execute(
+      `UPDATE contas_acesso
+          SET ativo = 'Não'
+        WHERE usuario_id = ? AND papel = 'admin'`,
+      [id]
+    );
+
+    await conexao.commit();
+  } catch (erro) {
+    await conexao.rollback();
+    throw erro;
+  } finally {
+    conexao.release();
   }
 }
