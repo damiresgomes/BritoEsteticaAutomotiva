@@ -20,11 +20,11 @@ export interface ContaAcesso extends RowDataPacket {
 const COLUNAS_CONTA = `
   ca.id,
   ca.email,
-  ca.senha_hash AS senhaHash,
+  ca.senha AS senhaHash,
   ca.papel,
   ca.ativo,
-  ca.cliente_id AS clienteId,
-  ca.usuario_id AS usuarioId,
+  ca.id_cliente AS clienteId,
+  ca.id_usuario AS usuarioId,
   COALESCE(c.nome, u.nome) AS nome,
   c.telefone AS telefone,
   u.ativo AS usuarioAtivo
@@ -34,8 +34,8 @@ export async function buscarContaPorEmail(email: string): Promise<ContaAcesso | 
   const [contas] = await pool.execute<ContaAcesso[]>(
     `SELECT ${COLUNAS_CONTA}
        FROM contas_acesso ca
-       LEFT JOIN clientes c ON c.id_cliente = ca.cliente_id
-       LEFT JOIN usuario u ON u.id = ca.usuario_id
+       LEFT JOIN clientes c ON c.id_cliente = ca.id_cliente
+       LEFT JOIN usuario u ON u.id = ca.id_usuario
       WHERE ca.email = ?
       LIMIT 1`,
     [email]
@@ -48,8 +48,8 @@ export async function buscarContaPorId(id: number): Promise<ContaAcesso | null> 
   const [contas] = await pool.execute<ContaAcesso[]>(
     `SELECT ${COLUNAS_CONTA}
        FROM contas_acesso ca
-       LEFT JOIN clientes c ON c.id_cliente = ca.cliente_id
-       LEFT JOIN usuario u ON u.id = ca.usuario_id
+       LEFT JOIN clientes c ON c.id_cliente = ca.id_cliente
+       LEFT JOIN usuario u ON u.id = ca.id_usuario
       WHERE ca.id = ?
       LIMIT 1`,
     [id]
@@ -61,7 +61,7 @@ export async function buscarContaPorId(id: number): Promise<ContaAcesso | null> 
 export async function emailEmUso(email: string, ignorarUsuarioId?: number): Promise<boolean> {
   const exclusao = ignorarUsuarioId === undefined
     ? ""
-    : " AND (usuario_id IS NULL OR usuario_id <> ?)";
+    : " AND (id_usuario IS NULL OR id_usuario <> ?)";
   const parametros = ignorarUsuarioId === undefined
     ? [email]
     : [email, ignorarUsuarioId];
@@ -94,7 +94,7 @@ export async function criarClienteComConta(dados: NovoClienteComConta): Promise<
       [dados.nome, dados.telefone]
     );
     const [conta] = await conexao.execute<ResultSetHeader>(
-      `INSERT INTO contas_acesso (email, senha_hash, papel, ativo, cliente_id)
+      `INSERT INTO contas_acesso (email, senha, papel, ativo, id_cliente)
        VALUES (?, ?, 'cliente', 'Sim', ?)`,
       [dados.email, dados.senhaHash, cliente.insertId]
     );

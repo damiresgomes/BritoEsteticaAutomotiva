@@ -63,7 +63,7 @@ export async function criarUsuario(usuario: NovoUsuario): Promise<number> {
       ]
     );
     await conexao.execute(
-      `INSERT INTO contas_acesso (email, senha_hash, papel, ativo, usuario_id)
+      `INSERT INTO contas_acesso (email, senha, papel, ativo, id_usuario)
        VALUES (?, ?, 'admin', 'Sim', ?)`,
       [usuario.email, usuario.senhaHash, resultado.insertId]
     );
@@ -92,7 +92,7 @@ export async function atualizarUsuario(id: number, dados: NovoUsuario): Promise<
     await conexao.beginTransaction();
     const [contas] = await conexao.execute<RowDataPacket[]>(
       `SELECT id FROM contas_acesso
-        WHERE usuario_id = ? AND papel = 'admin' FOR UPDATE`,
+        WHERE id_usuario = ? AND papel = 'admin' FOR UPDATE`,
       [id]
     );
     if (contas.length !== 1) {
@@ -115,8 +115,8 @@ export async function atualizarUsuario(id: number, dados: NovoUsuario): Promise<
     );
     await conexao.execute(
       `UPDATE contas_acesso
-          SET email = ?, senha_hash = ?
-        WHERE usuario_id = ? AND papel = 'admin'`,
+          SET email = ?, senha = ?
+        WHERE id_usuario = ? AND papel = 'admin'`,
       [dados.email, dados.senhaHash, id]
     );
 
@@ -136,7 +136,7 @@ export async function desativarUsuario(id: number): Promise<void> {
     await conexao.beginTransaction();
     const [contas] = await conexao.execute<RowDataPacket[]>(
       `SELECT id FROM contas_acesso
-        WHERE usuario_id = ? AND papel = 'admin' FOR UPDATE`,
+        WHERE id_usuario = ? AND papel = 'admin' FOR UPDATE`,
       [id]
     );
     if (contas.length !== 1) {
@@ -150,7 +150,7 @@ export async function desativarUsuario(id: number): Promise<void> {
     await conexao.execute(
       `UPDATE contas_acesso
           SET ativo = 'Não'
-        WHERE usuario_id = ? AND papel = 'admin'`,
+        WHERE id_usuario = ? AND papel = 'admin'`,
       [id]
     );
 
