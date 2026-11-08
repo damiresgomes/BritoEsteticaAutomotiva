@@ -3,9 +3,6 @@ services:
     image: mysql:8.0
     container_name: brito-mysql
     restart: unless-stopped
-    # Evita o erro 1418 (ER_BINLOG_UNSAFE_ROUTINE) ao criar rotinas stored
-    # sem característica declarada. O dump já declara `DETERMINISTIC`/`READS SQL DATA`,
-    # mas isto protege criação futura de functions/triggers.
     command: --log-bin-trust-function-creators=1
     ports:
       - "3306:3306"

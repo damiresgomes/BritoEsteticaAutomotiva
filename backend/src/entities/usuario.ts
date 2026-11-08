@@ -5,16 +5,20 @@ export enum StatusAtivo {
   NAO = "Não",
 }
 
+export type PapelUsuario = "admin" | "usuario";
+
 export class Usuario extends Pessoa {
     private _senhaHash: string;
     private _salario: number;
     private _ativo: StatusAtivo;
+    private _papel: PapelUsuario;
 
-    constructor(id: number, nome: string, email: string, cpf: string, dataDeNascimento: string, telefone: string, senhaHash: string, salario: number, ativo: StatusAtivo) {
+    constructor(id: number, nome: string, email: string, cpf: string, dataDeNascimento: string, telefone: string, senhaHash: string, salario: number, ativo: StatusAtivo, papel: PapelUsuario = "usuario") {
         super(id, nome, email, cpf, dataDeNascimento, telefone);
         this._senhaHash = senhaHash;
         this._salario = salario;
         this._ativo = ativo;
+        this._papel = papel;
     }
 
     get senhaHash(): string {
@@ -27,6 +31,10 @@ export class Usuario extends Pessoa {
 
     get ativo(): StatusAtivo {
         return this._ativo;
+    }
+
+    get papel(): PapelUsuario {
+        return this._papel;
     }
 
     set salario(novoSalario: number) {

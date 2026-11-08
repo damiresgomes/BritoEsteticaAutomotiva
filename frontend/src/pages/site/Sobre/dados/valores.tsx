@@ -1,27 +1,10 @@
 import type { ReactNode } from "react";
+import Icone from "./Icone";
 
 export interface Valor {
     titulo: string;
     texto: string;
     icone: ReactNode;
-}
-
-function Icone ({ children }: {children: ReactNode}) {
-    return(
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {children}
-    </svg>
-  );
 }
 
 export const valores: Valor[] = [

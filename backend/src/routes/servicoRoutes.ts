@@ -1,17 +1,20 @@
 import { Router } from "express";
-import { cadastrarServicoController, listarServicosController, atualizarServicoController, excluirServicoController } from "../controllers/servicoController";
+import { buscarServicoPorIdController, cadastrarServicoController, listarServicosController, atualizarServicoController, excluirServicoController } from "../controllers/servicoController";
+import { authMiddleware } from "../middlewares/authMiddleware";
 
 
 export function servicoRoutes(): Router {
   const router = Router();
 
-  router.post("/cadastro", cadastrarServicoController);
+  router.post("/cadastro", authMiddleware, cadastrarServicoController);
 
   router.get("/listar", listarServicosController);
 
-  router.put("/atualizar/:id", atualizarServicoController);
+  router.get("/:id", buscarServicoPorIdController);
 
-  router.delete("/deletar/:id", excluirServicoController);
+  router.put("/atualizar/:id", authMiddleware, atualizarServicoController);
+
+  router.delete("/deletar/:id", authMiddleware, excluirServicoController);
 
   return router;
 }

@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./componentes/ProtecaoRotas";
+import ProtectedRoute from "./components/ProtectedRouter";
 import PublicLayout from "./layouts/RodapeLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -7,22 +7,21 @@ import HomeSite from "./pages/site/Home";
 import SobreSite from "./pages/site/Sobre"
 import ServicosSite from "./pages/site/Servicos";
 import AgendamentoSite from "./pages/site/Agendamento";
-import CadastroUsuario from "./pages/autenticacao/Cadastro";
-import Login from "./pages/autenticacao/Login";
+import CadastroUsuario from "./pages/auth/Cadastro";
+import Login from "./pages/auth/Login";
 
-import LoginAdmin from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
-import ListarCategoria from "./pages/admin/Categoria/ListarCategoria";
-import CadastrarCategoria from "./pages/admin/Categoria/CadastrarCategoria";
-import ExcluirCategoria from "./pages/admin/Categoria/EditarCategoria";
-import ListarServico from "./pages/admin/Servico/ListarServico";
-import CadastrarServico from "./pages/admin/Servico/CadastrarServico";
-import ExcluirServico from "./pages/admin/Servico/EditarServico";
-import ListarAgendamento from "./pages/admin/Agendamento/ListarAgendamento";
-import CadastrarAgendamento from "./pages/admin/Agendamento/CadastrarAgendamento";
-import ExcluirAgendamento from "./pages/admin/Agendamento/EditarAgendamento";
-import ListarUsuario from "./pages/admin/Usuario/ListarUsuario";
-import CadastrarUsuario from "./pages/admin/Usuario/CadastrarUsuario";
+import ListarCategoria from "./pages/admin/categoria/Listarcategoria";
+import CadastrarCategoria from "./pages/admin/categoria/CadastrarCategoria";
+import ExcluirCategoria from "./pages/admin/categoria/EditarCategoria";
+import ListarServico from "./pages/admin/servico/ListarServico";
+import CadastrarServico from "./pages/admin/servico/CadastrarServico";
+import ExcluirServico from "./pages/admin/servico/EditarServico";
+import ListarAgendamento from "./pages/admin/agendamento/ListarAgendamento";
+import CadastrarAgendamento from "./pages/admin/agendamento/CadastrarAgendamento";
+import ExcluirAgendamento from "./pages/admin/agendamento/EditarAgendamento";
+import ListarUsuario from "./pages/admin/usuario/ListarUsuario";
+import CadastrarUsuario from "./pages/admin/usuario/CadastrarUsuario";
 
 export default function App() {
   return (
@@ -41,7 +40,6 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="admin" element={<AdminLayout />}>
-            <Route path="/admin/login" element={<LoginAdmin />} />
             <Route index element={<Dashboard />} />
             <Route path="categoria" element={<ListarCategoria />} />
             <Route path="categoria/cadastrar" element={<CadastrarCategoria />} />

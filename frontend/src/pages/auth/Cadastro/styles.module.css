@@ -1,0 +1,137 @@
+.page {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  color: #5cb3ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.title {
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 1.75rem;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin-bottom: 24px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field label {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  color: #fff;
+  background: #030712;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  font: inherit;
+}
+
+.field input:focus {
+  border-color: #5cb3ff;
+  outline: 2px solid rgba(92, 179, 255, 0.2);
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.fieldError {
+  color: #fca5a5;
+  font-size: 0.8rem;
+}
+
+.apiError {
+  margin: 0;
+  padding: 12px;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.submitButton {
+  margin-top: 4px;
+  padding: 12px;
+  color: #fff;
+  background: #2563eb;
+  border: 0;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.loginLink {
+  margin: 20px 0 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.loginLink a {
+  color: #5cb3ff;
+  text-decoration: none;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 28px 14px;
+  }
+
+  .card {
+    padding: 24px 18px;
+  }
+}

@@ -1,8 +1,7 @@
 import bcrypt from "bcrypt";
 import { AppError } from "../errors/AppError";
-import { buscarPorCpf, criarUsuario,buscarTodos, buscarPorId, atualizarUsuario,
+import { buscarPorEmail, buscarPorCpf, criarUsuario,buscarTodos, buscarPorId, atualizarUsuario,
 desativarUsuario,} from "../repositories/usuarioRepository";
-import { emailEmUso } from "../repositories/contaAcessoRepository";
 import { CadastroUsuarioInput, AtualizacaoUsuarioInput } from "../schemas/usuarioSchema";
 import { normalizarCpf } from "../validators/cpf";
 
@@ -18,7 +17,7 @@ function existeDuplicidade(erro: unknown): boolean {
 }
 
 export async function cadastrar(dados: CadastroUsuarioInput): Promise<{ id: number }> {
-  if (await emailEmUso(dados.email)) {
+  if (await buscarPorEmail(dados.email)) {
     throw new AppError(409, "E-mail já cadastrado");
   }
 
@@ -70,6 +69,7 @@ export async function buscarUsuarioPorId(id: number) {
     dataNascimento: usuario.dataDeNascimento,
     salario: usuario.salario,
     ativo: usuario.ativo,
+    papel: usuario.papel,
   };
 }
 
@@ -80,13 +80,7 @@ export async function atualizar(id: number, dados: AtualizacaoUsuarioInput): Pro
     throw new AppError(404, "Usuário não encontrado");
   }
 
-  if (dados.email && dados.email !== usuario.email) {
-    if (await emailEmUso(dados.email, id)) {
-      throw new AppError(409, "E-mail já cadastrado");
-    }
-  }
-
-  const cpf = dados.cpf ? normalizarCpf(dados.cpf) : usuario.cpf;
+  const cpf = normalizarCpf(dados.cpf);
 
   if (cpf !== usuario.cpf) {
     if (await buscarPorCpf(cpf)) {
@@ -98,12 +92,11 @@ export async function atualizar(id: number, dados: AtualizacaoUsuarioInput): Pro
 
   try {
     await atualizarUsuario(id, {
-      nome: dados.nome ?? usuario.nome,
-      email: dados.email ?? usuario.email,
+      nome: dados.nome,
       senhaHash,
       cpf,
-      salario: dados.salario ?? usuario.salario,
-      datanascimento: dados.datanascimento ?? usuario.dataDeNascimento,
+      salario: dados.salario,
+      datanascimento: dados.datanascimento,
     });
   } catch (erro) {
     if (existeDuplicidade(erro)) {

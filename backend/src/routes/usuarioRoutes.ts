@@ -1,15 +1,19 @@
 import { Router } from "express";
-import { cadastrarUsuarioController, listarUsuariosController, atualizarUsuarioController, buscarUsuarioPorIdController } from "../controllers/usuarioController";
+import { cadastrarUsuarioController, listarUsuariosController, atualizarUsuarioController, buscarUsuarioPorIdController, desativarUsuarioController } from "../controllers/usuarioController";
+import { authMiddleware } from "../middlewares/authMiddleware";
 
 export function usuarioRoutes(): Router {
   const router = Router();
 
-  // Todas as rotas deste recurso são administrativas; o app exige papel admin.
-  router.post("/cadastro", cadastrarUsuarioController);
-  router.get("/listar", listarUsuariosController);
-  router.get("/:id", buscarUsuarioPorIdController);
-  router.get("/atualizar/:id", atualizarUsuarioController);
-  router.put("/atualizar/:id", atualizarUsuarioController);
+  router.post("/cadastro", authMiddleware, cadastrarUsuarioController);
+
+  router.get("/listar", authMiddleware, listarUsuariosController);
+
+  router.get("/:id", authMiddleware, buscarUsuarioPorIdController);
+
+  router.put("/atualizar/:id", authMiddleware, atualizarUsuarioController);
+  
+  router.delete("/desativar/:id", authMiddleware, desativarUsuarioController);
 
   return router;
 }

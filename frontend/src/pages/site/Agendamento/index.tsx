@@ -1,59 +1,160 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { authService } from "../../../servicos/autenticacao";
+import axios from "axios";
+import { authService } from "../../../services/auth";
+import { agendamentoService } from "../../../services/agendamentos";
+import type { AgendamentoCriado } from "../../../services/agendamentos";
+import { servicoService } from "../../../services/services";
+import type { Servico } from "../../../services/services";
+import {
+  dataLocalAtual,
+  dataNaoEstaNoPassado,
+  mascararPlaca,
+  validarPlaca,
+} from "../../../utils/validadores";
+import { obterMensagemErro } from "../../../utils/erros";
 
 import styles from "./styles.module.css";
 
-type Opcao = { id: string; nome: string; preco: number };
+const CATEGORIA_PRINCIPAL = 1;
+const CATEGORIA_EXTRA = 2;
+const formatarPreco = (valor: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(valor);
 
-const LISTA_DE_SERVICOS: Opcao[] = [
-  { id: "lavagem-detalhada", nome: "Lavagem Detalhada", preco: 70 },
-  { id: "lavagem-simples", nome: "Lavagem Simples", preco: 40 },
-  { id: "lavagem-completa", nome: "Lavagem Completa", preco: 110 },
-];
+function mensagemErroDeAgendamento(erro: unknown): string {
+  if (axios.isAxiosError(erro)) {
+    if (erro.response?.status === 401) {
+      return "Sua sessão expirou. Entre novamente para consultar os horários.";
+    }
 
-const LISTA_DE_ACRESCIMOS: Opcao[] = [
-  { id: "cera", nome: "Cera Líquida Vonixx", preco: 35 },
-  { id: "bancos", nome: "Higienização de Bancos", preco: 60 },
-  { id: "farois", nome: "Polimento de Faróis", preco: 80 },
-  { id: "cristalizacao", nome: "Cristalização da Pintura", preco: 120 },
-  { id: "couro", nome: "Hidratação de Couro", preco: 70 },
-  { id: "aroma", nome: "Aromatização Premium", preco: 20 },
-];
+    if (erro.response?.status === 403) {
+      return "É necessário entrar com uma conta de cliente para consultar horários e agendar.";
+    }
+  }
 
-const LISTA_DE_HORARIOS = [
-  "08:00", "09:00", "10:00", "11:00", "13:00",
-  "14:00", "15:00", "16:00", "17:00",
-];
-
-const formatarPreco = (valor: number) => `R$ ${valor}`;
+  return obterMensagemErro(erro);
+}
 
 export default function BookingForm() {
   const location = useLocation();
-  const autenticado = authService.isAuthenticated();
+  const [autenticado, setAutenticado] = useState(() =>
+    authService.isAuthenticated("cliente")
+  );
   const [mostrarAviso, setMostrarAviso] = useState(() => !autenticado);
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [acrescimos, setAcrescimos] = useState<Servico[]>([]);
+  const [carregandoCatalogo, setCarregandoCatalogo] = useState(true);
+  const [erroCatalogo, setErroCatalogo] = useState("");
+  const [horarios, setHorarios] = useState<string[]>([]);
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false);
+  const [erroHorarios, setErroHorarios] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState("");
+  const [agendamentoCriado, setAgendamentoCriado] =
+    useState<AgendamentoCriado | null>(null);
   const [dadosDoFormulario, setDadosDoFormulario] = useState({
-    nome: "",
-    whatsapp: "",
+    placa: "",
     veiculo: "",
-    servico: LISTA_DE_SERVICOS[0].id,
+    servico: "",
     data: "",
     horario: "",
     observacoes: "",
   });
 
-  const [acrescimosMarcados, setAcrescimosMarcados] = useState<string[]>([]);
+  const [acrescimosMarcados, setAcrescimosMarcados] = useState<number[]>([]);
+  const servicoSelecionado = servicos.find(
+    (servico) => servico.id_servico === Number(dadosDoFormulario.servico)
+  );
+  const acrescimosSelecionados = acrescimos.filter((acrescimo) =>
+    acrescimosMarcados.includes(acrescimo.id_servico)
+  );
+  const totalEstimado = servicoSelecionado
+    ? ([servicoSelecionado, ...acrescimosSelecionados].reduce(
+        (totalEmCentavos, item) =>
+          totalEmCentavos + Math.round(item.preco * 100),
+        0
+      ) /
+        100)
+    : null;
+
+  useEffect(() => {
+    let cancelado = false;
+
+    Promise.all([
+      servicoService.listarPorCategoria(CATEGORIA_PRINCIPAL),
+      servicoService.listarPorCategoria(CATEGORIA_EXTRA),
+    ])
+      .then(([servicosDisponiveis, acrescimosDisponiveis]) => {
+        if (cancelado) return;
+        setServicos(servicosDisponiveis);
+        setAcrescimos(acrescimosDisponiveis);
+        setDadosDoFormulario((anterior) => ({
+          ...anterior,
+          servico: servicosDisponiveis[0]
+            ? String(servicosDisponiveis[0].id_servico)
+            : "",
+        }));
+      })
+      .catch((erro: unknown) => {
+        if (!cancelado) setErroCatalogo(obterMensagemErro(erro));
+      })
+      .finally(() => {
+        if (!cancelado) setCarregandoCatalogo(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!autenticado || !dadosDoFormulario.data) return;
+
+    let cancelado = false;
+
+    agendamentoService
+      .listarHorarios(dadosDoFormulario.data)
+      .then((horariosDisponiveis) => {
+        if (!cancelado) {
+          setHorarios(horariosDisponiveis);
+          setCarregandoHorarios(false);
+        }
+      })
+      .catch((erro: unknown) => {
+        if (!cancelado) {
+          setHorarios([]);
+          setErroHorarios(mensagemErroDeAgendamento(erro));
+          setCarregandoHorarios(false);
+        }
+      })
+
+    return () => {
+      cancelado = true;
+    };
+  }, [autenticado, dadosDoFormulario.data]);
 
   const aoMudarCampo = (
     evento: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
+    const { name, value } = evento.target;
+    if (name === "data") {
+      setHorarios([]);
+      setErroHorarios("");
+      setCarregandoHorarios(Boolean(autenticado && value));
+    }
     setDadosDoFormulario({
       ...dadosDoFormulario,
-      [evento.target.name]: evento.target.value,
+      [name]: name === "placa" ? mascararPlaca(value) : value,
+      ...(name === "data" ? { horario: "" } : {}),
     });
+    setErroEnvio("");
+    setAgendamentoCriado(null);
   };
 
-  const marcarOuDesmarcarAcrescimo = (idDoAcrescimo: string) => {
+  const marcarOuDesmarcarAcrescimo = (idDoAcrescimo: number) => {
     if (acrescimosMarcados.includes(idDoAcrescimo)) {
       setAcrescimosMarcados(
         acrescimosMarcados.filter((id) => id !== idDoAcrescimo)
@@ -63,18 +164,7 @@ export default function BookingForm() {
     }
   };
 
-  const servicoEscolhido = LISTA_DE_SERVICOS.find(
-    (servico) => servico.id === dadosDoFormulario.servico
-  );
-  const precoDoServico = servicoEscolhido ? servicoEscolhido.preco : 0;
-
-  const precoDosAcrescimos = LISTA_DE_ACRESCIMOS
-    .filter((acrescimo) => acrescimosMarcados.includes(acrescimo.id))
-    .reduce((soma, acrescimo) => soma + acrescimo.preco, 0);
-
-  const valorTotal = precoDoServico + precoDosAcrescimos;
-
-  const aoEnviarFormulario = (evento: FormEvent) => {
+  const aoEnviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
 
     if (!authService.isAuthenticated()) {
@@ -82,7 +172,59 @@ export default function BookingForm() {
       return;
     }
 
-    console.log({ ...dadosDoFormulario, acrescimosMarcados, valorTotal });
+    if (!dataNaoEstaNoPassado(dadosDoFormulario.data)) {
+      window.alert("Selecione uma data de hoje ou futura para o agendamento.");
+      return;
+    }
+
+    if (!validarPlaca(dadosDoFormulario.placa)) {
+      setErroEnvio("Informe uma placa válida (ex.: ABC-1234 ou ABC-1D23).");
+      return;
+    }
+
+    setEnviando(true);
+    setErroEnvio("");
+    setAgendamentoCriado(null);
+
+    try {
+      const resultado = await agendamentoService.criar({
+        placa: dadosDoFormulario.placa,
+        veiculo: dadosDoFormulario.veiculo,
+        servicoId: Number(dadosDoFormulario.servico),
+        data: dadosDoFormulario.data,
+        horario: dadosDoFormulario.horario,
+        observacoes: dadosDoFormulario.observacoes,
+        extras: acrescimosMarcados,
+      });
+
+      setAgendamentoCriado(resultado);
+    } catch (erro: unknown) {
+      setErroEnvio(obterMensagemErro(erro));
+
+      if (axios.isAxiosError(erro) && erro.response?.status === 401) {
+        authService.logout("cliente");
+        setAutenticado(false);
+        setMostrarAviso(true);
+        setHorarios([]);
+        setCarregandoHorarios(false);
+      } else if (axios.isAxiosError(erro) && erro.response?.status === 403) {
+        setErroEnvio(mensagemErroDeAgendamento(erro));
+      }
+
+      if (axios.isAxiosError(erro) && erro.response?.status === 409) {
+        setDadosDoFormulario((anterior) => ({ ...anterior, horario: "" }));
+        try {
+          setHorarios(
+            await agendamentoService.listarHorarios(dadosDoFormulario.data)
+          );
+        } catch (erroHorarios: unknown) {
+          setHorarios([]);
+          setErroHorarios(obterMensagemErro(erroHorarios));
+        }
+      }
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -102,44 +244,35 @@ export default function BookingForm() {
       >
         <div className={styles.linha}>
           <label className={styles.campo}>
-            <span className={styles.rotulo}>Nome completo</span>
+            <span className={styles.rotulo}>Placa</span>
             <input
               className={styles.entrada}
               type="text"
-              name="nome"
-              placeholder="Roberto Silva"
-              value={dadosDoFormulario.nome}
+              name="placa"
+              placeholder="ABC-1234"
+              maxLength={8}
+              autoComplete="off"
+              aria-label="Placa do veículo"
+              value={dadosDoFormulario.placa}
               onChange={aoMudarCampo}
               required
             />
           </label>
 
           <label className={styles.campo}>
-            <span className={styles.rotulo}>WhatsApp</span>
+            <span className={styles.rotulo}>Veículo</span>
             <input
               className={styles.entrada}
-              type="tel"
-              name="whatsapp"
-              placeholder="(11) 99999-9999"
-              value={dadosDoFormulario.whatsapp}
+              type="text"
+              name="veiculo"
+              placeholder="VW Golf"
+              maxLength={50}
+              value={dadosDoFormulario.veiculo}
               onChange={aoMudarCampo}
               required
             />
           </label>
         </div>
-
-        <label className={styles.campo}>
-          <span className={styles.rotulo}>Veículo</span>
-          <input
-            className={styles.entrada}
-            type="text"
-            name="veiculo"
-            placeholder="Honda Civic — Preto"
-            value={dadosDoFormulario.veiculo}
-            onChange={aoMudarCampo}
-            required
-          />
-        </label>
 
         <label className={styles.campo}>
           <span className={styles.rotulo}>Serviço</span>
@@ -148,31 +281,45 @@ export default function BookingForm() {
             name="servico"
             value={dadosDoFormulario.servico}
             onChange={aoMudarCampo}
+            disabled={carregandoCatalogo || servicos.length === 0}
+            required
           >
-            {LISTA_DE_SERVICOS.map((servico) => (
-              <option key={servico.id} value={servico.id}>
-                {servico.nome} — {formatarPreco(servico.preco)}
+            <option value="" disabled>
+              {carregandoCatalogo
+                ? "Carregando serviços..."
+                : erroCatalogo || (servicos.length ? "Selecione" : "Nenhum serviço disponível")}
+            </option>
+            {servicos.map((servico) => (
+              <option key={servico.id_servico} value={servico.id_servico}>
+                {servico.nome_servico} — {formatarPreco(servico.preco)}
               </option>
             ))}
           </select>
         </label>
+        {erroCatalogo && <p className={styles.mensagemErro} role="alert">{erroCatalogo}</p>}
 
         <fieldset className={`${styles.campo} ${styles.grupo}`}>
           <legend className={styles.rotulo}>Acréscimos opcionais</legend>
 
           <div className={styles.gradeDeAcrescimos}>
-            {LISTA_DE_ACRESCIMOS.map((acrescimo) => {
-              const estaMarcado = acrescimosMarcados.includes(acrescimo.id);
+            {carregandoCatalogo ? (
+              <p>Carregando acréscimos...</p>
+            ) : erroCatalogo ? (
+              <p>Não foi possível carregar os acréscimos.</p>
+            ) : acrescimos.length === 0 ? (
+              <p>Nenhum acréscimo disponível.</p>
+            ) : acrescimos.map((acrescimo) => {
+              const estaMarcado = acrescimosMarcados.includes(acrescimo.id_servico);
 
               return (
                 <button
-                  key={acrescimo.id}
+                  key={acrescimo.id_servico}
                   type="button"
                   className={`${styles.botaoAcrescimo} ${estaMarcado ? styles.marcado : ""}`}
                   aria-pressed={estaMarcado}
-                  onClick={() => marcarOuDesmarcarAcrescimo(acrescimo.id)}
+                  onClick={() => marcarOuDesmarcarAcrescimo(acrescimo.id_servico)}
                 >
-                  <span>{acrescimo.nome}</span>
+                  <span>{acrescimo.nome_servico}</span>
                   <span className={styles.precoDoAcrescimo}>
                     +{formatarPreco(acrescimo.preco)}
                   </span>
@@ -189,6 +336,7 @@ export default function BookingForm() {
               className={styles.entrada}
               type="date"
               name="data"
+              min={dataLocalAtual()}
               value={dadosDoFormulario.data}
               onChange={aoMudarCampo}
               required
@@ -202,12 +350,19 @@ export default function BookingForm() {
               name="horario"
               value={dadosDoFormulario.horario}
               onChange={aoMudarCampo}
+              disabled={!dadosDoFormulario.data || carregandoHorarios || !horarios.length}
               required
             >
               <option value="" disabled>
-                Selecione
+                {!dadosDoFormulario.data
+                  ? "Escolha uma data primeiro"
+                  : !autenticado
+                    ? "Entre para consultar os horários"
+                  : carregandoHorarios
+                    ? "Carregando horários..."
+                    : erroHorarios || (horarios.length ? "Selecione" : "Sem horários disponíveis")}
               </option>
-              {LISTA_DE_HORARIOS.map((horario) => (
+              {horarios.map((horario) => (
                 <option key={horario} value={horario}>
                   {horario}
                 </option>
@@ -215,6 +370,15 @@ export default function BookingForm() {
             </select>
           </label>
         </div>
+        {erroHorarios && <p className={styles.mensagemErro} role="alert">{erroHorarios}</p>}
+        {!autenticado && dadosDoFormulario.data && (
+          <p className={styles.notaTotal}>
+            <Link to="/autenticacao/login" state={{ from: location }}>
+              Entre com uma conta de cliente
+            </Link>{" "}
+            para consultar horários disponíveis.
+          </p>
+        )}
 
         <label className={styles.campo}>
           <span className={styles.rotulo}>Observações (opcional)</span>
@@ -228,14 +392,26 @@ export default function BookingForm() {
           />
         </label>
 
-        <div className={styles.rodape}>
-          <div className={styles.total}>
-            <span className={styles.rotulo}>Total</span>
-            <strong>{formatarPreco(valorTotal)}</strong>
-          </div>
+        {erroEnvio && <p className={styles.mensagemErro} role="alert">{erroEnvio}</p>}
+        {agendamentoCriado && (
+          <p className={styles.mensagemSucesso} role="status">
+            Agendamento #{agendamentoCriado.id} realizado com sucesso. Total:{" "}
+            {formatarPreco(totalEstimado ?? 0)}.
+          </p>
+        )}
 
-          <button className={styles.botaoEnviar} type="submit">
-            Agendar horário
+        <div className={styles.rodape}>
+          {servicoSelecionado && (
+            <div className={styles.total} aria-live="polite">
+              <strong>Total: {formatarPreco(totalEstimado ?? 0)}</strong>
+            </div>
+          )}
+          <button
+            className={styles.botaoEnviar}
+            type="submit"
+            disabled={enviando || carregandoCatalogo || !servicos.length}
+          >
+            {enviando ? "Enviando..." : "Agendar horário"}
           </button>
         </div>
       </form>

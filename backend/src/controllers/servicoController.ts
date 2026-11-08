@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { cadastroServicoSchema, listarServicosQuerySchema } from "../schemas/servicoSchema";
-import { cadastrarServico, excluirServico, atualizarServico, listarServicos } from "../services/servicoService";
+import { AppError } from "../errors/AppError";
+import { cadastroServicoSchema } from "../schemas/servicoSchema";
+import { cadastrarServico, excluirServico, atualizarServico, buscarServicoPorId, listarServicos } from "../services/servicoService";
 
 
 export async function cadastrarServicoController(request: Request, response: Response): Promise<Response> {
@@ -14,16 +15,23 @@ export async function cadastrarServicoController(request: Request, response: Res
 }
 
 export async function listarServicosController(request: Request, response: Response): Promise<Response> {
-    const servicos = await listarServicos();
+    const nome = typeof request.query.nome === "string" ? request.query.nome.trim() : undefined;
+    const idInformado = typeof request.query.id === "string" ? Number(request.query.id) : undefined;
+    const id = idInformado !== undefined && Number.isInteger(idInformado) && idInformado > 0 ? idInformado : undefined;
+
+    const servicos = await listarServicos(nome, id);
 
     return response.status(200).json(servicos);
 }
 
-export async function listarServicosPublicosController(request: Request, response: Response): Promise<Response> {
-    const { categoria } = listarServicosQuerySchema.parse(request.query);
-    const servicos = await listarServicos(categoria);
+export async function buscarServicoPorIdController(request: Request, response: Response): Promise<Response> {
+    const id = Number(request.params.id);
 
-    return response.status(200).json(servicos);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new AppError(400, "ID de serviço inválido");
+    }
+
+    return response.status(200).json(await buscarServicoPorId(id));
 }
 
 export async function excluirServicoController(request: Request, response: Response): Promise<Response> {

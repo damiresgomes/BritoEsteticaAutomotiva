@@ -2,8 +2,8 @@ import styles from "./styles.module.css";
 import Historia from "./components/Historia";
 import Estatisticas from "./components/Estatisticas";
 import Valores from "./components/Valores";
-import Chamada from "../../../componentes/compComum/Chamada";
-import Botao from "../../../componentes/compComum/Botao";
+import Chamada from "../../../components/Chamada";
+import Botao from "../../../components/Botao";
 
 export default function SobreSite() {
   return (

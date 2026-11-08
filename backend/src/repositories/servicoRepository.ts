@@ -76,7 +76,7 @@ export async function _atualizarServico(id_servico: number, servico: Servico): P
             servico.preco,
             servico.duracao_horas,
             servico.id_categoria,
-            servico.id_servico
+            id_servico
         ]
     );
 
@@ -91,25 +91,4 @@ export async function _excluirServico(id_servico: number): Promise<number> {
     );
 
     return resultado.affectedRows;
-}
-
-export async function listarServicosPorCategoria(id_categoria: number): Promise<Servico[]> {
-    const [servicos] = await pool.execute<ServicoRow[]>(
-        `SELECT ${COLUNAS} FROM servicos WHERE id_categoria = ?`,
-        [id_categoria]
-    );
-
-    return servicos;
-}
-
-export async function buscarServicosPorIds(ids: number[]): Promise<Servico[]> {
-    if (ids.length === 0) return [];
-
-    const marcadores = ids.map(() => "?").join(", ");
-    const [servicos] = await pool.execute<ServicoRow[]>(
-        `SELECT ${COLUNAS} FROM servicos WHERE id_servico IN (${marcadores})`,
-        ids
-    );
-
-    return servicos;
 }

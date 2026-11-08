@@ -18,4 +18,5 @@ export class Categoria {
         }
         this.nome_categoria = novoNome.trim();
     }
+    
 }

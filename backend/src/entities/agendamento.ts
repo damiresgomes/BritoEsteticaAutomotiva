@@ -1,7 +1,7 @@
 import { Carro } from "./carro";
 import { Cliente } from "./cliente";
 
-export type StatusAgendamento = "PENDENTE" | "CONFIRMADO" | "CANCELADO" | "CONCLUIDO" | "EM ATENDIMENTO";
+export type StatusAgendamento = "Pendente" | "Confirmado" | "Em atendimento" | "Concluído" | "Cancelado";
 
 export class Agendamento {
     constructor(
@@ -29,39 +29,41 @@ export class Agendamento {
     }
 
    public confirmarAgendamento():void {
-        if(this.status === "CONFIRMADO"){
+        if(this.status === "Confirmado"){
             throw new Error("Agendamento já confirmado");
         }
-        if(this.status === "CANCELADO"){
+        if(this.status === "Cancelado"){
             throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
         }
-        if(this.status === "CONCLUIDO"){
+        if(this.status === "Concluído"){
             throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
         }
-        this.status = "CONFIRMADO";
+        if (this.status !== "Pendente") throw new Error(`Não é possível confirmar um agendamento com status: ${this.status}`);
+        this.status = "Confirmado";
     }
 
     public cancelarAgendamento():void{
-        if(this.status === "EM ATENDIMENTO"){
+        if(this.status === "Em atendimento"){
             throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
         }
-        if(this.status === "CANCELADO"){
+        if(this.status === "Cancelado"){
             throw new Error("Agendamento já cancelado");
         }
-        if(this.status === "CONCLUIDO"){
+        if(this.status === "Concluído"){
             throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
         }
-        this.status = "CANCELADO";
+        if (this.status !== "Pendente" && this.status !== "Confirmado") throw new Error(`Não é possível cancelar um agendamento com status: ${this.status}`);
+        this.status = "Cancelado";
     }
 
     public atualizarAgendamento():void{
-        if(this.status === "CONCLUIDO" || this.status === "CONFIRMADO"){
+        if(this.status === "Concluído" || this.status === "Confirmado"){
             throw new Error(`Infelizmente não é possível atualizar o agendamento que esta com status: ${this.status}`);
         }
     }
 
     public atualizarDataHora(novaDataHora: Date): void {
-    if (this.status === "CONCLUIDO" || this.status === "CANCELADO" || this.status === "EM ATENDIMENTO") {
+    if (this.status === "Concluído" || this.status === "Cancelado" || this.status === "Em atendimento") {
         throw new Error(`Não é possível reagendar um serviço com status: ${this.status}`);
     }
     this.data_hora = novaDataHora;

@@ -6,11 +6,12 @@ import { authRoutes } from "./routes/authRoutes";
 import { usuarioRoutes } from "./routes/usuarioRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { servicoRoutes } from "./routes/servicoRoutes";
-import { authMiddleware, exigirPapel } from "./middlewares/authMiddleware";
 import { healthRoutes } from "./routes/healthRoutes";
 import { env } from "./config/env";
-import { servicoPublicoRoutes } from "./routes/servicoPublicoRoutes";
 import { agendamentoRoutes } from "./routes/agendamentoRoutes";
+import { dashboardRoutes } from "./routes/dashboardRoutes";
+import { clienteRoutes } from "./routes/clienteRoutes";
+import { categoriaRoutes } from "./routes/categoriaRoutes";
 
 export function buildApp() {
   const app = express();
@@ -30,14 +31,17 @@ export function buildApp() {
 
   app.use("/api/auth", authRoutes());
 
-  app.use("/api/usuarios", authMiddleware, exigirPapel("admin"), usuarioRoutes());
+  app.use("/api/usuarios", usuarioRoutes());
 
-  // Público (o site usa sem login): precisa vir antes da rota protegida.
-  app.use("/api/servicos", servicoPublicoRoutes());
+  app.use("/api/clientes", clienteRoutes());
 
-  app.use("/api/servicos", authMiddleware, exigirPapel("admin"), servicoRoutes());
+  app.use("/api/categorias", categoriaRoutes());
+
+  app.use("/api/servicos", servicoRoutes());
 
   app.use("/api/agendamentos", agendamentoRoutes());
+
+  app.use("/api/dashboard", dashboardRoutes());
 
   app.use((_request, response) => {
     return response.status(404).json({ message: "Rota não encontrada" });
