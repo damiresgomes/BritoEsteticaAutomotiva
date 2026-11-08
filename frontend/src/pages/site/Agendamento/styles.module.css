@@ -168,6 +168,33 @@
   font-size: 1.5rem;
 }
 
+.notaTotal {
+  margin: 0;
+  color: #a6acbe;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.mensagemErro,
+.mensagemSucesso {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 7px;
+  line-height: 1.5;
+}
+
+.mensagemErro {
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fca5a5;
+}
+
+.mensagemSucesso {
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  background: rgba(20, 83, 45, 0.18);
+  color: #86efac;
+}
+
 .botaoEnviar,
 .botaoCadastro {
   display: inline-flex;
@@ -190,6 +217,12 @@
 .botaoCadastro:hover {
   transform: translateY(-1px);
   background: #1d4ed8;
+}
+
+.botaoEnviar:disabled {
+  transform: none;
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .sobreposicao {

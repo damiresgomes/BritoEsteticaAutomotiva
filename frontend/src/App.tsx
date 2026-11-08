@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import ProtectedRoute from "./componentes/ProtecaoRotas";
+import ProtectedRoute from "./components/ProtectedRouter";
 import PublicLayout from "./layouts/RodapeLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -7,12 +7,12 @@ import HomeSite from "./pages/site/Home";
 import SobreSite from "./pages/site/Sobre"
 import ServicosSite from "./pages/site/Servicos";
 import AgendamentoSite from "./pages/site/Agendamento";
-import CadastroUsuario from "./pages/autenticacao/Cadastro";
-import Login from "./pages/autenticacao/Login";
+import CadastroUsuario from "./pages/auth/Cadastro";
+import Login from "./pages/auth/Login";
 
 import LoginAdmin from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
-import ListarCategoria from "./pages/admin/Categoria/ListarCategoria";
+import ListarCategoria from "./pages/admin/Categoria/Listarcategoria";
 import CadastrarCategoria from "./pages/admin/Categoria/CadastrarCategoria";
 import ExcluirCategoria from "./pages/admin/Categoria/EditarCategoria";
 import ListarServico from "./pages/admin/Servico/ListarServico";

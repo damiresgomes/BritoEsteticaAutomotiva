@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom'
-import PublicNavBar from '../../componentes/PublicoNavBar'
+import PublicNavBar from '../../components/PublicNavBar'
 import styles from './styles.module.css'
 
 export default function PublicLayout () {

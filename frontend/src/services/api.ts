@@ -8,7 +8,19 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("token");
+  const url = config.url ?? "";
+  const rotaPublica =
+    url.startsWith("/auth/login") ||
+    url.startsWith("/auth/cadastro-cliente") ||
+    url.startsWith("/servicos/listar");
+  const tokenCliente =
+    url.startsWith("/agendamentos/horarios") ||
+    url.startsWith("/agendamentos/cadastro");
+  const token = rotaPublica
+    ? null
+    : sessionStorage.getItem(
+        tokenCliente ? "brito-client-token" : "brito-admin-token"
+      );
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
