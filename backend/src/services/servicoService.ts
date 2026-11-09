@@ -5,6 +5,7 @@ import {
     _excluirServico,
     listarServicos as listarServicosNoBanco,
     listarServicosPorCategoria,
+    servicoPossuiAgendamentos,
     type Servico,
 } from "../repositories/servicoRepository";
 import { AppError } from "../errors/AppError";
@@ -47,6 +48,10 @@ export async function atualizarServico(id_servico: number, servico: CadastroServ
 
 
 export async function excluirServico(id_servico: number): Promise<number> {
+    if (await servicoPossuiAgendamentos(id_servico)) {
+        throw new AppError(409, "Não é possível excluir um serviço vinculado a agendamentos.");
+    }
+
     const servicoExcluido = await _excluirServico(id_servico)
 
     if (servicoExcluido === 0) {

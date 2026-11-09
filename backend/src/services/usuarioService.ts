@@ -1,10 +1,22 @@
 import bcrypt from "bcrypt";
 import { AppError } from "../errors/AppError";
-import { buscarPorCpf, criarUsuario,buscarTodos, buscarPorId, atualizarUsuario,
-desativarUsuario,} from "../repositories/usuarioRepository";
+import {
+  atualizarPerfilUsuario,
+  buscarPorCpf,
+  criarUsuario,
+  buscarTodos,
+  buscarPorId,
+  atualizarUsuario,
+  desativarUsuario,
+} from "../repositories/usuarioRepository";
 import { emailEmUso } from "../repositories/contaAcessoRepository";
-import { CadastroUsuarioInput, AtualizacaoUsuarioInput } from "../schemas/usuarioSchema";
+import {
+  CadastroUsuarioInput,
+  AtualizacaoUsuarioInput,
+  perfilAdminSchema,
+} from "../schemas/usuarioSchema";
 import { normalizarCpf } from "../validators/cpf";
+import type { z } from "zod";
 
 interface ErroDeBanco {
   code?: string;
@@ -122,4 +134,30 @@ export async function excluir(id: number): Promise<void> {
   }
 
   await desativarUsuario(id);
+}
+
+export async function atualizarPerfilAdministrador(
+  id: number,
+  dados: z.infer<typeof perfilAdminSchema>
+): Promise<void> {
+  const usuario = await buscarPorId(id);
+  if (!usuario) throw new AppError(404, "Usuário não encontrado.");
+
+  const cpf = normalizarCpf(dados.cpf);
+  if (cpf !== normalizarCpf(usuario.cpf) && await buscarPorCpf(cpf)) {
+    throw new AppError(409, "CPF já cadastrado.");
+  }
+
+  try {
+    await atualizarPerfilUsuario(id, {
+      nome: dados.nome,
+      cpf,
+      ...(dados.senha ? { senhaHash: await bcrypt.hash(dados.senha, 10) } : {}),
+      salario: dados.salario,
+      datanascimento: dados.datanascimento,
+    });
+  } catch (erro) {
+    if (existeDuplicidade(erro)) throw new AppError(409, "CPF já cadastrado.");
+    throw erro;
+  }
 }

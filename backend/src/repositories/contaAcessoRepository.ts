@@ -15,6 +15,9 @@ export interface ContaAcesso extends RowDataPacket {
   nome: string;
   telefone: string | null;
   usuarioAtivo: EstadoConta | null;
+  usuarioSalario: number | null;
+  usuarioDataNascimento: string | null;
+  usuarioCpf: string | null;
 }
 
 const COLUNAS_CONTA = `
@@ -27,7 +30,10 @@ const COLUNAS_CONTA = `
   ca.id_usuario AS usuarioId,
   COALESCE(c.nome, u.nome) AS nome,
   c.telefone AS telefone,
-  u.ativo AS usuarioAtivo
+  u.ativo AS usuarioAtivo,
+  u.salario AS usuarioSalario,
+  u.datanascimento AS usuarioDataNascimento,
+  u.cpf AS usuarioCpf
 `;
 
 export async function buscarContaPorEmail(email: string): Promise<ContaAcesso | null> {
@@ -78,6 +84,7 @@ export interface NovoClienteComConta {
   email: string;
   senhaHash: string;
   telefone: string;
+  cpf: string;
 }
 
 export async function criarClienteComConta(dados: NovoClienteComConta): Promise<{
@@ -90,8 +97,8 @@ export async function criarClienteComConta(dados: NovoClienteComConta): Promise<
     await conexao.beginTransaction();
 
     const [cliente] = await conexao.execute<ResultSetHeader>(
-      "INSERT INTO clientes (nome, telefone) VALUES (?, ?)",
-      [dados.nome, dados.telefone]
+      "INSERT INTO clientes (nome, telefone, cpf) VALUES (?, ?, ?)",
+      [dados.nome, dados.telefone, dados.cpf]
     );
     const [conta] = await conexao.execute<ResultSetHeader>(
       `INSERT INTO contas_acesso (email, senha, papel, ativo, id_cliente)

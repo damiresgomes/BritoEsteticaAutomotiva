@@ -43,6 +43,15 @@ export const cadastroUsuarioSchema = z.object({
   datanascimento: dataNascimentoSchema,
 });
 
+export const perfilAdminSchema = z.object({
+  nome: z.string().trim().min(1, "Nome é obrigatório").max(100),
+  cpf: z
+    .string({ error: "CPF é obrigatório" })
+    .refine(cpfValido, "CPF inválido"),
+  salario: z.number().finite().nonnegative("Salário não pode ser negativo"),
+  datanascimento: dataNascimentoSchema,
+  senha: senhaSchema.optional(),
+}).strict();
 
 export type CadastroUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;
 

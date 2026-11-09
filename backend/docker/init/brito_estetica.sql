@@ -181,7 +181,8 @@ INSERT INTO `categoria` (`id_categoria`, `nome_categoria`) VALUES
 CREATE TABLE `clientes` (
   `id_cliente` int(11) NOT NULL,
   `nome` varchar(100) NOT NULL,
-  `telefone` varchar(20) DEFAULT NULL
+  `telefone` varchar(20) DEFAULT NULL,
+  `cpf` varchar(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -372,7 +373,9 @@ ALTER TABLE `categoria`
 -- Índices de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`id_cliente`);
+  ADD PRIMARY KEY (`id_cliente`),
+  ADD UNIQUE KEY `uq_clientes_cpf` (`cpf`),
+  ADD CONSTRAINT `chk_clientes_cpf` CHECK (`cpf` IS NULL OR `cpf` REGEXP '^[0-9]{11}$');
 
 --
 -- Índices de tabela `servicos`

@@ -11,6 +11,8 @@ import { healthRoutes } from "./routes/healthRoutes";
 import { env } from "./config/env";
 import { servicoPublicoRoutes } from "./routes/servicoPublicoRoutes";
 import { agendamentoRoutes } from "./routes/agendamentoRoutes";
+import { categoriaRoutes } from "./routes/categoriaRoutes";
+import { clienteRoutes } from "./routes/clienteRoutes";
 
 export function buildApp() {
   const app = express();
@@ -31,6 +33,8 @@ export function buildApp() {
   app.use("/api/auth", authRoutes());
 
   app.use("/api/usuarios", authMiddleware, exigirPapel("admin"), usuarioRoutes());
+  app.use("/api/categorias", authMiddleware, exigirPapel("admin"), categoriaRoutes());
+  app.use("/api/clientes", authMiddleware, exigirPapel("admin"), clienteRoutes());
 
   // Público (o site usa sem login): precisa vir antes da rota protegida.
   app.use("/api/servicos", servicoPublicoRoutes());
