@@ -1,4 +1,4 @@
-import Botao from "../../../../componentes/compComum/Botao";
+import Botao from "../../../../components/Botao";
 
 import styles from "../styles.module.css"
 

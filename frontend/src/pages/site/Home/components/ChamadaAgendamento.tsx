@@ -1,5 +1,5 @@
-import Chamada from "../../../../componentes/compComum/Chamada";
-import Botao from "../../../../componentes/compComum/Botao";
+import Chamada from "../../../../components/Chamada";
+import Botao from "../../../../components/Botao";
 
 const WHATSAPP_URL = "https://wa.me/5519981339017";
 

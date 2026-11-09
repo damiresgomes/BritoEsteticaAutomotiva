@@ -1,0 +1,75 @@
+.page {
+  padding: 24px;
+  color: #f8fafc;
+}
+
+.form {
+  display: grid;
+  max-width: 720px;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0b1324;
+  color: #f8fafc;
+  font: inherit;
+}
+
+.form button,
+.table button,
+.page > button {
+  width: fit-content;
+  padding: 9px 14px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: #1d4ed8;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.message {
+  margin-top: 16px;
+  color: #fca5a5;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin-top: 24px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #263449;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table a {
+  margin-right: 12px;
+  color: #7dd3fc;
+}
+
+.table button {
+  padding: 6px 10px;
+  border-color: #7f1d1d;
+  background: #7f1d1d;
+}

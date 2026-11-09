@@ -6,23 +6,15 @@ import { agendamentoService } from "../../../services/agendamentos";
 import type { AgendamentoCriado } from "../../../services/agendamentos";
 import { servicoService } from "../../../services/services";
 import type { Servico } from "../../../services/services";
-import {
-  dataLocalAtual,
-  dataNaoEstaNoPassado,
-  mascararPlaca,
-  validarPlaca,
-} from "../../../utils/validadores";
+import FormAgendamento from "../../../components/FormAgendamento";
+import { dataLocalAtual, dataNaoEstaNoPassado } from "../../../utils/datas";
+import { mascararPlaca, validarPlaca } from "../../../utils/placa";
 import { obterMensagemErro } from "../../../utils/erros";
 
 import styles from "./styles.module.css";
 
 const CATEGORIA_PRINCIPAL = 1;
 const CATEGORIA_EXTRA = 2;
-const formatarPreco = (valor: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor);
 
 function mensagemErroDeAgendamento(erro: unknown): string {
   if (axios.isAxiosError(erro)) {
@@ -40,6 +32,9 @@ function mensagemErroDeAgendamento(erro: unknown): string {
 
 export default function BookingForm() {
   const location = useLocation();
+  const servicoSolicitado = Number(
+    new URLSearchParams(location.search).get("servicoId")
+  );
   const [autenticado, setAutenticado] = useState(() =>
     authService.isAuthenticated("cliente")
   );
@@ -91,11 +86,13 @@ export default function BookingForm() {
         if (cancelado) return;
         setServicos(servicosDisponiveis);
         setAcrescimos(acrescimosDisponiveis);
+        const servicoInicial =
+          servicosDisponiveis.find(
+            (servico) => servico.id_servico === servicoSolicitado
+          ) ?? servicosDisponiveis[0];
         setDadosDoFormulario((anterior) => ({
           ...anterior,
-          servico: servicosDisponiveis[0]
-            ? String(servicosDisponiveis[0].id_servico)
-            : "",
+          servico: servicoInicial ? String(servicoInicial.id_servico) : "",
         }));
       })
       .catch((erro: unknown) => {
@@ -108,7 +105,7 @@ export default function BookingForm() {
     return () => {
       cancelado = true;
     };
-  }, []);
+  }, [servicoSolicitado]);
 
   useEffect(() => {
     if (!autenticado || !dadosDoFormulario.data) return;
@@ -236,185 +233,29 @@ export default function BookingForm() {
         </p>
       </header>
 
-      <form
-        className={styles.cartao}
+      <FormAgendamento
+        autenticado={autenticado}
+        mostrarAviso={mostrarAviso}
+        dados={dadosDoFormulario}
+        servicos={servicos}
+        acrescimos={acrescimos}
+        acrescimosMarcados={acrescimosMarcados}
+        horarios={horarios}
+        carregandoCatalogo={carregandoCatalogo}
+        carregandoHorarios={carregandoHorarios}
+        enviando={enviando}
+        erroCatalogo={erroCatalogo}
+        erroHorarios={erroHorarios}
+        erroEnvio={erroEnvio}
+        agendamentoCriado={agendamentoCriado}
+        temServicoSelecionado={Boolean(servicoSelecionado)}
+        totalEstimado={totalEstimado}
+        dataMinima={dataLocalAtual()}
+        from={location}
+        onChange={aoMudarCampo}
+        onToggleAcrescimo={marcarOuDesmarcarAcrescimo}
         onSubmit={aoEnviarFormulario}
-        inert={!autenticado && mostrarAviso}
-        aria-hidden={!autenticado && mostrarAviso}
-      >
-        <div className={styles.linha}>
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>Placa</span>
-            <input
-              className={styles.entrada}
-              type="text"
-              name="placa"
-              placeholder="ABC-1234"
-              maxLength={8}
-              autoComplete="off"
-              aria-label="Placa do veículo"
-              value={dadosDoFormulario.placa}
-              onChange={aoMudarCampo}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>Veículo</span>
-            <input
-              className={styles.entrada}
-              type="text"
-              name="veiculo"
-              placeholder="VW Golf"
-              maxLength={50}
-              value={dadosDoFormulario.veiculo}
-              onChange={aoMudarCampo}
-              required
-            />
-          </label>
-        </div>
-
-        <label className={styles.campo}>
-          <span className={styles.rotulo}>Serviço</span>
-          <select
-            className={`${styles.entrada} ${styles.listaSuspensa}`}
-            name="servico"
-            value={dadosDoFormulario.servico}
-            onChange={aoMudarCampo}
-            disabled={carregandoCatalogo || servicos.length === 0}
-            required
-          >
-            <option value="" disabled>
-              {carregandoCatalogo
-                ? "Carregando serviços..."
-                : erroCatalogo || (servicos.length ? "Selecione" : "Nenhum serviço disponível")}
-            </option>
-            {servicos.map((servico) => (
-              <option key={servico.id_servico} value={servico.id_servico}>
-                {servico.nome_servico} — {formatarPreco(servico.preco)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {erroCatalogo && <p className={styles.mensagemErro} role="alert">{erroCatalogo}</p>}
-
-        <fieldset className={`${styles.campo} ${styles.grupo}`}>
-          <legend className={styles.rotulo}>Acréscimos opcionais</legend>
-
-          <div className={styles.gradeDeAcrescimos}>
-            {carregandoCatalogo ? (
-              <p>Carregando acréscimos...</p>
-            ) : erroCatalogo ? (
-              <p>Não foi possível carregar os acréscimos.</p>
-            ) : acrescimos.length === 0 ? (
-              <p>Nenhum acréscimo disponível.</p>
-            ) : acrescimos.map((acrescimo) => {
-              const estaMarcado = acrescimosMarcados.includes(acrescimo.id_servico);
-
-              return (
-                <button
-                  key={acrescimo.id_servico}
-                  type="button"
-                  className={`${styles.botaoAcrescimo} ${estaMarcado ? styles.marcado : ""}`}
-                  aria-pressed={estaMarcado}
-                  onClick={() => marcarOuDesmarcarAcrescimo(acrescimo.id_servico)}
-                >
-                  <span>{acrescimo.nome_servico}</span>
-                  <span className={styles.precoDoAcrescimo}>
-                    +{formatarPreco(acrescimo.preco)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div className={styles.linha}>
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>Data</span>
-            <input
-              className={styles.entrada}
-              type="date"
-              name="data"
-              min={dataLocalAtual()}
-              value={dadosDoFormulario.data}
-              onChange={aoMudarCampo}
-              required
-            />
-          </label>
-
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>Horário</span>
-            <select
-              className={`${styles.entrada} ${styles.listaSuspensa}`}
-              name="horario"
-              value={dadosDoFormulario.horario}
-              onChange={aoMudarCampo}
-              disabled={!dadosDoFormulario.data || carregandoHorarios || !horarios.length}
-              required
-            >
-              <option value="" disabled>
-                {!dadosDoFormulario.data
-                  ? "Escolha uma data primeiro"
-                  : !autenticado
-                    ? "Entre para consultar os horários"
-                  : carregandoHorarios
-                    ? "Carregando horários..."
-                    : erroHorarios || (horarios.length ? "Selecione" : "Sem horários disponíveis")}
-              </option>
-              {horarios.map((horario) => (
-                <option key={horario} value={horario}>
-                  {horario}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {erroHorarios && <p className={styles.mensagemErro} role="alert">{erroHorarios}</p>}
-        {!autenticado && dadosDoFormulario.data && (
-          <p className={styles.notaTotal}>
-            <Link to="/autenticacao/login" state={{ from: location }}>
-              Entre com uma conta de cliente
-            </Link>{" "}
-            para consultar horários disponíveis.
-          </p>
-        )}
-
-        <label className={styles.campo}>
-          <span className={styles.rotulo}>Observações (opcional)</span>
-          <textarea
-            className={`${styles.entrada} ${styles.areaDeTexto}`}
-            name="observacoes"
-            rows={3}
-            placeholder="Algum detalhe sobre o veículo ou serviço..."
-            value={dadosDoFormulario.observacoes}
-            onChange={aoMudarCampo}
-          />
-        </label>
-
-        {erroEnvio && <p className={styles.mensagemErro} role="alert">{erroEnvio}</p>}
-        {agendamentoCriado && (
-          <p className={styles.mensagemSucesso} role="status">
-            Agendamento #{agendamentoCriado.id} realizado com sucesso. Total:{" "}
-            {formatarPreco(agendamentoCriado.total)}.
-          </p>
-        )}
-
-        <div className={styles.rodape}>
-          {servicoSelecionado && (
-            <div className={styles.total} aria-live="polite">
-              <strong>Total: {formatarPreco(totalEstimado ?? 0)}</strong>
-            </div>
-          )}
-          <button
-            className={styles.botaoEnviar}
-            type="submit"
-            disabled={enviando || carregandoCatalogo || !servicos.length}
-          >
-            {enviando ? "Enviando..." : "Agendar horário"}
-          </button>
-        </div>
-      </form>
+      />
 
       {!autenticado && mostrarAviso && (
         <div className={styles.sobreposicao}>

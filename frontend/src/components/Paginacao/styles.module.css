@@ -1,0 +1,22 @@
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
+  color: #e5e7eb;
+}
+
+.paginacao button {
+  padding: 8px 12px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0b1324;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.paginacao button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
