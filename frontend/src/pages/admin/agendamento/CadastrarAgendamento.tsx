@@ -1,8 +1,5 @@
-export default function CadastrarAgendamento () {
-    return (
-        <>
-            <h1>Cadastrar Agendamento</h1>
-            <p>Formulário para cadastrar agendamentos.</p>
-        </>
-    )
+import FormularioAgendamento from "./FormularioAgendamento";
+
+export default function CadastrarAgendamento() {
+  return <FormularioAgendamento />;
 }

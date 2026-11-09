@@ -1,44 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { agendamentoService, type AgendamentoAdministrativo } from "../../../services/agendamentos";
-import { obterMensagemErro } from "../../../utils/erros";
+import { dataLocalAtual } from "../../../utils/datas";
+import CardAdmin from "../../../components/CardAdmin";
+import {
+  classeStatus,
+  formatarData,
+  mensagemErroAgendamentos,
+} from "./validators";
 import styles from "./styles.module.css";
-
-function dataLocalAtual(): string {
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-  const dia = String(hoje.getDate()).padStart(2, "0");
-
-  return `${ano}-${mes}-${dia}`;
-}
-
-function formatarData(data: string): string {
-  const [ano, mes, dia] = data.slice(0, 10).split("-");
-  if (!ano || !mes || !dia) return data;
-
-  return `${dia}/${mes}/${ano}`;
-}
-
-function classeStatus(status: AgendamentoAdministrativo["status"]): string {
-  switch (status) {
-    case "Pendente":
-      return styles.statusPending;
-    case "Confirmado":
-      return styles.statusConfirmed;
-    case "Cancelado":
-      return styles.statusCancelled;
-  }
-}
-
-function mensagemErroAgendamentos(erro: unknown): string {
-  if (axios.isAxiosError(erro) && erro.response?.status === 404) {
-    return "A rota administrativa GET /api/agendamentos/admin ainda não está disponível no backend.";
-  }
-
-  return obterMensagemErro(erro);
-}
 
 export default function Dashboard() {
   const [agendamentos, setAgendamentos] = useState<AgendamentoAdministrativo[]>([]);
@@ -135,27 +105,21 @@ export default function Dashboard() {
       )}
 
       <div className={styles.metrics} aria-label="Resumo de agendamentos">
-        <article className={styles.metricCard}>
-          <span className={styles.metricLabel}>Agendamentos hoje</span>
-          <strong className={styles.metricValue}>
-            {carregando ? "—" : agendamentosHoje}
-          </strong>
-          <span className={styles.metricHint}>Reservas para hoje</span>
-        </article>
-        <article className={styles.metricCard}>
-          <span className={styles.metricLabel}>Pendentes</span>
-          <strong className={styles.metricValue}>
-            {carregando ? "—" : pendentes}
-          </strong>
-          <span className={styles.metricHint}>Aguardando confirmação</span>
-        </article>
-        <article className={styles.metricCard}>
-          <span className={styles.metricLabel}>Confirmados</span>
-          <strong className={styles.metricValue}>
-            {carregando ? "—" : confirmados}
-          </strong>
-          <span className={styles.metricHint}>Agendamentos confirmados</span>
-        </article>
+        <CardAdmin
+          titulo="Agendamentos hoje"
+          valor={carregando ? "—" : agendamentosHoje}
+          descricao="Reservas para hoje"
+        />
+        <CardAdmin
+          titulo="Pendentes"
+          valor={carregando ? "—" : pendentes}
+          descricao="Aguardando confirmação"
+        />
+        <CardAdmin
+          titulo="Confirmados"
+          valor={carregando ? "—" : confirmados}
+          descricao="Agendamentos confirmados"
+        />
       </div>
 
       <section className={styles.appointmentsSection}>

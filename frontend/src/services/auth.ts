@@ -1,4 +1,5 @@
 import api from './api';
+import { limparToken, limparTokens, lerToken, salvarToken } from "./authStorage";
 
 export interface LoginCredentials {
   senha: string;
@@ -15,15 +16,34 @@ export interface AuthResponse {
   };
 }
 
+export interface PerfilConta {
+  id: number;
+  usuarioId: number | null;
+  nome: string;
+  email: string;
+  cpf: string | null;
+  papel: "cliente" | "admin";
+  salario: number | null;
+  datanascimento: string | null;
+}
+
+export type PerfilAdmin = PerfilConta;
+
+export type AtualizarPerfilAdmin = {
+  nome: string;
+  cpf: string;
+  salario: number;
+  datanascimento: string;
+  senha?: string;
+};
+
 export interface CadastroCliente {
   nome: string;
   email: string;
   senha: string;
   telefone: string;
+  cpf: string;
 }
-
-const CHAVE_TOKEN_CLIENTE = "brito-client-token";
-const CHAVE_TOKEN_ADMIN = "brito-admin-token";
 
 function obterPapelDaResposta(resposta: AuthResponse): "cliente" | "admin" | null {
   if (resposta.usuario?.papel) return resposta.usuario.papel;
@@ -49,7 +69,8 @@ export const authService = {
     credentials: LoginCredentials,
     papelEsperado: "cliente" | "admin"
   ): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    const rota = papelEsperado === "admin" ? "/auth/admin/login" : "/auth/login";
+    const response = await api.post<AuthResponse>(rota, credentials);
 
     if (!response.data.token) {
       throw new Error("O servidor não retornou um token de acesso.");
@@ -66,12 +87,8 @@ export const authService = {
       );
     }
 
-    sessionStorage.removeItem(CHAVE_TOKEN_CLIENTE);
-    sessionStorage.removeItem(CHAVE_TOKEN_ADMIN);
-    sessionStorage.setItem(
-      papel === "cliente" ? CHAVE_TOKEN_CLIENTE : CHAVE_TOKEN_ADMIN,
-      response.data.token
-    );
+    limparTokens();
+    salvarToken(papel, response.data.token);
     return response.data;
   },
 
@@ -83,26 +100,25 @@ export const authService = {
     return response.data;
   },
 
+  async buscarPerfil(): Promise<PerfilConta> {
+    const response = await api.get<PerfilConta>("/auth/me");
+    return response.data;
+  },
+
+  async atualizarPerfilAdmin(dados: AtualizarPerfilAdmin): Promise<void> {
+    await api.put("/auth/perfil-admin", dados);
+  },
+
   logout(papel?: "cliente" | "admin"): void {
-    if (!papel || papel === "cliente") {
-      sessionStorage.removeItem(CHAVE_TOKEN_CLIENTE);
-    }
-    if (!papel || papel === "admin") {
-      sessionStorage.removeItem(CHAVE_TOKEN_ADMIN);
-    }
+    if (papel) limparToken(papel);
+    else limparTokens();
   },
 
   isAuthenticated(papel: "cliente" | "admin" = "cliente"): boolean {
-    return Boolean(
-      sessionStorage.getItem(
-        papel === "cliente" ? CHAVE_TOKEN_CLIENTE : CHAVE_TOKEN_ADMIN
-      )
-    );
+    return Boolean(lerToken(papel));
   },
 
   getToken(papel: "cliente" | "admin" = "cliente"): string | null {
-    return sessionStorage.getItem(
-      papel === "cliente" ? CHAVE_TOKEN_CLIENTE : CHAVE_TOKEN_ADMIN
-    );
+    return lerToken(papel);
   },
 };

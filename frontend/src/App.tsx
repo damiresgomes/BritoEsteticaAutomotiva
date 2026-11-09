@@ -14,15 +14,20 @@ import LoginAdmin from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import ListarCategoria from "./pages/admin/Categoria/Listarcategoria";
 import CadastrarCategoria from "./pages/admin/Categoria/CadastrarCategoria";
-import ExcluirCategoria from "./pages/admin/Categoria/EditarCategoria";
+import EditarCategoria from "./pages/admin/Categoria/EditarCategoria";
 import ListarServico from "./pages/admin/Servico/ListarServico";
 import CadastrarServico from "./pages/admin/Servico/CadastrarServico";
-import ExcluirServico from "./pages/admin/Servico/EditarServico";
+import EditarServico from "./pages/admin/Servico/EditarServico";
 import ListarAgendamento from "./pages/admin/Agendamento/ListarAgendamento";
 import CadastrarAgendamento from "./pages/admin/Agendamento/CadastrarAgendamento";
-import ExcluirAgendamento from "./pages/admin/Agendamento/EditarAgendamento";
+import EditarAgendamento from "./pages/admin/Agendamento/EditarAgendamento";
 import ListarUsuario from "./pages/admin/Usuario/ListarUsuario";
 import CadastrarUsuario from "./pages/admin/Usuario/CadastrarUsuario";
+import PerfilAdmin from "./pages/admin/Usuario/PerfilAdmin";
+import ListarCliente from "./pages/admin/Cliente/ListarCliente";
+import CadastrarCliente from "./pages/admin/Cliente/CadastrarCliente";
+import EditarCliente from "./pages/admin/Cliente/EditarCliente";
+import MinhaConta from "./pages/site/MinhaConta";
 
 export default function App() {
   return (
@@ -35,25 +40,31 @@ export default function App() {
           <Route path="agendamento" element={<AgendamentoSite />} />
           <Route path="autenticacao/login" element={<Login />} />
           <Route path="autenticacao/cadastro" element={<CadastroUsuario />} />
+          <Route element={<ProtectedRoute papel="cliente" />}>
+            <Route path="minha-conta" element={<MinhaConta />} />
+          </Route>
         </Route>
 
-        <Route path="admin/login" element={<Login />} />
+        <Route path="admin/login" element={<LoginAdmin />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="admin" element={<AdminLayout />}>
-            <Route path="/admin/login" element={<LoginAdmin />} />
             <Route index element={<Dashboard />} />
             <Route path="categoria" element={<ListarCategoria />} />
             <Route path="categoria/cadastrar" element={<CadastrarCategoria />} />
-            <Route path="categoria/excluir" element={<ExcluirCategoria />} />
+            <Route path="categoria/editar/:id" element={<EditarCategoria />} />
             <Route path="servico" element={<ListarServico />} />
             <Route path="servico/cadastrar" element={<CadastrarServico />} />
-            <Route path="servico/excluir" element={<ExcluirServico />} />
+            <Route path="servico/editar/:id" element={<EditarServico />} />
             <Route path="agendamento" element={<ListarAgendamento />} />
             <Route path="agendamento/cadastrar" element={<CadastrarAgendamento />} />
-            <Route path="agendamento/excluir" element={<ExcluirAgendamento />} />
+            <Route path="agendamento/editar/:id" element={<EditarAgendamento />} />
+            <Route path="cliente" element={<ListarCliente />} />
+            <Route path="cliente/cadastrar" element={<CadastrarCliente />} />
+            <Route path="cliente/editar/:id" element={<EditarCliente />} />
             <Route path="usuario" element={<ListarUsuario />} />
             <Route path="usuario/cadastrar" element={<CadastrarUsuario />} />
+            <Route path="perfil" element={<PerfilAdmin />} />
           </Route>
         </Route>
 

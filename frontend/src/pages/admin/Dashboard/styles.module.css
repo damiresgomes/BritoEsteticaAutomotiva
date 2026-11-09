@@ -78,35 +78,10 @@
   margin-bottom: 28px;
 }
 
-.metricCard,
 .appointmentsSection {
   border: 1px solid #1e293b;
   border-radius: 10px;
   background: #0b1329;
-}
-
-.metricCard {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 150px;
-  padding: 22px;
-}
-
-.metricLabel {
-  color: #cbd5e1;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.metricValue {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.metricHint {
-  color: #64748b;
-  font-size: 0.8rem;
 }
 
 .appointmentsSection {
@@ -215,10 +190,6 @@
 
   .metrics {
     grid-template-columns: 1fr;
-  }
-
-  .metricCard {
-    min-height: 0;
   }
 
   .sectionHeader,

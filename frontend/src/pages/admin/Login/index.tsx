@@ -1,128 +1,152 @@
-import { useState } from "react";
-import type { SyntheticEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import AuthLogin, { LoginIcon } from "../../../components/AuthLogin";
+import authStyles from "../../../components/AuthLogin/styles.module.css";
+import { authService } from "../../../services/auth";
+import { obterMensagemErro } from "../../../utils/erros";
+import { validarEmail } from "../../../utils/validarEmail";
 import styles from "./styles.module.css";
 
-const ShieldIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
+type EstadoNavegacao = {
+  from?: {
+    pathname?: string;
+    search?: string;
+    hash?: string;
+  };
+};
 
-const LockIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-
-const LoginIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-    <path d="m10 17 5-5-5-5" />
-    <path d="M15 12H3" />
-  </svg>
-);
+type CampoLogin = "email" | "senha";
 
 export default function LoginAdmin() {
-  const [senha, setSenha] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erros, setErros] = useState<Partial<Record<CampoLogin, string>>>({});
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const estado = (location.state as EstadoNavegacao | null) ?? null;
 
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  function handleChange(campo: CampoLogin, valor: string) {
+    if (campo === "email") setEmail(valor);
+    else setSenha(valor);
 
-    if (senha === "brito123") {
-      sessionStorage.setItem("brito-admin-token", "token-simulado-123");
-      navigate("/admin");
-    } else {
-      alert("Senha incorreta!");
+    setErros((atuais) => ({ ...atuais, [campo]: undefined }));
+    setErro("");
+  }
+
+  async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setErro("");
+
+    const novosErros: Partial<Record<CampoLogin, string>> = {};
+    if (!email.trim()) {
+      novosErros.email = "Informe seu email.";
+    } else if (!validarEmail(email)) {
+      novosErros.email = "Informe um email válido.";
     }
-  };
+
+    if (!senha) novosErros.senha = "Informe sua senha.";
+
+    setErros(novosErros);
+    if (Object.keys(novosErros).length > 0) return;
+
+    setCarregando(true);
+    try {
+      await authService.login(
+        { email: email.trim(), senha },
+        "admin"
+      );
+
+      if (!authService.isAuthenticated("admin")) {
+        setErro("Não foi possível iniciar a sessão administrativa.");
+        return;
+      }
+
+      const caminho = estado?.from?.pathname;
+      const destinoSolicitado =
+        caminho?.startsWith("/") &&
+        !caminho.startsWith("//") &&
+        caminho !== "/admin/login"
+          ? `${caminho}${estado?.from?.search ?? ""}${estado?.from?.hash ?? ""}`
+          : undefined;
+
+      navigate(destinoSolicitado ?? "/admin", { replace: true });
+    } catch (erroLogin) {
+      setErro(obterMensagemErro(erroLogin));
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
-    <main className={styles.loginPage}>
-      <header className={styles.loginHeader}>
-        <span className={styles.loginEyebrow}>
-          <ShieldIcon />
-          <span>// ÁREA ADMINISTRATIVA</span>
-        </span>
+    <AuthLogin
+      eyebrow="// ÁREA ADMINISTRATIVA"
+      subtitulo="Área exclusiva do administrador para gerenciar agendamentos."
+      tituloCartao="LOGIN ADMIN"
+    >
+      <form className={authStyles.loginForm} onSubmit={handleSubmit} noValidate>
+        <label className={authStyles.loginLabel} htmlFor="admin-email">
+          EMAIL
+        </label>
+        <input
+          id="admin-email"
+          name="email"
+          className={authStyles.loginInput}
+          type="email"
+          autoComplete="username"
+          value={email}
+          onChange={(evento) => handleChange("email", evento.target.value)}
+          aria-invalid={Boolean(erros.email)}
+          aria-describedby={erros.email ? "admin-email-erro" : undefined}
+          required
+        />
+        {erros.email && (
+          <p className={styles.fieldError} id="admin-email-erro">
+            {erros.email}
+          </p>
+        )}
 
-        <h1 className={styles.loginTitle}>
-          ENTRAR NO <span className={styles.loginTitleAccent}>PAINEL</span>
-        </h1>
+        <label className={authStyles.loginLabel} htmlFor="admin-senha">
+          SENHA
+        </label>
+        <input
+          id="admin-senha"
+          name="senha"
+          className={authStyles.loginInput}
+          type="password"
+          autoComplete="current-password"
+          value={senha}
+          onChange={(evento) => handleChange("senha", evento.target.value)}
+          aria-invalid={Boolean(erros.senha)}
+          aria-describedby={erros.senha ? "admin-senha-erro" : undefined}
+          required
+        />
+        {erros.senha && (
+          <p className={styles.fieldError} id="admin-senha-erro">
+            {erros.senha}
+          </p>
+        )}
 
-        <p className={styles.loginSubtitle}>
-          Área exclusiva do administrador para gerenciar agendamentos.
-        </p>
-      </header>
+        {erro && (
+          <p className={styles.loginError} role="alert">
+            {erro}
+          </p>
+        )}
 
-      <section className={styles.loginCard}>
-        <div className={styles.loginCardHeader}>
-          <div className={styles.loginCardIcon}>
-            <LockIcon />
-          </div>
-          <div>
-            <span className={styles.loginCardEyebrow}>// CREDENCIAIS</span>
-            <h2 className={styles.loginCardTitle}>LOGIN ADMIN</h2>
-          </div>
-        </div>
+        <button
+          className={authStyles.loginButton}
+          type="submit"
+          disabled={carregando}
+        >
+          <LoginIcon />
+          <span>{carregando ? "ENTRANDO..." : "ENTRAR"}</span>
+        </button>
+      </form>
 
-        <form className={styles.loginForm} onSubmit={handleSubmit}>
-          <label className={styles.loginLabel} htmlFor="senha">
-            SENHA
-          </label>
-          <input
-            id="senha"
-            className={styles.loginInput}
-            type="password"
-            placeholder="••••••••"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            autoComplete="current-password"
-          />
-
-          <button className={styles.loginButton} type="submit">
-            <LoginIcon />
-            <span>ENTRAR</span>
-          </button>
-        </form>
-
-        <p className={styles.loginHint}>
-          Senha padrão de teste: <code>brito123</code>
-        </p>
-        <a href="/" className={styles.voltar}> ← Voltar pro site</a>
-      </section>
-    </main>
+      <a href="/" className={authStyles.voltar}>
+        ← Voltar pro site
+      </a>
+    </AuthLogin>
   );
 }

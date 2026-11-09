@@ -20,11 +20,21 @@ export type StatusAgendamento = "Pendente" | "Confirmado" | "Cancelado";
 
 export interface AgendamentoAdministrativo {
   id: number;
+  clienteId: number;
   cliente: string;
   servico: string;
+  servicoId: number;
+  extras: number[];
+  placa: string;
+  veiculo: string;
+  observacoes: string | null;
   data: string;
   horario: string;
   status: StatusAgendamento;
+}
+
+export interface CriarAgendamentoAdmin extends CriarAgendamento {
+  clienteId: number;
 }
 
 export const agendamentoService = {
@@ -51,5 +61,24 @@ export const agendamentoService = {
     );
 
     return response.data;
+  },
+
+  async criarAdmin(dados: CriarAgendamentoAdmin): Promise<AgendamentoCriado> {
+    const response = await api.post<AgendamentoCriado>(
+      "/agendamentos/admin",
+      dados
+    );
+    return response.data;
+  },
+
+  async atualizarAdmin(
+    id: number,
+    dados: CriarAgendamentoAdmin & { status: StatusAgendamento }
+  ): Promise<void> {
+    await api.put(`/agendamentos/admin/${id}`, dados);
+  },
+
+  async cancelarAdmin(id: number): Promise<void> {
+    await api.delete(`/agendamentos/admin/${id}`);
   },
 };
