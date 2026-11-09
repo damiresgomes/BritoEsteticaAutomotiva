@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { senhaSchema } from "./usuarioSchema";
+import { cpfValido, normalizarCpf } from "../validators/cpf";
 
 export const loginSchema = z.object({
   email: z
@@ -28,6 +29,10 @@ export const cadastroClienteSchema = z.object({
     .max(100, "Nome deve ter no máximo 100 caracteres"),
   email: loginSchema.shape.email,
   senha: senhaSchema,
+  cpf: z
+    .string({ error: "CPF é obrigatório" })
+    .refine(cpfValido, "CPF inválido")
+    .transform(normalizarCpf),
   telefone: z
     .string({ error: "Telefone é obrigatório" })
     .refine((valor) => {

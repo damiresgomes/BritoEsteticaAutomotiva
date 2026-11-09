@@ -59,4 +59,13 @@ export const horariosQuerySchema = z.object({
   data: dataSchema,
 });
 
+export const cadastroAgendamentoAdminSchema = cadastroAgendamentoSchema.extend({
+  clienteId: z.number({ error: "Cliente é obrigatório" }).int().positive(),
+});
+
+export const atualizarAgendamentoAdminSchema = cadastroAgendamentoSchema.extend({
+  clienteId: z.number({ error: "Cliente é obrigatório" }).int().positive(),
+  status: z.enum(["Pendente", "Confirmado", "Cancelado"]),
+}).strict();
+
 export type CadastroAgendamentoInput = z.infer<typeof cadastroAgendamentoSchema>;

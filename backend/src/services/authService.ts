@@ -30,7 +30,6 @@ export async function cadastrarCliente(dados: CadastroClienteInput): Promise<{ i
   if (await emailEmUso(dados.email)) {
     throw new AppError(409, "E-mail já cadastrado");
   }
-
   const senhaHash = await bcrypt.hash(dados.senha, 10);
 
   try {
@@ -39,12 +38,13 @@ export async function cadastrarCliente(dados: CadastroClienteInput): Promise<{ i
       email: dados.email,
       senhaHash,
       telefone: dados.telefone,
+      cpf: dados.cpf,
     });
 
     return { id: clienteId };
   } catch (erro) {
     if (erroDeDuplicidade(erro)) {
-      throw new AppError(409, "E-mail já cadastrado");
+      throw new AppError(409, "E-mail ou CPF já cadastrado");
     }
 
     throw erro;
@@ -52,7 +52,8 @@ export async function cadastrarCliente(dados: CadastroClienteInput): Promise<{ i
 }
 
 export async function loginAuthService(
-  { email, senha }: LoginInput
+  { email, senha }: LoginInput,
+  papelEsperado?: "cliente" | "admin"
 ): Promise<{
   token: string;
   usuario: { id: number; nome: string; email: string; papel: "cliente" | "admin" };
@@ -72,6 +73,15 @@ export async function loginAuthService(
 
   if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
     throw new AppError(403, "Conta inativa");
+  }
+
+  if (papelEsperado && conta.papel !== papelEsperado) {
+    throw new AppError(
+      403,
+      papelEsperado === "admin"
+        ? "Acesso restrito a contas administrativas"
+        : "Acesso restrito a contas de cliente"
+    );
   }
 
   const token = jwt.sign(
@@ -98,9 +108,13 @@ export async function loginAuthService(
 
 export async function buscarPerfilConta(id: number): Promise<{
   id: number;
+  usuarioId: number | null;
   nome: string;
   email: string;
+  cpf: string | null;
   papel: "cliente" | "admin";
+  salario: number | null;
+  datanascimento: string | null;
 }> {
   const conta = await buscarContaPorId(id);
 
@@ -110,8 +124,12 @@ export async function buscarPerfilConta(id: number): Promise<{
 
   return {
     id: conta.id,
+    usuarioId: conta.usuarioId,
     nome: conta.nome,
     email: conta.email,
+    cpf: conta.usuarioCpf,
     papel: conta.papel,
+    salario: conta.usuarioSalario,
+    datanascimento: conta.usuarioDataNascimento,
   };
 }

@@ -102,6 +102,14 @@ export async function listarServicosPorCategoria(id_categoria: number): Promise<
     return servicos;
 }
 
+export async function servicoPossuiAgendamentos(id_servico: number): Promise<boolean> {
+    const [linhas] = await pool.execute<RowDataPacket[]>(
+        "SELECT id_agendamento FROM agendamento_servico WHERE id_servico = ? LIMIT 1",
+        [id_servico]
+    );
+    return linhas.length > 0;
+}
+
 export async function buscarServicosPorIds(ids: number[]): Promise<Servico[]> {
     if (ids.length === 0) return [];
 

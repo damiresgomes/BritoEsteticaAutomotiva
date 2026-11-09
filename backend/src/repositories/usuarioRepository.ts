@@ -129,6 +129,57 @@ export async function atualizarUsuario(id: number, dados: NovoUsuario): Promise<
   }
 }
 
+export async function atualizarPerfilUsuario(
+  id: number,
+  dados: {
+    nome: string;
+    cpf: string;
+    senhaHash?: string;
+    salario: number;
+    datanascimento: string;
+  }
+): Promise<void> {
+  const conexao = await pool.getConnection();
+
+  try {
+    await conexao.beginTransaction();
+    const [contas] = await conexao.execute<RowDataPacket[]>(
+      `SELECT id FROM contas_acesso
+        WHERE id_usuario = ? AND papel = 'admin' FOR UPDATE`,
+      [id]
+    );
+    if (contas.length !== 1) {
+      throw new Error("Conta de acesso administrativa não encontrada");
+    }
+
+    await conexao.execute(
+      `UPDATE usuario
+          SET nome = ?, cpf = ?, salario = ?, datanascimento = ?
+        WHERE id = ?`,
+      [dados.nome, dados.cpf, dados.salario, dados.datanascimento, id]
+    );
+    if (dados.senhaHash) {
+      await conexao.execute(
+        `UPDATE usuario SET senha = ? WHERE id = ?`,
+        [dados.senhaHash, id]
+      );
+      await conexao.execute(
+        `UPDATE contas_acesso SET senha = ?
+          WHERE id_usuario = ? AND papel = 'admin'`,
+        [dados.senhaHash, id]
+      );
+    }
+
+    await conexao.commit();
+  } catch (erro) {
+    await conexao.rollback();
+    throw erro;
+  } finally {
+    conexao.release();
+  }
+}
+
+
 export async function desativarUsuario(id: number): Promise<void> {
   const conexao = await pool.getConnection();
 
