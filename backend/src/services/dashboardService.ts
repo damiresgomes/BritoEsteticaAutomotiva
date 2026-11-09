@@ -6,7 +6,7 @@ export async function obterDashboardUsuario() {
 }
 
 export async function obterDashboardCliente(id_cliente: number) {
-  const agendamentos = await listarAgendamentosCliente(id_cliente);
+  const { agendamentos } = await listarAgendamentosCliente(id_cliente);
   const agora = Date.now();
   const dataEmMs = (data: string) => new Date(`${data.replace(" ", "T")}Z`).getTime();
 
@@ -20,12 +20,12 @@ export async function obterDashboardCliente(id_cliente: number) {
       cancelados: agendamentos.filter((item) => item.status === "Cancelado").length,
     },
     proximosAgendamentos: agendamentos
-      .filter((item) => dataEmMs(item.data_hora) >= agora)
-      .sort((a, b) => dataEmMs(a.data_hora) - dataEmMs(b.data_hora))
+      .filter((item) => dataEmMs(item.dataHora) >= agora)
+      .sort((a, b) => dataEmMs(a.dataHora) - dataEmMs(b.dataHora))
       .slice(0, 5),
     ultimosAgendamentos: agendamentos
-      .filter((item) => dataEmMs(item.data_hora) < agora)
-      .sort((a, b) => dataEmMs(b.data_hora) - dataEmMs(a.data_hora))
+      .filter((item) => dataEmMs(item.dataHora) < agora)
+      .sort((a, b) => dataEmMs(b.dataHora) - dataEmMs(a.dataHora))
       .slice(0, 5),
   };
 }

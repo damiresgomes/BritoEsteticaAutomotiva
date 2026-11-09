@@ -1,72 +1,136 @@
 import { Carro } from "./carro";
-import { Cliente } from "./cliente";
+import { ConflitoError, RequisicaoInvalidaError } from "../errors/AppError";
 
-export type StatusAgendamento = "Pendente" | "Confirmado" | "Em atendimento" | "Concluído" | "Cancelado";
+export type StatusAgendamento =
+  | "Pendente"
+  | "Confirmado"
+  | "Em atendimento"
+  | "Concluído"
+  | "Cancelado";
 
-export class Agendamento {
-    constructor(
-        protected id_agendamento: number,
-        protected data_hora: Date,
-        protected status: StatusAgendamento,
-        protected cliente: Cliente,
-        protected carro: Carro
-    ) {}
-
-    get id(): number {
-        return this.id_agendamento;
-    }
-    get dataHora(): Date {  
-        return this.data_hora;
-    }
-    get statusAgendamento(): StatusAgendamento {
-        return this.status;
-    }
-    get clienteAgendado(): Cliente {
-        return this.cliente;
-    }
-    get carroAgendado(): Carro {
-        return this.carro;
-    }
-
-   public confirmarAgendamento():void {
-        if(this.status === "Confirmado"){
-            throw new Error("Agendamento já confirmado");
-        }
-        if(this.status === "Cancelado"){
-            throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
-        }
-        if(this.status === "Concluído"){
-            throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
-        }
-        if (this.status !== "Pendente") throw new Error(`Não é possível confirmar um agendamento com status: ${this.status}`);
-        this.status = "Confirmado";
-    }
-
-    public cancelarAgendamento():void{
-        if(this.status === "Em atendimento"){
-            throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
-        }
-        if(this.status === "Cancelado"){
-            throw new Error("Agendamento já cancelado");
-        }
-        if(this.status === "Concluído"){
-            throw new Error(`Infelizmente não é possível cancelar o agendamento que esta com status: ${this.status}`);
-        }
-        if (this.status !== "Pendente" && this.status !== "Confirmado") throw new Error(`Não é possível cancelar um agendamento com status: ${this.status}`);
-        this.status = "Cancelado";
-    }
-
-    public atualizarAgendamento():void{
-        if(this.status === "Concluído" || this.status === "Confirmado"){
-            throw new Error(`Infelizmente não é possível atualizar o agendamento que esta com status: ${this.status}`);
-        }
-    }
-
-    public atualizarDataHora(novaDataHora: Date): void {
-    if (this.status === "Concluído" || this.status === "Cancelado" || this.status === "Em atendimento") {
-        throw new Error(`Não é possível reagendar um serviço com status: ${this.status}`);
-    }
-    this.data_hora = novaDataHora;
+export interface ServicoItemAgendado {
+  id_servico: number;
+  nome_servico: string;
+  preco: number;
 }
 
+const TRANSICOES_VALIDAS: Record<StatusAgendamento, StatusAgendamento[]> = {
+  Pendente: ["Confirmado", "Cancelado"],
+  Confirmado: ["Em atendimento", "Cancelado"],
+  "Em atendimento": ["Concluído"],
+  Concluído: [],
+  Cancelado: [],
+};
+
+export class Agendamento {
+  private _id: number;
+  private _dataHora: string;
+  private _status: StatusAgendamento;
+  private _idCliente: number;
+  private _carro: Carro;
+  private _nomeCliente?: string;
+  private _servicos: ServicoItemAgendado[];
+
+  constructor(
+    id: number,
+    dataHora: string,
+    status: StatusAgendamento,
+    idCliente: number,
+    carro: Carro,
+    servicos: ServicoItemAgendado[] = [],
+    nomeCliente?: string
+  ) {
+    this._id = id;
+    this._dataHora = dataHora;
+    this._status = status;
+    this._idCliente = idCliente;
+    this._carro = carro;
+    this._servicos = servicos;
+    this._nomeCliente = nomeCliente;
+  }
+
+  get id(): number {
+    return this._id;
+  }
+
+  get dataHora(): string {
+    return this._dataHora;
+  }
+
+  get status(): StatusAgendamento {
+    return this._status;
+  }
+
+  get idCliente(): number {
+    return this._idCliente;
+  }
+
+  get carro(): Carro {
+    return this._carro;
+  }
+
+  get nomeCliente(): string | undefined {
+    return this._nomeCliente;
+  }
+
+  get servicos(): ServicoItemAgendado[] {
+    return this._servicos;
+  }
+
+  public definirServicos(servicos: ServicoItemAgendado[]): void {
+    this._servicos = servicos;
+  }
+
+  public transitarPara(novoStatus: StatusAgendamento): void {
+    const permitidas = TRANSICOES_VALIDAS[this._status];
+    if (!permitidas.includes(novoStatus)) {
+      throw new ConflitoError(
+        `Não é possível alterar o status de "${this._status}" para "${novoStatus}".`
+      );
+    }
+    this._status = novoStatus;
+  }
+
+  public confirmar(): void {
+    this.transitarPara("Confirmado");
+  }
+
+  public iniciarAtendimento(): void {
+    this.transitarPara("Em atendimento");
+  }
+
+  public concluir(): void {
+    this.transitarPara("Concluído");
+  }
+
+  public cancelar(): void {
+    this.transitarPara("Cancelado");
+  }
+
+  public garantirModificavel(): void {
+    if (this._status !== "Pendente" && this._status !== "Confirmado") {
+      throw new ConflitoError(
+        `Não é possível alterar um agendamento com status "${this._status}".`
+      );
+    }
+  }
+
+  public atualizarDados(novaDataHora: string, novoCarro: Carro): void {
+    this.garantirModificavel();
+    this._dataHora = novaDataHora;
+    this._carro = novoCarro;
+  }
+
+  public toJSON() {
+    return {
+      id_agendamento: this._id,
+      data_hora: this._dataHora,
+      placa_veiculo: this._carro.placa,
+      modelo_veiculo: this._carro.modelo,
+      status: this._status,
+      id_cliente: this._idCliente,
+      ...(this._nomeCliente ? { nome_cliente: this._nomeCliente } : {}),
+      servicos: this._servicos,
+    };
+  }
 }

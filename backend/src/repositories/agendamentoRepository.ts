@@ -1,24 +1,9 @@
 import { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { pool } from "../config/database";
-import { CriarAgendamentoInput, StatusAgendamento } from "../schemas/agendamentoSchema";
-import { AppError } from "../errors/AppError";
-
-export interface ServicoAgendado {
-  id_servico: number;
-  nome_servico: string;
-  preco: number;
-}
-
-export interface AgendamentoResumo {
-  id_agendamento: number;
-  data_hora: string;
-  placa_veiculo: string | null;
-  modelo_veiculo: string | null;
-  status: StatusAgendamento;
-  id_cliente: number;
-  nome_cliente?: string;
-  servicos: ServicoAgendado[];
-}
+import { CriarAgendamentoInput } from "../schemas/agendamentoSchema";
+import { RequisicaoInvalidaError } from "../errors/AppError";
+import { Agendamento, ServicoItemAgendado, StatusAgendamento } from "../entities/agendamento";
+import { Carro } from "../entities/carro";
 
 interface AgendamentoRow extends RowDataPacket {
   id_agendamento: number;
@@ -45,10 +30,8 @@ export async function listarHorariosOcupados(data: string): Promise<string[]> {
     [data]
   );
 
-  return linhas.map((linha) => linha.horario as string);
+  return linhas.map((linha) => String(linha.horario));
 }
-
-
 
 function converterDataHora(valor: string): string {
   return new Date(valor).toLocaleString("sv-SE", {
@@ -57,8 +40,11 @@ function converterDataHora(valor: string): string {
   });
 }
 
-async function carregarServicos(idsAgendamento: number[], connection = pool): Promise<Map<number, ServicoAgendado[]>> {
-  const agrupados = new Map<number, ServicoAgendado[]>();
+async function carregarServicos(
+  idsAgendamento: number[],
+  connection: PoolConnection | typeof pool = pool
+): Promise<Map<number, ServicoItemAgendado[]>> {
+  const agrupados = new Map<number, ServicoItemAgendado[]>();
   if (idsAgendamento.length === 0) return agrupados;
 
   const placeholders = idsAgendamento.map(() => "?").join(",");
@@ -70,26 +56,42 @@ async function carregarServicos(idsAgendamento: number[], connection = pool): Pr
       ORDER BY s.nome_servico`,
     idsAgendamento
   );
+
   for (const row of rows) {
     const lista = agrupados.get(row.id_agendamento) ?? [];
-    lista.push({ id_servico: row.id_servico, nome_servico: row.nome_servico, preco: row.preco });
+    lista.push({
+      id_servico: row.id_servico,
+      nome_servico: row.nome_servico,
+      preco: Number(row.preco),
+    });
     agrupados.set(row.id_agendamento, lista);
   }
   return agrupados;
 }
 
-async function mapearAgendamentos(rows: AgendamentoRow[], connection = pool): Promise<AgendamentoResumo[]> {
-  const servicos = await carregarServicos(rows.map((row) => row.id_agendamento), connection);
-  return rows.map((row) => ({
-    id_agendamento: row.id_agendamento,
-    data_hora: row.data_hora,
-    placa_veiculo: row.placa_veiculo,
-    modelo_veiculo: row.modelo_veiculo,
-    status: row.status,
-    id_cliente: row.id_cliente,
-    ...(row.nome_cliente ? { nome_cliente: row.nome_cliente } : {}),
-    servicos: servicos.get(row.id_agendamento) ?? [],
-  }));
+async function mapearAgendamentos(
+  rows: AgendamentoRow[],
+  connection: PoolConnection | typeof pool = pool
+): Promise<Agendamento[]> {
+  const ids = rows.map((row) => row.id_agendamento);
+  const servicosMap = await carregarServicos(ids, connection);
+
+  return rows.map((row) => {
+    const carro = new Carro(
+      row.placa_veiculo ?? "SEM-PLACA",
+      row.modelo_veiculo ?? "Não informado"
+    );
+    const servicos = servicosMap.get(row.id_agendamento) ?? [];
+    return new Agendamento(
+      row.id_agendamento,
+      row.data_hora,
+      row.status,
+      row.id_cliente,
+      carro,
+      servicos,
+      row.nome_cliente
+    );
+  });
 }
 
 async function garantirServicosExistem(connection: PoolConnection, idsServicos: number[]): Promise<void> {
@@ -100,7 +102,7 @@ async function garantirServicosExistem(connection: PoolConnection, idsServicos: 
   );
 
   if (servicosRows.length !== idsServicos.length) {
-    throw new AppError(400, "Um ou mais serviços selecionados não existem.");
+    throw new RequisicaoInvalidaError("Um ou mais serviços selecionados não existem.");
   }
 }
 
@@ -133,14 +135,22 @@ export async function criarAgendamento(
       [dataHora, dados.placa_veiculo, dados.modelo_veiculo, id_cliente]
     );
 
-    for (const idServico of dados.servicos) {
+    const idAgendamento = resultado.insertId;
+
+    if (dados.servicos.length > 0) {
+      const placeholders = dados.servicos.map(() => "(?, ?)").join(", ");
+      const params: number[] = [];
+      for (const idServico of dados.servicos) {
+        params.push(idAgendamento, idServico);
+      }
       await connection.execute(
-        "INSERT INTO agendamento_servico (id_agendamento, id_servico) VALUES (?, ?)",
-        [resultado.insertId, idServico]
+        `INSERT INTO agendamento_servico (id_agendamento, id_servico) VALUES ${placeholders}`,
+        params
       );
     }
+
     await connection.commit();
-    return resultado.insertId;
+    return idAgendamento;
   } catch (erro) {
     await connection.rollback();
     throw erro;
@@ -153,14 +163,14 @@ export async function atualizarAgendamentoCliente(
   id_agendamento: number,
   id_cliente: number,
   dados: CriarAgendamentoInput
-): Promise<void> {
+): Promise<number> {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
     await garantirServicosExistem(connection, dados.servicos);
 
     const dataHora = converterDataHora(dados.data_hora);
-    await connection.execute<ResultSetHeader>(
+    const [resultado] = await connection.execute<ResultSetHeader>(
       `UPDATE agendamentos
           SET data_hora = ?, placa_veiculo = ?, modelo_veiculo = ?
         WHERE id_agendamento = ? AND id_cliente = ?`,
@@ -172,13 +182,20 @@ export async function atualizarAgendamentoCliente(
       [id_agendamento]
     );
 
-    for (const idServico of dados.servicos) {
+    if (dados.servicos.length > 0) {
+      const placeholders = dados.servicos.map(() => "(?, ?)").join(", ");
+      const params: number[] = [];
+      for (const idServico of dados.servicos) {
+        params.push(id_agendamento, idServico);
+      }
       await connection.execute(
-        "INSERT INTO agendamento_servico (id_agendamento, id_servico) VALUES (?, ?)",
-        [id_agendamento, idServico]
+        `INSERT INTO agendamento_servico (id_agendamento, id_servico) VALUES ${placeholders}`,
+        params
       );
     }
+
     await connection.commit();
+    return resultado.affectedRows;
   } catch (erro) {
     await connection.rollback();
     throw erro;
@@ -187,35 +204,73 @@ export async function atualizarAgendamentoCliente(
   }
 }
 
-export async function listarAgendamentosCliente(id_cliente: number): Promise<AgendamentoResumo[]> {
-  const [rows] = await pool.execute<AgendamentoRow[]>(
-    `SELECT id_agendamento, data_hora, placa_veiculo, modelo_veiculo, status, id_cliente
-       FROM agendamentos WHERE id_cliente = ? ORDER BY data_hora DESC`,
+export async function listarAgendamentosCliente(
+  id_cliente: number,
+  limite?: number,
+  offset?: number
+): Promise<{ agendamentos: Agendamento[]; total: number }> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM agendamentos WHERE id_cliente = ?",
     [id_cliente]
   );
-  return mapearAgendamentos(rows);
+  const total = Number(totalRow?.total || 0);
+
+  let query = `SELECT id_agendamento, data_hora, placa_veiculo, modelo_veiculo, status, id_cliente
+       FROM agendamentos WHERE id_cliente = ? ORDER BY data_hora DESC`;
+  const params: (number | string)[] = [id_cliente];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
+  }
+
+  const [rows] = await pool.execute<AgendamentoRow[]>(query, params);
+  const agendamentos = await mapearAgendamentos(rows);
+
+  return { agendamentos, total };
 }
 
-export async function listarTodosAgendamentos(): Promise<AgendamentoResumo[]> {
-  const [rows] = await pool.execute<AgendamentoRow[]>(
-    `SELECT a.id_agendamento, a.data_hora, a.placa_veiculo, a.modelo_veiculo, a.status,
+export async function listarTodosAgendamentos(
+  limite?: number,
+  offset?: number
+): Promise<{ agendamentos: Agendamento[]; total: number }> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM agendamentos"
+  );
+  const total = Number(totalRow?.total || 0);
+
+  let query = `SELECT a.id_agendamento, a.data_hora, a.placa_veiculo, a.modelo_veiculo, a.status,
             a.id_cliente, c.nome AS nome_cliente
        FROM agendamentos a JOIN clientes c ON c.id_cliente = a.id_cliente
-      ORDER BY a.data_hora DESC`
-  );
-  return mapearAgendamentos(rows);
+      ORDER BY a.data_hora DESC`;
+  const params: number[] = [];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
+  }
+
+  const [rows] = await pool.execute<AgendamentoRow[]>(query, params);
+  const agendamentos = await mapearAgendamentos(rows);
+
+  return { agendamentos, total };
 }
 
-export async function buscarAgendamentoCliente(id_agendamento: number, id_cliente: number): Promise<AgendamentoResumo | null> {
+export async function buscarAgendamentoCliente(
+  id_agendamento: number,
+  id_cliente: number
+): Promise<Agendamento | null> {
   const [rows] = await pool.execute<AgendamentoRow[]>(
     `SELECT id_agendamento, data_hora, placa_veiculo, modelo_veiculo, status, id_cliente
        FROM agendamentos WHERE id_agendamento = ? AND id_cliente = ? LIMIT 1`,
     [id_agendamento, id_cliente]
   );
-  return (await mapearAgendamentos(rows))[0] ?? null;
+  if (rows.length === 0) return null;
+  const lista = await mapearAgendamentos(rows);
+  return lista[0] ?? null;
 }
 
-export async function buscarAgendamentoPorId(id_agendamento: number): Promise<AgendamentoResumo | null> {
+export async function buscarAgendamentoPorId(id_agendamento: number): Promise<Agendamento | null> {
   const [rows] = await pool.execute<AgendamentoRow[]>(
     `SELECT a.id_agendamento, a.data_hora, a.placa_veiculo, a.modelo_veiculo, a.status,
             a.id_cliente, c.nome AS nome_cliente
@@ -223,10 +278,15 @@ export async function buscarAgendamentoPorId(id_agendamento: number): Promise<Ag
       WHERE a.id_agendamento = ? LIMIT 1`,
     [id_agendamento]
   );
-  return (await mapearAgendamentos(rows))[0] ?? null;
+  if (rows.length === 0) return null;
+  const lista = await mapearAgendamentos(rows);
+  return lista[0] ?? null;
 }
 
-export async function atualizarStatusAgendamento(id_agendamento: number, status: StatusAgendamento): Promise<number> {
+export async function atualizarStatusAgendamento(
+  id_agendamento: number,
+  status: StatusAgendamento
+): Promise<number> {
   const [resultado] = await pool.execute<ResultSetHeader>(
     "UPDATE agendamentos SET status = ? WHERE id_agendamento = ?",
     [status, id_agendamento]

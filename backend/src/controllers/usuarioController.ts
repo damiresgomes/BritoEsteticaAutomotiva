@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { AppError } from "../errors/AppError";
+import { AcessoProibidoError, ConflitoError } from "../errors/AppError";
 import { atualizacaoUsuarioSchema, cadastroUsuarioSchema } from "../schemas/usuarioSchema";
+import { formatarRespostaListagem, paginacaoQuerySchema } from "../schemas/paginacaoSchema";
+import { validarId } from "../validators/validaId";
 import { cadastrar, listar, buscarUsuarioPorId, atualizar, excluir } from "../services/usuarioService";
-
 
 export async function cadastrarUsuarioController(request: Request, response: Response): Promise<Response> {
   const dados = cadastroUsuarioSchema.parse(request.body);
@@ -15,27 +16,25 @@ export async function cadastrarUsuarioController(request: Request, response: Res
 }
 
 export async function listarUsuariosController(request: Request, response: Response): Promise<Response> {
-  const usuarios = await listar();
+  const { pagina, limite } = paginacaoQuerySchema.parse(request.query);
+  const { usuarios, total } = await listar(pagina, limite);
 
-  return response.status(200).json(usuarios);
+  response.setHeader("X-Total-Count", total.toString());
+  const resposta = formatarRespostaListagem(usuarios, total, pagina, limite);
+  return response.status(200).json(resposta);
 }
 
 export async function buscarUsuarioPorIdController(request: Request, response: Response): Promise<Response> {
-  const { id } = request.params;
-  const usuario = await buscarUsuarioPorId(Number(id));
-
+  const id = validarId(request.params.id, "usuário");
+  const usuario = await buscarUsuarioPorId(id);
   return response.status(200).json(usuario);
 }
 
 export async function atualizarUsuarioController(request: Request, response: Response): Promise<Response> {
-  const id = Number(request.params.id);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new AppError(400, "ID de usuário inválido");
-  }
+  const id = validarId(request.params.id, "usuário");
 
   if (request.usuario?.id !== id) {
-    throw new AppError(403, "Você só pode editar seu próprio usuário");
+    throw new AcessoProibidoError("Você só pode editar seu próprio usuário");
   }
 
   const dados = atualizacaoUsuarioSchema.parse(request.body);
@@ -45,17 +44,12 @@ export async function atualizarUsuarioController(request: Request, response: Res
 }
 
 export async function desativarUsuarioController(request: Request, response: Response): Promise<Response> {
-  const id = Number(request.params.id);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    throw new AppError(400, "ID de usuário inválido");
-  }
+  const id = validarId(request.params.id, "usuário");
 
   if (request.usuario?.id === id) {
-    throw new AppError(409, "Você não pode desativar o próprio usuário");
+    throw new ConflitoError("Você não pode desativar o próprio usuário");
   }
 
   await excluir(id);
   return response.status(200).json({ message: "Usuário desativado com sucesso" });
 }
-

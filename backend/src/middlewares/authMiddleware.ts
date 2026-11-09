@@ -50,7 +50,7 @@ export async function authMiddleware(
     throw new AppError(401, "Usuário não encontrado");
   }
 
-  if (usuario.ativo !== "Sim") {
+  if (!usuario.ativo) {
     throw new AppError(403, "Usuário inativo");
   }
 

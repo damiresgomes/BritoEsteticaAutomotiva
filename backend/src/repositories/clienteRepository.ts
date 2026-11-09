@@ -1,8 +1,6 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { pool } from "../config/database";
 import { Cliente } from "../entities/cliente";
-
-export type StatusCliente = "Sim" | "Não";
 
 export interface NovoCliente {
   nome: string;
@@ -17,43 +15,43 @@ export interface ContaCliente {
   email: string | null;
   telefone: string | null;
   senha_hash: string | null;
-  ativo: StatusCliente;
+  ativo: string;
 }
 
 interface ClienteRow extends RowDataPacket, ContaCliente {}
 
-export interface ClientePublico {
-  id: number;
-  nome: string;
-  email: string | null;
-  telefone: string | null;
-  ativo: StatusCliente;
-}
-
 function mapearCliente(row: ClienteRow): Cliente {
-  return new Cliente(row.id_cliente, row.nome, row.telefone ?? "");
+  return new Cliente(
+    row.id_cliente,
+    row.nome,
+    row.email ?? "",
+    row.telefone ?? "",
+    row.ativo === "Sim",
+    row.senha_hash ?? undefined
+  );
 }
 
-export async function buscarContaClientePorEmail(email: string): Promise<ContaCliente | null> {
+export async function buscarContaClientePorEmail(email: string): Promise<Cliente | null> {
   const [rows] = await pool.execute<ClienteRow[]>(
     "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE email = ? LIMIT 1",
     [email]
   );
-  return rows[0] ?? null;
+  if (rows.length === 0) return null;
+  return mapearCliente(rows[0]);
 }
 
-export async function buscarContaClientePorId(id: number): Promise<ClientePublico | null> {
+export async function buscarContaClientePorId(id: number): Promise<Cliente | null> {
   const [rows] = await pool.execute<ClienteRow[]>(
     "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE id_cliente = ? LIMIT 1",
     [id]
   );
-  const row = rows[0];
-  return row ? { id: row.id_cliente, nome: row.nome, email: row.email, telefone: row.telefone, ativo: row.ativo } : null;
+  if (rows.length === 0) return null;
+  return mapearCliente(rows[0]);
 }
 
 export async function criarCliente(cliente: NovoCliente): Promise<number> {
   const [resultado] = await pool.execute<ResultSetHeader>(
-    "INSERT INTO clientes (nome, email, senha_hash, telefone) VALUES (?, ?, ?, ?)",
+    "INSERT INTO clientes (nome, email, senha_hash, telefone, ativo) VALUES (?, ?, ?, ?, 'Sim')",
     [cliente.nome, cliente.email, cliente.senhaHash, cliente.telefone]
   );
   return resultado.insertId;
@@ -64,25 +62,37 @@ export async function buscarPorId(id_cliente: number): Promise<Cliente | null> {
     "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE id_cliente = ? LIMIT 1",
     [id_cliente]
   );
-  return rows[0] ? mapearCliente(rows[0]) : null;
+  if (rows.length === 0) return null;
+  return mapearCliente(rows[0]);
 }
 
-export async function buscarClientes(): Promise<Cliente[]> {
-  const [rows] = await pool.execute<ClienteRow[]>(
-    "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes ORDER BY nome"
+export async function buscarClientes(
+  limite?: number,
+  offset?: number
+): Promise<{ clientes: Cliente[]; total: number }> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM clientes"
   );
-  return rows.map(mapearCliente);
+  const total = Number(totalRow?.total || 0);
+
+  let query = "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes ORDER BY nome";
+  const params: number[] = [];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
+  }
+
+  const [rows] = await pool.execute<ClienteRow[]>(query, params);
+  const clientes = rows.map(mapearCliente);
+
+  return { clientes, total };
 }
 
-export async function buscarClientesPorNome(nome: string): Promise<Cliente[]> {
-  const [rows] = await pool.execute<ClienteRow[]>(
-    "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE nome LIKE CONCAT('%', ?, '%') ORDER BY nome",
-    [nome]
-  );
-  return rows.map(mapearCliente);
-}
-
-export async function atualizarCliente(id_cliente: number, cliente: Pick<NovoCliente, "nome" | "email" | "telefone">): Promise<number> {
+export async function atualizarCliente(
+  id_cliente: number,
+  cliente: { nome: string; email: string; telefone: string }
+): Promise<number> {
   const [resultado] = await pool.execute<ResultSetHeader>(
     "UPDATE clientes SET nome = ?, email = ?, telefone = ? WHERE id_cliente = ?",
     [cliente.nome, cliente.email, cliente.telefone, id_cliente]

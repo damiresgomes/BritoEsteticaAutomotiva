@@ -43,12 +43,11 @@ export const cadastroUsuarioSchema = z.object({
   datanascimento: dataNascimentoSchema,
 });
 
-
 export type CadastroUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;
 
+// Na edição: todos os campos são obrigatórios (incluindo senha e CPF), exceto o e-mail que não pode ser alterado
 export const atualizacaoUsuarioSchema = cadastroUsuarioSchema
   .omit({ email: true })
-  .extend({ senha: senhaSchema.optional() })
   .strict();
 
 export type AtualizacaoUsuarioInput = z.infer<typeof atualizacaoUsuarioSchema>;

@@ -36,7 +36,7 @@ export async function clienteAuthMiddleware(request: Request, _response: Respons
 
   const cliente = await buscarContaClientePorId(payload.id);
   if (!cliente) throw new AppError(401, "Cliente não encontrado.");
-  if (cliente.ativo !== "Sim") throw new AppError(403, "Cliente inativo.");
+  if (!cliente.ativo) throw new AppError(403, "Cliente inativo.");
 
   request.cliente = payload;
   next();
