@@ -1,0 +1,33 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 150px;
+  padding: 22px;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  background: #0b1329;
+  color: #f8fafc;
+}
+
+.titulo {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.valor {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.descricao {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  .card {
+    min-height: 0;
+  }
+}

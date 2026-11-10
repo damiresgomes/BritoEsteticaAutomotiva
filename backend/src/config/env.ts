@@ -1,4 +1,8 @@
-import "dotenv/config";
+import path from "node:path";
+import dotenv from "dotenv";
+
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -26,3 +30,4 @@ if (!resultado.success) {
 }
 
 export const env = resultado.data;
+

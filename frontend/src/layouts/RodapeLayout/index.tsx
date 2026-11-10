@@ -6,7 +6,9 @@ export default function PublicLayout () {
     return (
         <div className={styles.container}>
             <PublicNavBar />
-            <Outlet />
+            <main>
+                <Outlet />
+            </main>
 
             <footer className={styles.rodape}>
                 <div>

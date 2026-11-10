@@ -1,0 +1,40 @@
+.fieldError,
+.loginError {
+  margin: -8px 0 0;
+  color: #fca5a5;
+  font-size: 0.8rem;
+}
+
+.loginError {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.loginSuccess {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 4px;
+  background: rgba(74, 222, 128, 0.08);
+  color: #86efac;
+  font-size: 0.875rem;
+}
+
+.cadastroLink {
+  margin: 20px 0 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.cadastroLink a {
+  color: #5cb3ff;
+  text-decoration: none;
+}
+
+.cadastroLink a:hover {
+  text-decoration: underline;
+}

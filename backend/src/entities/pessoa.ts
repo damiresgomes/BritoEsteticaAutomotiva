@@ -1,44 +1,64 @@
+import { RequisicaoInvalidaError } from "../errors/AppError";
+
 export abstract class Pessoa {
-    protected _nome: string;
-    protected _email: string;
-    private _cpf: string;
-    protected _dataDeNascimento: string;
-    protected _telefone: string;
-    protected _id: number;
+  protected _id: number;
+  protected _nome: string;
+  protected _email: string;
+  protected _telefone: string;
+  protected _ativo: boolean;
 
-    constructor(id: number, nome: string, email: string, cpf: string, dataDeNascimento: string, telefone: string) {
-        this._id = id;
-        this._nome = nome;
-        this._email = email;
-        this._cpf = cpf;
-        this._dataDeNascimento = dataDeNascimento;
-        this._telefone = telefone;
+  constructor(
+    id: number,
+    nome: string,
+    email: string,
+    telefone: string,
+    ativo: boolean = true
+  ) {
+    this.validarCamposBase(nome, email);
+    this._id = id;
+    this._nome = nome.trim();
+    this._email = email.trim().toLowerCase();
+    this._telefone = telefone ? telefone.trim() : "";
+    this._ativo = ativo;
+  }
+
+  private validarCamposBase(nome: string, email: string): void {
+    if (!nome || nome.trim().length === 0) {
+      throw new RequisicaoInvalidaError("Nome é obrigatório.");
     }
-
-    get cpf(): string {
-        return this._cpf;
+    if (!email || email.trim().length === 0) {
+      throw new RequisicaoInvalidaError("E-mail é obrigatório.");
     }
+  }
 
-    get nome(): string {
-        return this._nome;
-    }
+  get id(): number {
+    return this._id;
+  }
 
-    get email(): string {
-        return this._email;
-    }
+  get nome(): string {
+    return this._nome;
+  }
 
-    get dataDeNascimento(): string {
-        return this._dataDeNascimento;
-    }
+  get email(): string {
+    return this._email;
+  }
 
-    get telefone(): string {
-        return this._telefone;
-    }
+  get telefone(): string {
+    return this._telefone;
+  }
 
-    get id(): number {
-        return this._id;
-    }
+  get ativo(): boolean {
+    return this._ativo;
+  }
 
-    public abstract obterPapel(): string;
+  public desativar(): void {
+    this._ativo = false;
+  }
 
+  public ativar(): void {
+    this._ativo = true;
+  }
+
+  public abstract obterPapel(): string;
+  public abstract toJSON(): Record<string, unknown>;
 }

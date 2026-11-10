@@ -1,12 +1,18 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { authService } from "../../services/auth";
 
-export default function ProtectedRoute () {
-    const location = useLocation()
-    const hasAdminSession = Boolean(sessionStorage.getItem('brito-admin-token'))
+type Props = {
+  papel?: "cliente" | "admin";
+};
 
-    if (!hasAdminSession) {
-        return <Navigate to='/admin/login' replace state={{ from: location}} />
-    }
+export default function ProtectedRoute({ papel = "admin" }: Props) {
+  const location = useLocation();
+  const temSessao = authService.isAuthenticated(papel);
 
-    return <Outlet />
+  if (!temSessao) {
+    const rotaLogin = papel === "admin" ? "/admin/login" : "/autenticacao/login";
+    return <Navigate to={rotaLogin} replace state={{ from: location }} />;
+  }
+
+  return <Outlet />;
 }

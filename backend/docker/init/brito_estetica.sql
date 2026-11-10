@@ -76,12 +76,13 @@ DELIMITER ;
 --
 
 CREATE TABLE `agendamentos` (
-  `id_agendamento` int(11) NOT NULL,
+  `id_agendamento` int(11) NOT NULL AUTO_INCREMENT,
   `data_hora` datetime NOT NULL,
   `placa_veiculo` varchar(10) DEFAULT NULL,
   `modelo_veiculo` varchar(50) DEFAULT NULL,
   `id_cliente` int(11) NOT NULL,
-  `status` enum('Pendente','Confirmado','Cancelado') NOT NULL DEFAULT 'Pendente'
+  `status` enum('Pendente','Confirmado','Em atendimento','Concluído','Cancelado') NOT NULL DEFAULT 'Pendente',
+  `observacoes` text DEFAULT NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -181,7 +182,11 @@ INSERT INTO `categoria` (`id_categoria`, `nome_categoria`) VALUES
 CREATE TABLE `clientes` (
   `id_cliente` int(11) NOT NULL,
   `nome` varchar(100) NOT NULL,
-  `telefone` varchar(20) DEFAULT NULL
+  `telefone` varchar(20) DEFAULT NULL,
+  `cpf` varchar(11) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `senha_hash` varchar(255) DEFAULT NULL,
+  `ativo` enum('Sim','Não') NOT NULL DEFAULT 'Sim'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -274,17 +279,19 @@ CREATE TABLE `usuario` (
   `cpf` varchar(30) NOT NULL,
   `salario` double NOT NULL,
   `datanascimento` date NOT NULL,
-  `ativo` enum('Sim','Não') NOT NULL
+  `ativo` enum('Sim','Não') NOT NULL,
+  `papel` enum('ADMIN','USUARIO') NOT NULL DEFAULT 'USUARIO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Despejando dados para a tabela `usuario`
 --
 
-INSERT INTO `usuario` (`id`, `nome`, `email`, `senha`, `cpf`, `salario`, `datanascimento`, `ativo`) VALUES
-(1, 'Administrador', 'admin@gmail.com', '$2y$10$UlRENRQON2SjaSYAxmYs4OydOa5NkiJTqdZMbKiJbH75yZ5Xfebom', '094.650.100-90', 3500, '1980-07-22', 'Sim'),
-(2, 'Bill Gates', 'teste@teste.com', '$2y$10$ineMFivFCCHdP3gGGWfoR.RRqt.3jYDbIi.mXDPLjIM0vvYps9j7G', '424.454.180-20', 3500, '2000-10-20', 'Sim'),
-(9, 'teste', 'teste2@teste.com', '$2y$10$wl.IteWzPTk3Sc/5SL2cCuL3mrh8yqwHHLCGF4/e3oUJD6lcZZyUW', '540.998.448-03', 5240, '2007-11-12', 'Sim');
+INSERT INTO `usuario` (`id`, `nome`, `email`, `senha`, `cpf`, `salario`, `datanascimento`, `ativo`, `papel`) VALUES
+(1, 'Administrador', 'admin@gmail.com', '$2y$10$UlRENRQON2SjaSYAxmYs4OydOa5NkiJTqdZMbKiJbH75yZ5Xfebom', '094.650.100-90', 3500, '1980-07-22', 'Sim', 'ADMIN'),
+(2, 'Bill Gates', 'teste@teste.com', '$2y$10$ineMFivFCCHdP3gGGWfoR.RRqt.3jYDbIi.mXDPLjIM0vvYps9j7G', '424.454.180-20', 3500, '2000-10-20', 'Sim', 'USUARIO'),
+(3, 'Damires', 'damiresbrito2007@gmail.com', '$2b$10$6.nVPvVsiO7vrv7XPKDVFuD2v0vZhQZKC9H8Yh9/LfjKGC1uamnDy', '000.000.000-00', 0, '2000-01-01', 'Sim', 'ADMIN'),
+(9, 'teste', 'teste2@teste.com', '$2y$10$wl.IteWzPTk3Sc/5SL2cCuL3mrh8yqwHHLCGF4/e3oUJD6lcZZyUW', '540.998.448-03', 5240, '2007-11-12', 'Sim', 'USUARIO');
 
 --
 -- Normaliza os CPFs plantados para apenas dígitos.
@@ -342,7 +349,14 @@ CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_agendamentos_centraliza
 --
 DROP TABLE IF EXISTS `vw_servico_mais_vendido`;
 
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `vw_servico_mais_vendido`  AS WITH ContagemServicos AS (SELECT `s`.`nome_servico` AS `nome_servico`, count(`ags`.`id_agendamento`) AS `total_vendas` FROM (`servicos` `s` left join `agendamento_servico` `ags` on(`s`.`id_servico` = `ags`.`id_servico`)) GROUP BY `s`.`id_servico`, `s`.`nome_servico`) SELECT `contagemservicos`.`nome_servico` AS `nome_servico`, `contagemservicos`.`total_vendas` AS `total_vendas` FROM `contagemservicos` ORDER BY `contagemservicos`.`total_vendas` DESC LIMIT 0, 11  ;
+-- View sem CTE para compatibilidade com MySQL 8 (ALGORITHM=UNDEFINED não suporta WITH)
+CREATE VIEW `vw_servico_mais_vendido` AS
+  SELECT s.nome_servico, COUNT(ags.id_agendamento) AS total_vendas
+    FROM servicos s
+    LEFT JOIN agendamento_servico ags ON s.id_servico = ags.id_servico
+   GROUP BY s.id_servico, s.nome_servico
+   ORDER BY total_vendas DESC
+   LIMIT 11;
 
 --
 -- Índices para tabelas despejadas
@@ -372,7 +386,10 @@ ALTER TABLE `categoria`
 -- Índices de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  ADD PRIMARY KEY (`id_cliente`);
+  ADD PRIMARY KEY (`id_cliente`),
+  ADD UNIQUE KEY `uq_clientes_cpf` (`cpf`),
+  ADD UNIQUE KEY `uq_clientes_email` (`email`),
+  ADD CONSTRAINT `chk_clientes_cpf` CHECK (`cpf` IS NULL OR `cpf` REGEXP '^[0-9]{11}$');
 
 --
 -- Índices de tabela `servicos`
@@ -388,6 +405,27 @@ ALTER TABLE `usuario`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_usuario_email` (`email`),
   ADD UNIQUE KEY `uq_usuario_cpf` (`cpf`);
+
+-- --------------------------------------------------------
+--
+-- Tabela `contas_acesso` — credenciais unificadas de clientes e usuários admin
+--
+
+CREATE TABLE `contas_acesso` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `papel` enum('cliente','admin') NOT NULL DEFAULT 'cliente',
+  `ativo` enum('Sim','Não') NOT NULL DEFAULT 'Sim',
+  `id_cliente` int(11) DEFAULT NULL,
+  `id_usuario` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_contas_email` (`email`),
+  KEY `idx_contas_cliente` (`id_cliente`),
+  KEY `idx_contas_usuario` (`id_usuario`),
+  CONSTRAINT `fk_conta_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE SET NULL,
+  CONSTRAINT `fk_conta_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- AUTO_INCREMENT para tabelas despejadas
@@ -408,9 +446,10 @@ ALTER TABLE `categoria`
 --
 -- AUTO_INCREMENT de tabela `clientes`
 --
+SET FOREIGN_KEY_CHECKS = 0;
 ALTER TABLE `clientes`
   MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
-
+SET FOREIGN_KEY_CHECKS = 1;
 --
 -- AUTO_INCREMENT de tabela `servicos`
 --

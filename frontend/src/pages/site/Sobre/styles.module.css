@@ -89,8 +89,6 @@
   object-fit: cover;
 }
 
-
-
 .statsSection {
   padding: 40px 20px 80px 20px;
   display: flex;
@@ -225,60 +223,6 @@
   display: flex;
   justify-content: flex-end;
 }
-
-
-.sobre .chamada {
-  padding: 100px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.sobre .containerChamada {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 800px;
-}
-
-.sobre .tituloChamada {
-  color: #ffffff;
-  font-size: 2.6rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-  line-height: 1.1;
-}
-
-.sobre .descricaoChamada {
-  color: #6d7f99;
-  font-size: 1.05rem;
-  font-weight: 400;
-  line-height: 1.6;
-  margin-bottom: 40px;
-}
-
-.sobre .botaoChamada {
-  display: inline-block;
-  background-color: #3867d6;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-decoration: none;
-  text-transform: uppercase;
-  padding: 16px 32px;
-  border-radius: 2px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.sobre .botaoChamada:hover {
-  background-color: #2b52b3;
-  transform: translateY(-2px);
-}
-
 
 @media (max-width: 1024px) {
   .sobre .hero .container,

@@ -1,32 +1,40 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/authController";
-import { AuthService } from "../services/authService";
-import { UsuarioRepository } from "../repositories/usuarioRepository";
-import { authMiddleware } from "../middlewares/authMiddleware";
+import {
+  cadastroCliente,
+  login,
+  loginAdmin,
+  logout,
+  perfil,
+  atualizarPerfilAdmin,
+  teste,
+} from "../controllers/authController";
+import {
+  atualizarMeuCadastroClienteController,
+  cadastrarClienteController,
+  loginClienteController,
+  logoutClienteController,
+  perfilClienteController,
+} from "../controllers/clienteAuthController";
+import { authMiddleware, exigirPapel } from "../middlewares/authMiddleware";
+import { clienteAuthMiddleware } from "../middlewares/clienteAuthMiddleware";
 import { limiteLoginMiddleware } from "../middlewares/limiteLoginMiddleware";
 
 export function authRoutes(): Router {
   const router = Router();
 
-  const usuarioRepository = new UsuarioRepository();
-  const authService = new AuthService(usuarioRepository);
-  const authController = new AuthController(authService);
+  router.post("/cadastro-cliente", cadastroCliente);
+  router.post("/admin/login", limiteLoginMiddleware, loginAdmin);
+  router.post("/login", limiteLoginMiddleware, login);
+  router.post("/logout", authMiddleware, logout);
+  router.get("/me", authMiddleware, perfil);
+  router.put("/perfil-admin", authMiddleware, exigirPapel("admin"), atualizarPerfilAdmin);
+  router.get("/teste", authMiddleware, teste);
 
-  router.post("/login", limiteLoginMiddleware, (request, response) =>
-    authController.login(request, response)
-  );
-
-  router.post("/logout", authMiddleware, (request, response) =>
-    authController.logout(request, response)
-  );
-
-  router.get("/me", authMiddleware, (request, response) =>
-    authController.perfil(request, response)
-  );
-
-  router.get("/teste", authMiddleware, (request, response) =>
-    authController.teste(request, response)
-  );
+  router.post("/cliente/cadastro", cadastrarClienteController);
+  router.post("/cliente/login", loginClienteController);
+  router.post("/cliente/logout", clienteAuthMiddleware, logoutClienteController);
+  router.get("/cliente/me", clienteAuthMiddleware, perfilClienteController);
+  router.put("/cliente/me", clienteAuthMiddleware, atualizarMeuCadastroClienteController);
 
   return router;
 }

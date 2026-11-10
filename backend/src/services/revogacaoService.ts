@@ -1,19 +1,19 @@
-const tokensRevogados = new Map<string, number>();
+const tokensExpirados = new Map<string, number>();
 
-export function revogarToken(jti: string, expiraEmSegundos: number): void {
+export function expirarToken(jti: string, expiraEmSegundos: number): void {
     limparTokensExpirados();
-    tokensRevogados.set(jti, Date.now() + expiraEmSegundos * 1000);
+    tokensExpirados.set(jti, Date.now() + expiraEmSegundos * 1000);
 }
 
-export function tokenRevogado(jti: string): boolean {
-    const expiraEm = tokensRevogados.get(jti);
+export function tokenExpirado(jti: string): boolean {
+    const expiraEm = tokensExpirados.get(jti);
 
     if (!expiraEm) {
         return false;
     }
 
     if (expiraEm <= Date.now()) {
-        tokensRevogados.delete(jti);
+        tokensExpirados.delete(jti);
         return false;
     }
 
@@ -23,9 +23,9 @@ export function tokenRevogado(jti: string): boolean {
 export function limparTokensExpirados(): void {
     const agora = Date.now();
 
-    for (const [jti, expiraEm] of tokensRevogados) {
+    for (const [jti, expiraEm] of tokensExpirados) {
         if (expiraEm <= agora) {
-            tokensRevogados.delete(jti);
+            tokensExpirados.delete(jti);
         }
     }
 }

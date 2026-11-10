@@ -1,62 +1,172 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { pool } from "../config/database";
-import { NovoUsuario, Usuario } from "../types/usuario";
+import { PapelUsuario, Usuario } from "../entities/usuario";
 
-interface UsuarioRow extends RowDataPacket, Usuario {}
+export interface NovoUsuario {
+  nome: string;
+  email: string;
+  senhaHash: string;
+  cpf: string;
+  salario: number;
+  datanascimento: string;
+}
 
-const COLUNAS = "id, nome, email, senha, cpf, salario, datanascimento, ativo";
+export type DadosAtualizacaoUsuario = Omit<NovoUsuario, "email">;
 
-export class UsuarioRepository {
-  async buscarPorEmail(email: string): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario WHERE email = ?`,
-      [email]
-    );
+interface UsuarioRow extends RowDataPacket {
+  id: number;
+  nome: string;
+  email: string;
+  senhaHash: string;
+  cpf: string;
+  salario: number;
+  dataDeNascimento: string;
+  ativo: string;
+  papel: PapelUsuario;
+}
 
-    return usuarios[0] ?? null;
+const COLUNAS =
+  "id, nome, email, senha AS senhaHash, cpf, salario, datanascimento AS dataDeNascimento, ativo, papel";
+
+function mapearUsuario(row: UsuarioRow): Usuario {
+  return new Usuario(
+    row.id,
+    row.nome,
+    row.email,
+    "",
+    row.cpf,
+    Number(row.salario),
+    row.dataDeNascimento,
+    row.senhaHash,
+    row.ativo === "Sim",
+    row.papel ?? "usuario"
+  );
+}
+
+export async function buscarPorEmail(email: string): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario WHERE email = ? LIMIT 1`,
+    [email]
+  );
+  if (usuarios.length === 0) return null;
+  return mapearUsuario(usuarios[0]);
+}
+
+export async function buscarPorCpf(cpf: string): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario
+      WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?
+      LIMIT 1`,
+    [cpf]
+  );
+  if (usuarios.length === 0) return null;
+  return mapearUsuario(usuarios[0]);
+}
+
+export async function buscarPorId(id: number): Promise<Usuario | null> {
+  const [usuarios] = await pool.execute<UsuarioRow[]>(
+    `SELECT ${COLUNAS} FROM usuario WHERE id = ? LIMIT 1`,
+    [id]
+  );
+  if (usuarios.length === 0) return null;
+  return mapearUsuario(usuarios[0]);
+}
+
+export async function criarUsuario(usuario: NovoUsuario): Promise<number> {
+  const [resultado] = await pool.execute<ResultSetHeader>(
+    `INSERT INTO usuario (nome, email, senha, cpf, salario, datanascimento, ativo, papel)
+     VALUES (?, ?, ?, ?, ?, ?, 'Sim', 'usuario')`,
+    [
+      usuario.nome,
+      usuario.email,
+      usuario.senhaHash,
+      usuario.cpf,
+      usuario.salario,
+      usuario.datanascimento,
+    ]
+  );
+  return resultado.insertId;
+}
+
+export async function buscarTodos(
+  limite?: number,
+  offset?: number
+): Promise<{ usuarios: Usuario[]; total: number }> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM usuario WHERE ativo = 'Sim'"
+  );
+  const total = Number(totalRow?.total || 0);
+
+  let query = `SELECT ${COLUNAS} FROM usuario WHERE ativo = 'Sim' ORDER BY nome`;
+  const params: number[] = [];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
   }
 
-  async buscarPorCpf(cpf: string): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario
-        WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?`,
-      [cpf]
-    );
+  const [rows] = await pool.execute<UsuarioRow[]>(query, params);
+  const usuarios = rows.map(mapearUsuario);
 
-    return usuarios[0] ?? null;
+  return { usuarios, total };
+}
+
+export async function atualizarUsuario(id: number, dados: DadosAtualizacaoUsuario): Promise<number> {
+  const [resultado] = await pool.execute<ResultSetHeader>(
+    `UPDATE usuario
+        SET nome = ?, senha = ?, cpf = ?, salario = ?, datanascimento = ?
+      WHERE id = ?`,
+    [
+      dados.nome,
+      dados.senhaHash,
+      dados.cpf,
+      dados.salario,
+      dados.datanascimento,
+      id,
+    ]
+  );
+  return resultado.affectedRows;
+}
+
+export async function desativarUsuario(id: number): Promise<number> {
+  const [resultado] = await pool.execute<ResultSetHeader>(
+    `UPDATE usuario SET ativo = 'Não' WHERE id = ?`,
+    [id]
+  );
+  return resultado.affectedRows;
+}
+
+export async function atualizarPerfilUsuario(
+  id: number,
+  dados: {
+    nome: string;
+    cpf: string;
+    salario: number;
+    datanascimento: string;
+    senhaHash?: string;
   }
+): Promise<void> {
+  const conexao = await pool.getConnection();
 
-  async buscarPorId(id: number): Promise<Usuario | null> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT ${COLUNAS} FROM usuario WHERE id = ?`,
-      [id]
+  try {
+    await conexao.beginTransaction();
+    await conexao.execute(
+      `UPDATE usuario
+          SET nome = ?, cpf = ?, salario = ?, datanascimento = ?
+        WHERE id = ?`,
+      [dados.nome, dados.cpf, dados.salario, dados.datanascimento, id]
     );
-
-    return usuarios[0] ?? null;
-  }
-
-  async criarUsuario(usuario: NovoUsuario): Promise<number> {
-    const [resultado] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO usuario
-         (nome, email, senha, cpf, salario, datanascimento, ativo)
-       VALUES (?, ?, ?, ?, ?, ?, 'Sim')`,
-      [
-        usuario.nome,
-        usuario.email,
-        usuario.senhaHash,
-        usuario.cpf,
-        usuario.salario,
-        usuario.datanascimento,
-      ]
-    );
-
-    return resultado.insertId;
-  }
-
-  async buscarTodos(): Promise<{ id: number; nome: string; email: string }[]> {
-    const [usuarios] = await pool.execute<UsuarioRow[]>(
-      `SELECT id, nome, email FROM usuario WHERE ativo = 'Sim'`
-    );
-    return usuarios;
+    if (dados.senhaHash) {
+      await conexao.execute(
+        `UPDATE usuario SET senha = ? WHERE id = ?`,
+        [dados.senhaHash, id]
+      );
+    }
+    await conexao.commit();
+  } catch (erro) {
+    await conexao.rollback();
+    throw erro;
+  } finally {
+    conexao.release();
   }
 }

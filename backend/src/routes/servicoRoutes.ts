@@ -1,19 +1,28 @@
 import { Router } from "express";
-import { ServicoController } from "../controllers/servicoController";
-import { ServicoRepository } from "../repositories/servicoRepository";
-import { ServicoService } from "../services/servicoService";
-
+import {
+  buscarServicoPorIdController,
+  cadastrarServicoController,
+  listarServicosController,
+  atualizarServicoController,
+  excluirServicoController,
+} from "../controllers/servicoController";
+import { authMiddleware, exigirPapel } from "../middlewares/authMiddleware";
 
 export function servicoRoutes(): Router {
   const router = Router();
 
-  const servicoRepository = new ServicoRepository();
-  const servicoService = new ServicoService(servicoRepository);
-  const servicoController = new ServicoController(servicoService);
+  // Rotas autenticadas do CRUD administrativo
+  router.post("/cadastro", authMiddleware, exigirPapel("admin"), cadastrarServicoController);
+  router.post("/", authMiddleware, exigirPapel("admin"), cadastrarServicoController);
+  router.put("/atualizar/:id", authMiddleware, exigirPapel("admin"), atualizarServicoController);
+  router.put("/:id", authMiddleware, exigirPapel("admin"), atualizarServicoController);
+  router.delete("/deletar/:id", authMiddleware, exigirPapel("admin"), excluirServicoController);
+  router.delete("/:id", authMiddleware, exigirPapel("admin"), excluirServicoController);
 
-  router.post("/cadastro", (request, response) => servicoController.cadastrarServico(request, response));
-
-  router.get("/listar", (request, response) => servicoController.listarServicos(request, response));
+  // Listagem e detalhes públicos (compatível com o site e o painel)
+  router.get("/listar", listarServicosController);
+  router.get("/", listarServicosController);
+  router.get("/:id", buscarServicoPorIdController);
 
   return router;
 }

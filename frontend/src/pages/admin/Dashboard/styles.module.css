@@ -1,0 +1,200 @@
+.dashboard {
+  color: #f8fafc;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.title {
+  margin: 8px 0;
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 750;
+}
+
+.subtitle,
+.sectionHeader p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.refreshButton,
+.errorMessage button {
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #111827;
+  color: #e2e8f0;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.refreshButton:hover:not(:disabled),
+.errorMessage button:hover:not(:disabled) {
+  border-color: #60a5fa;
+  color: #93c5fd;
+}
+
+.refreshButton:disabled,
+.errorMessage button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  border: 1px solid #7f1d1d;
+  border-radius: 8px;
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+  padding: 16px;
+}
+
+.errorMessage button {
+  flex: 0 0 auto;
+  border-color: #7f1d1d;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.appointmentsSection {
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  background: #0b1329;
+}
+
+.appointmentsSection {
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.sectionHeader h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.sectionHeader p {
+  font-size: 0.85rem;
+}
+
+.sectionHeader a {
+  color: #60a5fa;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sectionHeader a:hover {
+  color: #bfdbfe;
+}
+
+.tableScroller {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 15px 24px;
+  border-bottom: 1px solid #1e293b;
+  white-space: nowrap;
+}
+
+.table th {
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.table td {
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusPending {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+}
+
+.statusConfirmed {
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
+}
+
+.statusCancelled {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+}
+
+.emptyState {
+  margin: 0;
+  padding: 32px 24px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .pageHeader {
+    align-items: flex-start;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader,
+  .errorMessage {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
