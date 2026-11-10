@@ -8,7 +8,7 @@ import {
   ativarCliente,
   atualizarCliente,
   buscarCliente,
-  cadastrarCliente,
+  cadastrarClienteAdmin,
   excluirCliente,
   listarClientes,
 } from "../services/clienteService";
@@ -33,7 +33,7 @@ export async function cadastrarClienteController(
   response: Response
 ): Promise<Response> {
   const dados = cadastroClienteAdminSchema.parse(request.body);
-  const id = await cadastrarCliente(dados);
+  const id = await cadastrarClienteAdmin(dados);
   return response.status(201).json({ message: "Cliente cadastrado com sucesso.", id });
 }
 

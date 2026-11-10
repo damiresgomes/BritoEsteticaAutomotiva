@@ -1,7 +1,8 @@
 import { Router } from "express";
 import {
   atualizarCategoriaController,
-  criarCategoriaController,
+  buscarCategoriaController,
+  cadastrarCategoriaController,
   excluirCategoriaController,
   listarCategoriasController,
 } from "../controllers/categoriaController";
@@ -9,10 +10,11 @@ import {
 export function categoriaRoutes(): Router {
   const router = Router();
 
-  router.get("/listar", listarCategoriasController);
-  router.post("/cadastro", criarCategoriaController);
-  router.put("/atualizar/:id", atualizarCategoriaController);
-  router.delete("/deletar/:id", excluirCategoriaController);
+  router.get(["/", "/listar"], listarCategoriasController);
+  router.get("/:id", buscarCategoriaController);
+  router.post(["/", "/cadastro"], cadastrarCategoriaController);
+  router.put(["/:id", "/atualizar/:id"], atualizarCategoriaController);
+  router.delete(["/:id", "/deletar/:id"], excluirCategoriaController);
 
   return router;
 }

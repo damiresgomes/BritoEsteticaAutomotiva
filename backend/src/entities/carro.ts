@@ -1,36 +1,50 @@
+import { RequisicaoInvalidaError } from "../errors/AppError";
+
 export class Carro {
-    constructor(
-        protected modelo: string,
-        protected ano: number,
-        protected placa: string,
-        protected cambio: string,
-        protected portas: string
-    ) {}
+  private _placa: string;
+  private _modelo: string;
 
-    get modeloCarro(): string {
-        return this.modelo;
-    }
+  constructor(placa: string, modelo: string) {
+    this.validarCampos(placa, modelo);
+    this._placa = placa.trim().toUpperCase();
+    this._modelo = modelo.trim();
+  }
 
-    get anoCarro(): number {
-        return this.ano;
+  private validarCampos(placa: string, modelo: string): void {
+    if (!placa || placa.trim().length === 0) {
+      throw new RequisicaoInvalidaError("Placa do veículo é obrigatória.");
     }
+    if (!modelo || modelo.trim().length === 0) {
+      throw new RequisicaoInvalidaError("Modelo do veículo é obrigatório.");
+    }
+  }
 
-    get placaCarro(): string {
-        return this.placa;
-    }
+  get placa(): string {
+    return this._placa;
+  }
 
-    get cambioCarro(): string {
-        return this.cambio;
-    }
+  get modelo(): string {
+    return this._modelo;
+  }
 
-    get portasCarro(): string {
-        return this.portas;
+  public atualizarPlaca(novaPlaca: string): void {
+    if (!novaPlaca || novaPlaca.trim().length === 0) {
+      throw new RequisicaoInvalidaError("Placa não pode ser vazia.");
     }
+    this._placa = novaPlaca.trim().toUpperCase();
+  }
 
-    public atualizarPlaca(novaPlaca: string): void {
-        if (!novaPlaca || novaPlaca.trim().length === 0) {
-            throw new Error("Placa não pode ser vazia");
-        }
-        this.placa = novaPlaca.trim().toUpperCase();
+  public atualizarModelo(novoModelo: string): void {
+    if (!novoModelo || novoModelo.trim().length === 0) {
+      throw new RequisicaoInvalidaError("Modelo não pode ser vazio.");
     }
-}
+    this._modelo = novoModelo.trim();
+  }
+
+  public toJSON() {
+    return {
+      placa: this._placa,
+      modelo: this._modelo,
+    };
+  }
+}

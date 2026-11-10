@@ -8,7 +8,15 @@ import {
   atualizarPerfilAdmin,
   teste,
 } from "../controllers/authController";
+import {
+  atualizarMeuCadastroClienteController,
+  cadastrarClienteController,
+  loginClienteController,
+  logoutClienteController,
+  perfilClienteController,
+} from "../controllers/clienteAuthController";
 import { authMiddleware, exigirPapel } from "../middlewares/authMiddleware";
+import { clienteAuthMiddleware } from "../middlewares/clienteAuthMiddleware";
 import { limiteLoginMiddleware } from "../middlewares/limiteLoginMiddleware";
 
 export function authRoutes(): Router {
@@ -21,6 +29,12 @@ export function authRoutes(): Router {
   router.get("/me", authMiddleware, perfil);
   router.put("/perfil-admin", authMiddleware, exigirPapel("admin"), atualizarPerfilAdmin);
   router.get("/teste", authMiddleware, teste);
+
+  router.post("/cliente/cadastro", cadastrarClienteController);
+  router.post("/cliente/login", loginClienteController);
+  router.post("/cliente/logout", clienteAuthMiddleware, logoutClienteController);
+  router.get("/cliente/me", clienteAuthMiddleware, perfilClienteController);
+  router.put("/cliente/me", clienteAuthMiddleware, atualizarMeuCadastroClienteController);
 
   return router;
 }

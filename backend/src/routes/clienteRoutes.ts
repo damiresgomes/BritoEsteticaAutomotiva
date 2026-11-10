@@ -11,8 +11,8 @@ import {
 export function clienteRoutes(): Router {
   const router = Router();
 
-  router.get("/listar", listarClientesController);
-  router.post("/cadastro", cadastrarClienteController);
+  router.get(["/", "/listar"], listarClientesController);
+  router.post(["/", "/cadastro"], cadastrarClienteController);
   router.get("/:id", buscarClienteController);
   router.put("/:id", atualizarClienteController);
   router.delete("/:id", excluirClienteController);

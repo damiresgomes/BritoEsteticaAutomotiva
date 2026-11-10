@@ -1,27 +1,43 @@
 import { Pessoa } from "./pessoa";
 
 export class Cliente extends Pessoa {
-    constructor(
-        id: number,
-        nome: string,
-        telefone: string
-    ) {
-        super(id, nome, "", "", "", telefone);
-    }
+  private _senhaHash?: string;
 
-    get nome(): string {
-        return this._nome;
-    }
+  constructor(
+    id: number,
+    nome: string,
+    email: string,
+    telefone: string,
+    ativo: boolean = true,
+    senhaHash?: string
+  ) {
+    super(id, nome, email, telefone, ativo);
+    this._senhaHash = senhaHash;
+  }
 
-    get telefone(): string {
-        return this._telefone;
-    }
+  get senhaHash(): string | undefined {
+    return this._senhaHash;
+  }
 
-    set telefone(novoTelefone: string) {
-        this._telefone = novoTelefone;
+  public atualizarCadastro(nome: string, telefone: string, senhaHash?: string): void {
+    this._nome = nome.trim();
+    this._telefone = telefone.trim();
+    if (senhaHash) {
+      this._senhaHash = senhaHash;
     }
+  }
 
-    public override obterPapel(): string {
-        return "Cliente";
-    }
+  public override obterPapel(): string {
+    return "cliente";
+  }
+
+  public override toJSON() {
+    return {
+      id_cliente: this._id,
+      nome: this._nome,
+      email: this._email,
+      telefone: this._telefone,
+      ativo: this._ativo ? "Sim" : "Não",
+    };
+  }
 }

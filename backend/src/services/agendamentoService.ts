@@ -1,14 +1,23 @@
-import { AppError } from "../errors/AppError";
-import { CadastroAgendamentoInput } from "../schemas/agendamentoSchema";
+import { AppError, ConflitoError, RecursoNaoEncontradoError } from "../errors/AppError";
+import { CadastroAgendamentoInput, CriarAgendamentoInput } from "../schemas/agendamentoSchema";
 import { buscarServicosPorIds } from "../repositories/servicoRepository";
 import {
+  atualizarAgendamentoCliente,
   atualizarAgendamentoCompleto,
   atualizarStatusAgendamento,
+  buscarAgendamentoCliente,
+  buscarAgendamentoPorId,
   buscarStatusAgendamento,
+  criarAgendamento,
   criarAgendamentoCompleto,
+  existeConflitoHorario,
   listarAgendamentosAdmin,
+  listarAgendamentosCliente,
   listarHorariosOcupados,
+  listarTodosAgendamentos,
 } from "../repositories/agendamentoRepository";
+import { Agendamento, StatusAgendamento } from "../entities/agendamento";
+import { Carro } from "../entities/carro";
 
 const CATEGORIA_PRINCIPAL = 1;
 const CATEGORIA_EXTRA = 2;
@@ -32,6 +41,97 @@ export async function listarHorariosDisponiveis(data: string): Promise<string[]>
     (horario) =>
       !ocupados.includes(horario) && !(data === hoje && horario <= horaAtual)
   );
+}
+
+async function garantirHorarioLivre(dataHora: string, idIgnorado?: number): Promise<void> {
+  if (await existeConflitoHorario(dataHora, idIgnorado)) {
+    throw new ConflitoError("Já existe um agendamento nesse horário.");
+  }
+}
+
+export async function cadastrarAgendamentoCliente(
+  id_cliente: number,
+  dados: CriarAgendamentoInput
+): Promise<number> {
+  new Carro(dados.placa_veiculo, dados.modelo_veiculo);
+  await garantirHorarioLivre(dados.data_hora);
+  return criarAgendamento(id_cliente, dados);
+}
+
+export async function listarMeusAgendamentos(id_cliente: number, pagina?: number, limite?: number) {
+  const offset = pagina !== undefined && limite !== undefined ? (pagina - 1) * limite : undefined;
+  return listarAgendamentosCliente(id_cliente, limite, offset);
+}
+
+export async function listarAgendamentosUsuario(pagina?: number, limite?: number) {
+  const offset = pagina !== undefined && limite !== undefined ? (pagina - 1) * limite : undefined;
+  return listarTodosAgendamentos(limite, offset);
+}
+
+export async function buscarMeuAgendamento(
+  id_agendamento: number,
+  id_cliente: number
+): Promise<Agendamento> {
+  const agendamento = await buscarAgendamentoCliente(id_agendamento, id_cliente);
+  if (!agendamento) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
+  }
+  return agendamento;
+}
+
+export async function atualizarMeuAgendamento(
+  id_agendamento: number,
+  id_cliente: number,
+  dados: CriarAgendamentoInput
+): Promise<void> {
+  const agendamento = await buscarAgendamentoCliente(id_agendamento, id_cliente);
+  if (!agendamento) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
+  }
+
+  const novoCarro = new Carro(dados.placa_veiculo, dados.modelo_veiculo);
+  agendamento.atualizarDados(dados.data_hora, novoCarro);
+
+  await garantirHorarioLivre(dados.data_hora, id_agendamento);
+  const linhasAfetadas = await atualizarAgendamentoCliente(id_agendamento, id_cliente, dados);
+
+  if (linhasAfetadas === 0) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado para atualização.");
+  }
+}
+
+export async function cancelarMeuAgendamento(
+  id_agendamento: number,
+  id_cliente: number
+): Promise<void> {
+  const agendamento = await buscarAgendamentoCliente(id_agendamento, id_cliente);
+  if (!agendamento) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
+  }
+
+  agendamento.cancelar();
+
+  const linhasAfetadas = await atualizarStatusAgendamento(id_agendamento, "Cancelado");
+  if (linhasAfetadas === 0) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado para cancelamento.");
+  }
+}
+
+export async function atualizarStatus(
+  id_agendamento: number,
+  novoStatus: StatusAgendamento
+): Promise<void> {
+  const agendamento = await buscarAgendamentoPorId(id_agendamento);
+  if (!agendamento) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
+  }
+
+  agendamento.transitarPara(novoStatus);
+
+  const linhasAfetadas = await atualizarStatusAgendamento(id_agendamento, novoStatus);
+  if (linhasAfetadas === 0) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado para atualização de status.");
+  }
 }
 
 export async function cadastrarAgendamento(
@@ -66,16 +166,16 @@ export async function cadastrarAgendamento(
 async function validarServicosSelecionados(dados: CadastroAgendamentoInput) {
   const idsExtras = [...new Set(dados.extras)];
   const servicos = await buscarServicosPorIds([dados.servicoId, ...idsExtras]);
-  const principal = servicos.find((servico) => servico.id_servico === dados.servicoId);
+  const principal = servicos.find((servico) => servico.id === dados.servicoId);
 
-  if (!principal || principal.id_categoria !== CATEGORIA_PRINCIPAL) {
+  if (!principal || principal.idCategoria !== CATEGORIA_PRINCIPAL) {
     throw new AppError(400, "Serviço inválido.");
   }
 
-  const extras = servicos.filter((servico) => idsExtras.includes(servico.id_servico));
+  const extras = servicos.filter((servico) => idsExtras.includes(servico.id));
   if (
     extras.length !== idsExtras.length ||
-    extras.some((servico) => servico.id_categoria !== CATEGORIA_EXTRA)
+    extras.some((servico) => servico.idCategoria !== CATEGORIA_EXTRA)
   ) {
     throw new AppError(400, "Acréscimo inválido.");
   }

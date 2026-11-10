@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
 import { buscarContaPorId, PapelConta } from "../repositories/contaAcessoRepository";
+import { buscarPorId } from "../repositories/usuarioRepository";
 import { tokenExpirado } from "../services/revogacaoService";
 
 export interface Token {
@@ -24,7 +25,8 @@ declare module "express-serve-static-core" {
 function payloadValido(payload: string | jwt.JwtPayload): payload is jwt.JwtPayload & {
   id: number;
   email: string;
-  papel: PapelConta;
+  papel?: string;
+  tipo?: string;
   jti: string;
 } {
   return (
@@ -32,7 +34,6 @@ function payloadValido(payload: string | jwt.JwtPayload): payload is jwt.JwtPayl
     payload !== null &&
     Number.isSafeInteger(payload.id) &&
     typeof payload.email === "string" &&
-    (payload.papel === "cliente" || payload.papel === "admin") &&
     typeof payload.jti === "string" &&
     payload.jti.length > 0
   );
@@ -52,7 +53,8 @@ export async function authMiddleware(
   let payload: jwt.JwtPayload & {
     id: number;
     email: string;
-    papel: PapelConta;
+    papel?: string;
+    tipo?: string;
     jti: string;
   };
   try {
@@ -71,23 +73,41 @@ export async function authMiddleware(
 
   const conta = await buscarContaPorId(payload.id);
 
-  if (!conta || conta.email !== payload.email || conta.papel !== payload.papel) {
-    throw new AppError(401, "Sessão inválida. Faça login novamente.");
+  if (conta) {
+    if (conta.email !== payload.email) {
+      throw new AppError(401, "Sessão inválida. Faça login novamente.");
+    }
+    if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
+      throw new AppError(403, "Conta inativa");
+    }
+    request.usuario = {
+      id: conta.id,
+      email: conta.email,
+      papel: conta.papel,
+      jti: payload.jti,
+      exp: payload.exp,
+      clienteId: conta.clienteId,
+      usuarioId: conta.usuarioId,
+    };
+  } else {
+    const usuario = await buscarPorId(payload.id);
+    if (!usuario || usuario.email !== payload.email) {
+      throw new AppError(401, "Sessão inválida. Faça login novamente.");
+    }
+    if (!usuario.ativo) {
+      throw new AppError(403, "Conta inativa");
+    }
+    request.usuario = {
+      id: usuario.id,
+      email: usuario.email,
+      papel: usuario.papel === "admin" ? "admin" : "cliente",
+      jti: payload.jti,
+      exp: payload.exp,
+      usuarioId: usuario.id,
+      clienteId: null,
+    };
   }
 
-  if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
-    throw new AppError(403, "Conta inativa");
-  }
-
-  request.usuario = {
-    id: conta.id,
-    email: conta.email,
-    papel: conta.papel,
-    jti: payload.jti,
-    exp: payload.exp,
-    clienteId: conta.clienteId,
-    usuarioId: conta.usuarioId,
-  };
   next();
 }
 

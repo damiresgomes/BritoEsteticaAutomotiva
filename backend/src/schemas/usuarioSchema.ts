@@ -53,6 +53,11 @@ export const perfilAdminSchema = z.object({
   senha: senhaSchema.optional(),
 }).strict();
 
+export const atualizacaoUsuarioSchema = cadastroUsuarioSchema
+  .omit({ email: true })
+  .strict();
+
 export type CadastroUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;
 
-export type AtualizacaoUsuarioInput = z.infer<typeof cadastroUsuarioSchema>;
+export type AtualizacaoUsuarioInput = z.infer<typeof atualizacaoUsuarioSchema>;
+
