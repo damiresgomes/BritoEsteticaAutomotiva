@@ -24,13 +24,8 @@ export async function buscarResumoUsuario() {
   );
 
   const [servicosMaisSolicitados] = await pool.execute<RowDataPacket[]>(
-    `SELECT s.id_servico, s.nome_servico, COUNT(*) AS quantidade
-       FROM agendamento_servico ags
-       JOIN servicos s ON s.id_servico = ags.id_servico
-       JOIN agendamentos a ON a.id_agendamento = ags.id_agendamento
-      WHERE a.status <> 'Cancelado'
-      GROUP BY s.id_servico, s.nome_servico
-      ORDER BY quantidade DESC, s.nome_servico
+    `SELECT nome_servico, total_vendas AS quantidade
+       FROM vw_servico_mais_vendido
       LIMIT 5`
   );
 
