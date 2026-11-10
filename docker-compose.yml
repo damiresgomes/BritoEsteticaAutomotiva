@@ -16,22 +16,28 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/init:/docker-entrypoint-initdb.d
+      - ./backend/docker/init/brito_estetica.sql:/docker-entrypoint-initdb.d/brito_estetica.sql
+    networks:
+      - rede-interna
 
   backend:
     build: ./backend
     container_name: backend_node
     restart: always
-    ports:
-      -"3001:3001"
+    #ports:
+    #  - "3333:3333"
     environment:
-      PORT: 3001
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: senhadificilpradedeu123
-      DB_NAME: meu_banco
+      PORT: 3333
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: http://localhost:3000,http://localhost
+      TRUST_PROXY: 1
     depends_on:
-      - db
+      - mysql
     networks:
       - rede-interna
       - rede-externa
@@ -60,11 +66,11 @@ services:
       - rede-interna
       - rede-externa
 
-  networks:
-    rede-externa:
-      drive: bridge
-    rede-interna:
-      drive: bridge
+networks:
+  rede-externa:
+    driver: bridge
+  rede-interna:
+    driver: bridge
 
-  volumes:
-    mysql_data:
+volumes:
+  mysql_data:
