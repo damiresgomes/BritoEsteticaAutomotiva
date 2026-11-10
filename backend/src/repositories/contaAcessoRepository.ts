@@ -84,7 +84,7 @@ export interface NovoClienteComConta {
   email: string;
   senhaHash: string;
   telefone: string;
-  cpf: string;
+  cpf?: string | null;
 }
 
 export async function criarClienteComConta(dados: NovoClienteComConta): Promise<{
@@ -98,7 +98,7 @@ export async function criarClienteComConta(dados: NovoClienteComConta): Promise<
 
     const [cliente] = await conexao.execute<ResultSetHeader>(
       "INSERT INTO clientes (nome, telefone, cpf) VALUES (?, ?, ?)",
-      [dados.nome, dados.telefone, dados.cpf]
+      [dados.nome, dados.telefone, dados.cpf ?? null]
     );
     const [conta] = await conexao.execute<ResultSetHeader>(
       `INSERT INTO contas_acesso (email, senha, papel, ativo, id_cliente)

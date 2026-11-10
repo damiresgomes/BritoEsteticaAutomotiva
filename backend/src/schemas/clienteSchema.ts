@@ -23,7 +23,8 @@ const dadosClienteSchema = z.object({
   email: loginSchema.shape.email,
   cpf: z.string({ error: "CPF é obrigatório" })
     .refine(cpfValido, "CPF inválido")
-    .transform(normalizarCpf),
+    .transform(normalizarCpf)
+    .optional(),
   telefone: telefoneSchema,
 });
 

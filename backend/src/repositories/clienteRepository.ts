@@ -124,7 +124,7 @@ export type StatusCliente = "Ativo" | "Inativo" | "Sem conta";
 export interface ClienteAdmin extends RowDataPacket {
   id: number;
   nome: string;
-  cpf: string;
+  cpf?: string | null;
   email: string | null;
   telefone: string | null;
   status: StatusCliente;
@@ -134,7 +134,7 @@ export interface ClienteAdmin extends RowDataPacket {
 export interface DadosClienteAdmin {
   nome: string;
   email: string;
-  cpf: string;
+  cpf?: string | null;
   telefone: string;
   senhaHash?: string;
 }
@@ -193,7 +193,7 @@ export async function criarClienteAdmin(
 
     const [cliente] = await conexao.execute<ResultSetHeader>(
       "INSERT INTO clientes (nome, telefone, cpf) VALUES (?, ?, ?)",
-      [dados.nome, dados.telefone, dados.cpf]
+      [dados.nome, dados.telefone, dados.cpf ?? null]
     );
     await conexao.execute<ResultSetHeader>(
       `INSERT INTO contas_acesso (email, senha, papel, ativo, id_cliente)
@@ -250,7 +250,7 @@ export async function atualizarClienteAdmin(
 
     await conexao.execute<ResultSetHeader>(
       "UPDATE clientes SET nome = ?, cpf = ?, telefone = ? WHERE id_cliente = ?",
-      [dados.nome, dados.cpf, dados.telefone, id]
+      [dados.nome, dados.cpf ?? null, dados.telefone, id]
     );
 
     if (contas.length) {
