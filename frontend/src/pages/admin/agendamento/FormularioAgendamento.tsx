@@ -3,10 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import styles from "../../../components/AdminCrud/styles.module.css";
 import { clienteService, type ClienteAdmin } from "../../../services/clients";
-import {
-  agendamentoService,
-  type StatusAgendamento,
-} from "../../../services/agendamentos";
+import { agendamentoService, type StatusAgendamento } from "../../../services/agendamentos";
 import { servicoService, type Servico } from "../../../services/services";
 import { obterMensagemErro } from "../../../utils/erros";
 import { dataLocalAtual } from "../../../utils/datas";
@@ -101,7 +98,7 @@ export default function FormularioAgendamento({ id }: Props) {
     };
   }, [id]);
 
-  function atualizarCampo(campo: keyof Formulario, valor: string) {
+  function atualizarCampo(campo: keyof Formulario, valor: string | number[]) {
     setForm((atual) => ({ ...atual, [campo]: valor }));
   }
 
@@ -145,29 +142,29 @@ export default function FormularioAgendamento({ id }: Props) {
   }
 
   if (carregando) {
-    return <section className={styles.page}><p>Carregando formulário...</p></section>;
+    return <section className={styles.pagina}><p>Carregando formulário...</p></section>;
   }
 
   if (falhaCarregamento) {
     return (
-      <section className={styles.page}>
+      <section className={styles.pagina}>
         <HeaderAdmin
           titulo={id === undefined ? "CADASTRAR AGENDAMENTO" : "EDITAR AGENDAMENTO"}
           links={[{ to: "/admin/agendamento", label: "← VOLTAR AOS AGENDAMENTOS" }]}
         />
-        <p className={styles.message} role="alert">{erro}</p>
+        <p className={styles.mensagem} role="alert">{erro}</p>
       </section>
     );
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo={id === undefined ? "CADASTRAR AGENDAMENTO" : "EDITAR AGENDAMENTO"}
         links={[{ to: "/admin/agendamento", label: "← VOLTAR AOS AGENDAMENTOS" }]}
       />
-      <form className={styles.form} onSubmit={salvar}>
-        <label className={styles.field}>
+      <form className={styles.formulario} onSubmit={salvar}>
+        <label className={styles.campo}>
           Cliente
           <select
             required
@@ -183,27 +180,29 @@ export default function FormularioAgendamento({ id }: Props) {
           </select>
         </label>
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Placa
           <input
             required
             maxLength={8}
+            placeholder="ABC1D23"
             value={form.placa}
             onChange={(evento) => atualizarCampo("placa", evento.target.value.toUpperCase())}
           />
         </label>
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Veículo
           <input
             required
             maxLength={50}
+            placeholder="Modelo do veículo"
             value={form.veiculo}
             onChange={(evento) => atualizarCampo("veiculo", evento.target.value)}
           />
         </label>
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Serviço principal
           <select
             required
@@ -220,7 +219,7 @@ export default function FormularioAgendamento({ id }: Props) {
         </label>
 
         {extras.length > 0 && (
-          <fieldset className={styles.field}>
+          <fieldset className={styles.campo}>
             <legend>Serviços adicionais</legend>
             {extras.map((extra) => (
               <label key={extra.id_servico}>
@@ -235,7 +234,7 @@ export default function FormularioAgendamento({ id }: Props) {
           </fieldset>
         )}
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Data
           <input
             required
@@ -246,7 +245,7 @@ export default function FormularioAgendamento({ id }: Props) {
           />
         </label>
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Horário
           <input
             required
@@ -256,21 +255,22 @@ export default function FormularioAgendamento({ id }: Props) {
           />
         </label>
 
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Observações
           <textarea
             maxLength={500}
+            placeholder="Observações pertinentes ao atendimento..."
             value={form.observacoes}
             onChange={(evento) => atualizarCampo("observacoes", evento.target.value)}
           />
         </label>
 
         {id !== undefined && (
-          <label className={styles.field}>
+          <label className={styles.campo}>
             Status
             <select
               value={form.status}
-              onChange={(evento) => atualizarCampo("status", evento.target.value)}
+              onChange={(evento) => atualizarCampo("status", evento.target.value as StatusAgendamento)}
               disabled={form.status === "Cancelado"}
             >
               <option value="Pendente">Pendente</option>
@@ -283,7 +283,7 @@ export default function FormularioAgendamento({ id }: Props) {
           </label>
         )}
 
-        {erro && <p className={styles.message} role="alert">{erro}</p>}
+        {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
         <button type="submit" disabled={salvando}>
           {salvando ? "Salvando..." : id === undefined ? "Cadastrar agendamento" : "Salvar alterações"}
         </button>

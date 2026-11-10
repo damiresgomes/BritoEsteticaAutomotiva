@@ -14,6 +14,7 @@ export default function FormularioCategoria({ id }: Props) {
 
   useEffect(() => {
     if (id === undefined) return;
+
     categoriaService
       .listar()
       .then((categorias) => {
@@ -37,13 +38,13 @@ export default function FormularioCategoria({ id }: Props) {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo={id === undefined ? "CADASTRAR CATEGORIA" : "EDITAR CATEGORIA"}
         links={[{ to: "/admin/categoria", label: "← VOLTAR ÀS CATEGORIAS" }]}
       />
-      <form className={styles.form} onSubmit={salvar}>
-        <label className={styles.field}>
+      <form className={styles.formulario} onSubmit={salvar}>
+        <label className={styles.campo}>
           Nome da categoria
           <input
             value={nome}
@@ -52,7 +53,7 @@ export default function FormularioCategoria({ id }: Props) {
             required
           />
         </label>
-        {erro && <p className={styles.message} role="alert">{erro}</p>}
+        {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
         <button type="submit">{id === undefined ? "Cadastrar" : "Salvar"}</button>
       </form>
     </section>

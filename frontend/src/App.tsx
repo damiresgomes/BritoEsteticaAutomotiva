@@ -41,7 +41,7 @@ export default function App() {
           <Route path="autenticacao/login" element={<Login />} />
           <Route path="autenticacao/cadastro" element={<CadastroUsuario />} />
           <Route element={<ProtectedRoute papel="cliente" />}>
-            <Route path="minha-conta" element={<MinhaConta />} />
+          <Route path="minha-conta" element={<MinhaConta />} />
           </Route>
         </Route>
 

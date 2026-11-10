@@ -66,22 +66,21 @@ export function LoginIcon() {
   );
 }
 
-export default function AuthLogin({
-  eyebrow,
-  subtitulo,
-  tituloCartao,
-  children,
-}: AuthLoginProps) {
+export default function AuthLogin({ eyebrow, subtitulo, tituloCartao, children }: AuthLoginProps) {
+
   return (
     <main className={styles.loginPage}>
       <header className={styles.loginHeader}>
+
         <span className={styles.loginEyebrow}>
-          <ShieldIcon />
-          <span>{eyebrow}</span>
+            <ShieldIcon />
+            <span>{eyebrow}</span>
         </span>
+
         <h1 className={styles.loginTitle}>
           ENTRAR NO <span className={styles.loginTitleAccent}>PAINEL</span>
         </h1>
+
         <p className={styles.loginSubtitle}>{subtitulo}</p>
       </header>
 
@@ -90,10 +89,12 @@ export default function AuthLogin({
           <div className={styles.loginCardIcon}>
             <LockIcon />
           </div>
+
           <div>
             <span className={styles.loginCardEyebrow}>// CREDENCIAIS</span>
             <h2 className={styles.loginCardTitle}>{tituloCartao}</h2>
           </div>
+
         </div>
         {children}
       </section>

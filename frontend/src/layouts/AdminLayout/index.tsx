@@ -7,7 +7,9 @@ export default function AdminLayout () {
     return (
         <UsuarioProvider>
             <div className={styles.adminShell}>
+
                 <AdminNavBar />
+                
                 <main className={styles.adminMain}>
                     <Outlet />
                 </main>

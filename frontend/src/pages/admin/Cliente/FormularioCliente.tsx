@@ -67,29 +67,29 @@ export default function FormularioCliente({ id }: Props) {
   }
 
   if (carregando) {
-    return <section className={styles.page}><p>Carregando cliente...</p></section>;
+    return <section className={styles.pagina}><p>Carregando cliente...</p></section>;
   }
 
   if (falhaCarregamento) {
     return (
-      <section className={styles.page}>
+      <section className={styles.pagina}>
         <HeaderAdmin
           titulo="EDITAR CLIENTE"
           links={[{ to: "/admin/cliente", label: "← VOLTAR AOS CLIENTES" }]}
         />
-        <p className={styles.message} role="alert">{erro}</p>
+        <p className={styles.menssagem} role="alert">{erro}</p>
       </section>
     );
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo={id === undefined ? "CADASTRAR CLIENTE" : "EDITAR CLIENTE"}
         links={[{ to: "/admin/cliente", label: "← VOLTAR AOS CLIENTES" }]}
       />
-      <form className={styles.form} onSubmit={salvar}>
-        <label className={styles.field}>
+      <form className={styles.formulario} onSubmit={salvar}>
+        <label className={styles.campo}>
           Nome
           <input
             required
@@ -98,7 +98,7 @@ export default function FormularioCliente({ id }: Props) {
             onChange={(evento) => atualizarCampo("nome", evento.target.value)}
           />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           CPF
           <input
             required
@@ -110,7 +110,7 @@ export default function FormularioCliente({ id }: Props) {
             onChange={(evento) => atualizarCampo("cpf", mascararCPF(evento.target.value))}
           />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           E-mail de acesso
           <input
             required
@@ -120,7 +120,7 @@ export default function FormularioCliente({ id }: Props) {
             onChange={(evento) => atualizarCampo("email", evento.target.value)}
           />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Telefone
           <input
             required
@@ -130,7 +130,7 @@ export default function FormularioCliente({ id }: Props) {
             onChange={(evento) => atualizarCampo("telefone", evento.target.value)}
           />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           {id === undefined || !temConta ? "Senha inicial" : "Nova senha (opcional)"}
           <input
             required={id === undefined || !temConta}

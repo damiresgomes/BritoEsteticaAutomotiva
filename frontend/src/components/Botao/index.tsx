@@ -9,7 +9,7 @@ interface BotaoProps {
     href?: string;
 }
 
-export default function Botao ({children, variante = "primario", to, href}: BotaoProps) {
+export default function Botao ({ children, variante = "primario", to, href }: BotaoProps) {
     const className = `${styles.botao} ${styles[variante]}`;
 
     if (to) {

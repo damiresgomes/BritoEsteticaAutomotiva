@@ -40,7 +40,7 @@ export default function ListarCategoria() {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="CATEGORIA"
         links={[
@@ -48,10 +48,16 @@ export default function ListarCategoria() {
           { to: "/admin/categoria/cadastrar", label: "+ CADASTRAR CATEGORIA" },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Nome</th><th>Ações</th></tr></thead>
+      {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+      <div className={styles.divTabela}>
+        <table className={styles.tabela}>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          
           <tbody>
             {categoriasVisiveis.map((categoria) => (
               <tr key={categoria.id_categoria}>

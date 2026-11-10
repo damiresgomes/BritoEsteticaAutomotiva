@@ -1,6 +1,5 @@
 import type { ChangeEvent, FormEvent } from "react";
-import { Link } from "react-router-dom";
-import type { Location } from "react-router-dom";
+import { Link, type Location } from "react-router-dom";
 import type { AgendamentoCriado } from "../../services/agendamentos";
 import type { Servico } from "../../services/services";
 import styles from "../../pages/site/Agendamento/styles.module.css";
@@ -72,6 +71,7 @@ export default function FormAgendamento({
   onToggleAcrescimo,
   onSubmit,
 }: FormAgendamentoProps) {
+  
   return (
     <form
       className={styles.cartao}

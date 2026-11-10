@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { authService, type PerfilAdmin } from "../services/auth";
 import { obterMensagemErro } from "../utils/erros";
 import { UsuarioContext } from "./usuarioContextValue";

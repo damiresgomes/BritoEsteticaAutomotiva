@@ -5,6 +5,7 @@ export default function PublicNavBar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.container}>
+
         <Link to="/" className={styles.logoText}>
           Brito <span>Estética</span>
         </Link>
@@ -16,6 +17,7 @@ export default function PublicNavBar() {
           <NavLink className={styles.itemLink} to="/agendamento">Agendamento</NavLink>
           <NavLink className={styles.itemLink} to="autenticacao/login">Login</NavLink>
         </nav>
+        
       </div>
     </header>
   );

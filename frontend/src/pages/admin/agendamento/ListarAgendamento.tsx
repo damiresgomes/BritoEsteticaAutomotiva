@@ -45,7 +45,7 @@ export default function ListarAgendamento() {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="AGENDAMENTOS"
         links={[
@@ -56,9 +56,9 @@ export default function ListarAgendamento() {
           },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
+      {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+      <div className={styles.divTabela}>
+        <table className={styles.tabela}>
           <thead><tr><th>Cliente</th><th>Serviços</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody>
             {visiveis.map((agendamento) => (

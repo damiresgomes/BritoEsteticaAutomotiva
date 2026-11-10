@@ -6,11 +6,8 @@ type PaginacaoProps = {
   aoMudarPagina: (pagina: number) => void;
 };
 
-export default function Paginacao({
-  pagina,
-  totalPaginas,
-  aoMudarPagina,
-}: PaginacaoProps) {
+export default function Paginacao({ pagina, totalPaginas, aoMudarPagina }: PaginacaoProps) {
+
   if (totalPaginas <= 1) return null;
 
   return (
@@ -22,9 +19,11 @@ export default function Paginacao({
       >
         Anterior
       </button>
+
       <span>
         Página {pagina} de {totalPaginas}
       </span>
+      
       <button
         type="button"
         onClick={() => aoMudarPagina(pagina + 1)}
