@@ -1,9 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { Link } from "react-router-dom";
-import type {
-  ErrosFormulario,
-  FormularioCadastro,
-} from "../../utils/cadastro";
+import type { ErrosFormulario, FormularioCadastro } from "../../utils/cadastro";
 import styles from "./styles.module.css";
 
 type FormClienteProps = {
@@ -27,8 +24,8 @@ export default function FormCliente({
 }: FormClienteProps) {
   return (
     <>
-      <form className={styles.form} onSubmit={onSubmit} noValidate>
-        <div className={styles.field}>
+      <form className={styles.formulario} onSubmit={onSubmit} noValidate>
+        <div className={styles.campo}>
         <label htmlFor="nome">Nome</label>
         <input
           id="nome"
@@ -41,13 +38,13 @@ export default function FormCliente({
           required
         />
         {erros.nome && (
-          <span className={styles.fieldError} id="nome-erro">
+          <span className={styles.campoErro} id="nome-erro">
             {erros.nome}
           </span>
         )}
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.campo}>
         <label htmlFor="cpf">CPF</label>
         <input
           id="cpf"
@@ -63,13 +60,13 @@ export default function FormCliente({
           required
         />
         {erros.cpf && (
-          <span className={styles.fieldError} id="cpf-erro">
+          <span className={styles.campoErro} id="cpf-erro">
             {erros.cpf}
           </span>
         )}
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.campo}>
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -83,13 +80,13 @@ export default function FormCliente({
           required
         />
         {erros.email && (
-          <span className={styles.fieldError} id="email-erro">
+          <span className={styles.campoErro} id="email-erro">
             {erros.email}
           </span>
         )}
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.campo}>
         <label htmlFor="telefone">Telefone</label>
         <input
           id="telefone"
@@ -106,13 +103,13 @@ export default function FormCliente({
           required
         />
         {erros.telefone && (
-          <span className={styles.fieldError} id="telefone-erro">
+          <span className={styles.campoErro} id="telefone-erro">
             {erros.telefone}
           </span>
         )}
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.campo}>
         <label htmlFor="senha">Senha</label>
         <input
           id="senha"
@@ -127,13 +124,13 @@ export default function FormCliente({
           required
         />
         {erros.senha && (
-          <span className={styles.fieldError} id="senha-erro">
+          <span className={styles.campoErro} id="senha-erro">
             {erros.senha}
           </span>
         )}
         </div>
 
-        <div className={styles.field}>
+        <div className={styles.campo}>
         <label htmlFor="confirmarSenha">Confirme sua senha</label>
         <input
           id="confirmarSenha"
@@ -149,20 +146,20 @@ export default function FormCliente({
           required
         />
         {erros.confirmarSenha && (
-          <span className={styles.fieldError} id="confirmarSenha-erro">
+          <span className={styles.campoErro} id="confirmarSenha-erro">
             {erros.confirmarSenha}
           </span>
         )}
         </div>
 
         {erroApi && (
-          <p className={styles.apiError} role="alert">
+          <p className={styles.apiErro} role="alert">
             {erroApi}
           </p>
         )}
 
         <button
-          className={styles.submitButton}
+          className={styles.botaoEnvio}
           type="submit"
           disabled={carregando}
         >
@@ -172,7 +169,7 @@ export default function FormCliente({
 
       <p className={styles.loginLink}>
         Já tem uma conta?{" "}
-        <Link to="/autenticacao/login" state={{ from }}>
+        <Link to="/auth/login" state={{ from }}>
           Acesse o login
         </Link>
       </p>

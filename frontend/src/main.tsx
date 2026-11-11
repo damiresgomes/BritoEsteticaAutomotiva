@@ -9,7 +9,7 @@ if (!rootElement) {
   throw new Error('Elemento #root não encontrado no index.html')
 }
 
-createRoot(document.getElementById('root')!).render(
+createRoot(rootElement!).render(
   <StrictMode>
     <App />
   </StrictMode>,

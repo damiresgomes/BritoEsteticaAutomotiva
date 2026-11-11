@@ -77,9 +77,7 @@ export default function AuthLogin({ eyebrow, subtitulo, tituloCartao, children }
             <span>{eyebrow}</span>
         </span>
 
-        <h1 className={styles.loginTitle}>
-          ENTRAR NO <span className={styles.loginTitleAccent}>PAINEL</span>
-        </h1>
+        <h1 className={styles.loginTitle}>Entrar no painel</h1>
 
         <p className={styles.loginSubtitle}>{subtitulo}</p>
       </header>
@@ -91,7 +89,7 @@ export default function AuthLogin({ eyebrow, subtitulo, tituloCartao, children }
           </div>
 
           <div>
-            <span className={styles.loginCardEyebrow}>// CREDENCIAIS</span>
+            <span className={styles.loginCardEyebrow}>Credenciais</span>
             <h2 className={styles.loginCardTitle}>{tituloCartao}</h2>
           </div>
 

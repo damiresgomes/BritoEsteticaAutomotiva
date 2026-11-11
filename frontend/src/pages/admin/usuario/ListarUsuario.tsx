@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import Paginacao from "../../../components/Paginacao";
 import styles from "../../../components/AdminCrud/styles.module.css";
@@ -9,7 +10,7 @@ export default function ListarUsuario() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [pagina, setPagina] = useState(1);
   const [erro, setErro] = useState("");
-  const porPagina = 6;
+  const itensPorPagina = 6;
 
   useEffect(() => {
     userService.listar()
@@ -17,9 +18,9 @@ export default function ListarUsuario() {
       .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));
   }, []);
 
-  const totalPaginas = Math.max(1, Math.ceil(usuarios.length / porPagina));
+  const totalPaginas = Math.max(1, Math.ceil(usuarios.length / itensPorPagina));
   const usuariosVisiveis = useMemo(
-    () => usuarios.slice((pagina - 1) * porPagina, pagina * porPagina),
+    () => usuarios.slice((pagina - 1) * itensPorPagina, pagina * itensPorPagina),
     [usuarios, pagina]
   );
 
@@ -35,12 +36,21 @@ export default function ListarUsuario() {
       {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
       <div className={styles.divTabela}>
         <table className={styles.tabela}>
-          <thead><tr><th>Nome</th><th>Email</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+
           <tbody>
             {usuariosVisiveis.map((usuario) => (
               <tr key={usuario.id}>
                 <td>{usuario.nome}</td>
                 <td>{usuario.email}</td>
+                <td>
+                <Link to={`/admin/usuario/editar/${usuario.id}`}>Editar</Link>
+              </td>
               </tr>
             ))}
             {!usuarios.length && <tr><td colSpan={2}>Nenhum usuário cadastrado.</td></tr>}

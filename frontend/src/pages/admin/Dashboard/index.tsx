@@ -3,11 +3,7 @@ import { Link } from "react-router-dom";
 import { agendamentoService, type AgendamentoAdministrativo } from "../../../services/agendamentos";
 import { dataLocalAtual } from "../../../utils/datas";
 import CardAdmin from "../../../components/CardAdmin";
-import {
-  classeStatus,
-  formatarData,
-  mensagemErroAgendamentos,
-} from "./validators";
+import { classeStatus, formatarData, mensagemErroAgendamentos } from "./validators";
 import styles from "./styles.module.css";
 
 export default function Dashboard() {

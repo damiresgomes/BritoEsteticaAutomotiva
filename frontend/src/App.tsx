@@ -28,6 +28,7 @@ import ListarCliente from "./pages/admin/Cliente/ListarCliente";
 import CadastrarCliente from "./pages/admin/Cliente/CadastrarCliente";
 import EditarCliente from "./pages/admin/Cliente/EditarCliente";
 import MinhaConta from "./pages/site/MinhaConta";
+import EditarUsuario from "./pages/admin/Usuario/EditarUsuario";
 
 export default function App() {
   return (
@@ -45,7 +46,7 @@ export default function App() {
           </Route>
         </Route>
 
-        <Route path="admin/login" element={<LoginAdmin />} />
+        <Route path="/admin/login" element={<LoginAdmin />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="admin" element={<AdminLayout />}>
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="cliente/cadastrar" element={<CadastrarCliente />} />
             <Route path="cliente/editar/:id" element={<EditarCliente />} />
             <Route path="usuario" element={<ListarUsuario />} />
+            <Route path="usuario/editar/:id" element={<EditarUsuario />} />
             <Route path="usuario/cadastrar" element={<CadastrarUsuario />} />
             <Route path="perfil" element={<PerfilAdmin />} />
           </Route>
