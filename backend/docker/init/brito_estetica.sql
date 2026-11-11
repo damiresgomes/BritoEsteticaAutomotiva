@@ -76,13 +76,13 @@ DELIMITER ;
 --
 
 CREATE TABLE `agendamentos` (
-  `id_agendamento` int(11) NOT NULL AUTO_INCREMENT,
+  `id_agendamento` int(11) NOT NULL,
   `data_hora` datetime NOT NULL,
   `placa_veiculo` varchar(10) DEFAULT NULL,
   `modelo_veiculo` varchar(50) DEFAULT NULL,
   `id_cliente` int(11) NOT NULL,
   `status` enum('Pendente','Confirmado','Em atendimento','Concluído','Cancelado') NOT NULL DEFAULT 'Pendente',
-  `observacoes` text DEFAULT NULL,
+  `observacoes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -280,7 +280,7 @@ CREATE TABLE `usuario` (
   `salario` double NOT NULL,
   `datanascimento` date NOT NULL,
   `ativo` enum('Sim','Não') NOT NULL,
-  `papel` enum('ADMIN','USUARIO') NOT NULL DEFAULT 'USUARIO'
+  `papel` enum('admin','usuario') NOT NULL DEFAULT 'usuario'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -290,7 +290,7 @@ CREATE TABLE `usuario` (
 INSERT INTO `usuario` (`id`, `nome`, `email`, `senha`, `cpf`, `salario`, `datanascimento`, `ativo`, `papel`) VALUES
 (1, 'Administrador', 'admin@gmail.com', '$2y$10$UlRENRQON2SjaSYAxmYs4OydOa5NkiJTqdZMbKiJbH75yZ5Xfebom', '094.650.100-90', 3500, '1980-07-22', 'Sim', 'ADMIN'),
 (2, 'Bill Gates', 'teste@teste.com', '$2y$10$ineMFivFCCHdP3gGGWfoR.RRqt.3jYDbIi.mXDPLjIM0vvYps9j7G', '424.454.180-20', 3500, '2000-10-20', 'Sim', 'USUARIO'),
-(3, 'Damires', 'damiresbrito2007@gmail.com', '$2b$10$6.nVPvVsiO7vrv7XPKDVFuD2v0vZhQZKC9H8Yh9/LfjKGC1uamnDy', '000.000.000-00', 0, '2000-01-01', 'Sim', 'ADMIN'),
+(3, 'Damires', 'damiresbrito2007@gmail.com', '$2b$10$6.nVPvVsiO7vrv7XPKDVFuD2v0vZhQZKC9H8Yh9/LfjKGC1uamnDy', '000.000.000-00', 3500, '2000-01-01', 'Sim', 'ADMIN'),
 (9, 'teste', 'teste2@teste.com', '$2y$10$wl.IteWzPTk3Sc/5SL2cCuL3mrh8yqwHHLCGF4/e3oUJD6lcZZyUW', '540.998.448-03', 5240, '2007-11-12', 'Sim', 'USUARIO');
 
 --
@@ -459,8 +459,10 @@ ALTER TABLE `servicos`
 --
 -- AUTO_INCREMENT de tabela `usuario`
 --
+SET FOREIGN_KEY_CHECKS = 0;
 ALTER TABLE `usuario`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+SET FOREIGN_KEY_CHECKS = 1;
 
 --
 -- Restrições para tabelas despejadas
