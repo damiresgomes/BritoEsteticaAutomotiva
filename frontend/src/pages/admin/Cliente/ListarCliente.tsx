@@ -57,7 +57,7 @@ export default function ListarCliente() {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="CLIENTES"
         links={[
@@ -65,15 +65,21 @@ export default function ListarCliente() {
           { to: "/admin/cliente/cadastrar", label: "+ CADASTRAR CLIENTE" },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
       {carregando ? (
         <p>Carregando clientes...</p>
       ) : (
         <>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
+          <div className={styles.divTabela}>
+            <table className={styles.tabela}>
               <thead>
-                <tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Acesso</th><th>Ações</th></tr>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Telefone</th>
+                  <th>Acesso</th>
+                  <th>Ações</th>
+                </tr>
               </thead>
               <tbody>
                 {visiveis.map((cliente) => (

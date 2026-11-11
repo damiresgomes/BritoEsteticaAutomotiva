@@ -53,7 +53,7 @@ export default function FormularioCategoria({ id }: Props) {
             required
           />
         </label>
-        {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+        {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
         <button type="submit">{id === undefined ? "Cadastrar" : "Salvar"}</button>
       </form>
     </section>

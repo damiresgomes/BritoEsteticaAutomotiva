@@ -283,7 +283,7 @@ export default function FormularioAgendamento({ id }: Props) {
           </label>
         )}
 
-        {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+        {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
         <button type="submit" disabled={salvando}>
           {salvando ? "Salvando..." : id === undefined ? "Cadastrar agendamento" : "Salvar alterações"}
         </button>
