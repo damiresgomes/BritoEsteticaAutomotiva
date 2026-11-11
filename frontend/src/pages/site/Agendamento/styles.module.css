@@ -21,7 +21,6 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-/* brilho suave no topo da página */
 .pagina::before {
   content: "";
   position: absolute;
@@ -103,7 +102,6 @@
   overflow: hidden;
 }
 
-/* linha de destaque no topo do cartão */
 .cartao::before {
   content: "";
   position: absolute;
