@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
   const url = config.url ?? "";
   const rotaPublica =
     url.startsWith("/auth/login") ||
-    url.startsWith("/auth/admin/login") ||
+    url.startsWith("/admin/login") ||
     url.startsWith("/auth/cadastro-cliente") ||
     url.startsWith("/servicos/listar");
   const tokenCliente =

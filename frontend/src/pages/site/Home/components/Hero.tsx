@@ -4,7 +4,7 @@ import styles from "../styles.module.css"
 
 export default function Hero () {
     return (
-        <section className="hero">
+        <section className={styles.hero}>
             <div className={styles.container}>
                 <span className={styles.subtitulo}>ESTÉTICA AUTOMOTIVA BRITO</span>
                 <h1 className={styles.tituloPrincipal}>O REFLEXO DA

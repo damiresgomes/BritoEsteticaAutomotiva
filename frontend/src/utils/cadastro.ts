@@ -14,6 +14,7 @@ export type ErrosFormulario = Partial<Record<keyof FormularioCadastro, string>>;
 
 export function mascararTelefone(valor: string): string {
   const numeros = valor.replace(/\D/g, "").slice(0, 11);
+  
   if (numeros.length <= 2) return numeros ? `(${numeros}` : "";
   if (numeros.length <= 6) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
   if (numeros.length <= 10) {
