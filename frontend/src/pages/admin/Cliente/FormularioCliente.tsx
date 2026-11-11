@@ -77,7 +77,7 @@ export default function FormularioCliente({ id }: Props) {
           titulo="EDITAR CLIENTE"
           links={[{ to: "/admin/cliente", label: "← VOLTAR AOS CLIENTES" }]}
         />
-        <p className={styles.menssagem} role="alert">{erro}</p>
+        <p className={styles.mensagem} role="alert">{erro}</p>
       </section>
     );
   }
@@ -151,7 +151,7 @@ export default function FormularioCliente({ id }: Props) {
         {id !== undefined && temConta && (
           <p>Deixe a senha vazia para manter a senha atual.</p>
         )}
-        {erro && <p className={styles.message} role="alert">{erro}</p>}
+        {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
         <button type="submit">{id === undefined ? "Cadastrar cliente" : "Salvar alterações"}</button>
       </form>
     </section>

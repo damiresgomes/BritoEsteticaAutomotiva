@@ -24,7 +24,7 @@ export default function ListarUsuario() {
   );
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="USUÁRIOS"
         links={[
@@ -32,9 +32,9 @@ export default function ListarUsuario() {
           { to: "/admin/usuario/cadastrar", label: "+ CADASTRAR USUÁRIO" },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
+      <div className={styles.divTabela}>
+        <table className={styles.tabela}>
           <thead><tr><th>Nome</th><th>Email</th></tr></thead>
           <tbody>
             {usuariosVisiveis.map((usuario) => (

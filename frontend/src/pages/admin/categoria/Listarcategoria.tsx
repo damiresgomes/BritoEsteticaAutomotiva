@@ -48,7 +48,7 @@ export default function ListarCategoria() {
           { to: "/admin/categoria/cadastrar", label: "+ CADASTRAR CATEGORIA" },
         ]}
       />
-      {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
       <div className={styles.divTabela}>
         <table className={styles.tabela}>
           <thead>

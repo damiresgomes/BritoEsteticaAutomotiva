@@ -56,7 +56,7 @@ export default function ListarAgendamento() {
           },
         ]}
       />
-      {erro && <p className={styles.menssagem} role="alert">{erro}</p>}
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
       <div className={styles.divTabela}>
         <table className={styles.tabela}>
           <thead><tr><th>Cliente</th><th>Serviços</th><th>Data</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead>

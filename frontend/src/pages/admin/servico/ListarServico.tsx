@@ -40,7 +40,7 @@ export default function ListarServico() {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="SERVIÇOS"
         links={[
@@ -48,9 +48,9 @@ export default function ListarServico() {
           { to: "/admin/servico/cadastrar", label: "+ CADASTRAR SERVIÇO" },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
+      <div className={styles.divTabela}>
+        <table className={styles.tabela}>
           <thead><tr><th>Serviço</th><th>Preço</th><th>Categoria</th><th>Ações</th></tr></thead>
           <tbody>
             {servicosVisiveis.map((servico) => (

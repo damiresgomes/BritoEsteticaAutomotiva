@@ -67,29 +67,29 @@ export default function FormularioServico({ id }: Props) {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo={id === undefined ? "CADASTRAR SERVIÇO" : "EDITAR SERVIÇO"}
         links={[{ to: "/admin/servico", label: "← VOLTAR AOS SERVIÇOS" }]}
       />
-      <form className={styles.form} onSubmit={salvar}>
-        <label className={styles.field}>
+      <form className={styles.formulario} onSubmit={salvar}>
+        <label className={styles.campo}>
           Nome
           <input required maxLength={100} value={form.nome_servico} onChange={(e) => setForm({ ...form, nome_servico: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Descrição
           <textarea required value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Preço
           <input required type="number" min="0.01" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Duração (horas)
           <input required type="number" min="0.01" step="0.01" value={form.duracao_horas} onChange={(e) => setForm({ ...form, duracao_horas: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Categoria
           <select required value={form.id_categoria} onChange={(e) => setForm({ ...form, id_categoria: e.target.value })}>
             <option value="">Selecione</option>
@@ -98,7 +98,7 @@ export default function FormularioServico({ id }: Props) {
             ))}
           </select>
         </label>
-        {erro && <p className={styles.message} role="alert">{erro}</p>}
+        {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
         <button type="submit">{id === undefined ? "Cadastrar" : "Salvar"}</button>
       </form>
     </section>
