@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { lerToken } from "./authStorage";
 
+const baseURL = (import.meta.env.VITE_API_URL || "http://localhost:3333/api")
+    .replace(":3000", ":3333")
+    .replace(/\/$/, "");
+
 const api = axios.create({
-    baseURL: (import.meta.env.VITE_API_URL || "http://localhost:3333").replace(":3000", ":3333"),
+    baseURL,
     headers: {
         'Content-Type': 'application/json',
     },

@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import Paginacao from "../../../components/Paginacao";
 import styles from "../../../components/AdminCrud/styles.module.css";
+import { useUsuario } from "../../../contexts/useUsuario";
 import { userService, type Usuario } from "../../../services/users";
 import { obterMensagemErro } from "../../../utils/erros";
 
 const POR_PAGINA = 6;
 
 export default function ListarUsuario() {
+  const { usuario: usuarioAutenticado } = useUsuario();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -46,12 +48,16 @@ export default function ListarUsuario() {
           </thead>
 
           <tbody>
-            {usuarios.map((usuario) => (
-              <tr key={usuario.id}>
-                <td>{usuario.nome}</td>
-                <td>{usuario.email}</td>
+            {usuarios.map((item) => (
+              <tr key={item.id}>
+                <td>{item.nome}</td>
+                <td>{item.email}</td>
                 <td>
-                  <Link to={`/admin/usuario/editar/${usuario.id}`}>Editar</Link>
+                  {usuarioAutenticado?.usuarioId === item.id ? (
+                    <Link to={`/admin/usuario/editar/${item.id}`}>Editar</Link>
+                  ) : (
+                    "—"
+                  )}
                 </td>
               </tr>
             ))}

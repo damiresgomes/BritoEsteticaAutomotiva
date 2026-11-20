@@ -20,18 +20,18 @@ Frontend (`cd frontend`):
 - Não existem testes nem CI.
 
 Stack completa:
-- `docker compose config` — valida o arquivo sem subir nada
+- `docker compose config --quiet` — valida o arquivo sem imprimir variáveis resolvidas
 - `docker compose up -d --build`
 - `docker compose ps`, `docker compose logs -f <service>`
 - Site via Nginx: http://localhost. Apenas o Nginx publica porta no host. Backend (`backend:3333`), frontend (`frontend:3000`) e MySQL (`mysql:3306`) ficam apenas nas redes Docker.
 
 ## Armadilhas de Docker e ambiente
 
-- O `backend/Dockerfile` executa `npm start` e copia o `dist/` local; ele não compila. Rode `cd backend && npm run build` antes de `docker compose build backend` ou `up --build`. O `dist/` está no `.gitignore`, então um clone novo não tem artefato de build.
+- O `backend/Dockerfile` executa `npm start` e copia o `dist/` local; ele não compila. Rode `cd backend && npm run build` antes de `docker compose build backend` ou `up --build`. O `dist/` está no `.gitignore`, então um clone novo não tem artefato de build. Por isso `backend/.dockerignore` não pode excluir `dist/`.
 - O `frontend/Dockerfile` sobe o servidor **dev** do Vite na porta 3000, não um build de produção.
 - O `.env` da raiz alimenta o Docker Compose. O `backend/.env` (ignorado pelo Git) é carregado por `backend/src/config/env.ts` no `npm run dev` local. Neste checkout eles têm credenciais de banco diferentes; o backend local usa `backend/.env`, o Docker usa os valores do Compose. Aponte os dois para a mesma instância/volume MySQL ou a aplicação não inicia.
 - O `backend/docker/init/brito_estetica.sql` só roda quando o volume do MySQL é criado pela primeira vez. Volumes existentes podem exigir migração manual; `docker compose down -v` recria o banco e apaga os dados.
-- Base da API no frontend: `VITE_API_URL` tem padrão `http://localhost:3333`, e `src/services/api.ts` troca a porta `3000` por `3333`. Isso funciona via Docker/Nginx. Rodar só o Vite em 5173 exige `VITE_API_URL=http://localhost:3333/api` ou um proxy para `/api`.
+- Base da API no frontend: o Compose define `VITE_API_URL=/api`, então as chamadas passam pelo Nginx. O padrão quando a variável não existe é `http://localhost:3333/api`, e `src/services/api.ts` troca a porta `3000` por `3333`. Rodar só o Vite em 5173 exige `VITE_API_URL=http://localhost:3333/api` ou um proxy para `/api`.
 - O `.gitignore` da raiz ignora `.env` e `.env.*`, exceto `.env.example`. Nunca leia, mostre ou version credenciais.
 
 ## Arquitetura do backend
@@ -70,6 +70,6 @@ Stack completa:
 ## Paginação e autenticação complementar
 
 - Listagens administrativas usam paginação no servidor: o frontend envia `?pagina=&limite=` e recebe `{ dados, paginacao }`. Os wrappers em `src/services` mantêm os métodos antigos sem parâmetros e acrescentam `listarPaginado`.
-- Autoedição de usuário administrativo usa `PUT /auth/perfil-usuario`, autenticado e sem alteração de e-mail. Perfil de cliente usa `/auth/cliente/me`.
+- Autoedição de usuário administrativo usa `PUT /auth/perfil-usuario`, autenticado e sem alteração de e-mail. `PUT /usuarios/:id` também exige que o token pertença ao próprio usuário; listar, cadastrar e desativar usuários exigem `papel: "admin"`. Perfil de cliente usa `/auth/cliente/me`.
 - O contexto `UsuarioProvider` fica em `src/main.tsx` e expõe `usuario`, `cliente` e `recarregar`. Login e logout disparam o evento `brito:sessao` para atualizar o contexto sem recriar a página.
 - Não troque os formatos de token: `/auth/admin/login` emite `papel`/`jti` para `authMiddleware`, enquanto `/auth/cliente/login` emite `tipo: "cliente"`, `id` de cliente e `jti` para `clienteAuthMiddleware`.

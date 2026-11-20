@@ -20,8 +20,10 @@ Use esta skill sempre que o trabalho tocar autenticação ou credenciais.
 - Política de senha: mínimo de 8 caracteres, maiúscula, minúscula, número e símbolo.
 - JWT com expiração e `jti`; verificação no middleware antes de liberar a rota.
 - Existem dois tokens separados: administrador e cliente. Não misture.
-- Rotas administrativas exigem `authMiddleware` + `exigirPapel("admin")`.
+- Rotas administrativas exigem `authMiddleware` + `exigirPapel("admin")`; listar, cadastrar e desativar usuários seguem essa regra.
+- `PUT /usuarios/:id` exige que o token pertença ao próprio usuário, mesmo que seja admin.
 - Rotas de cliente exigem JWT com `tipo: "cliente"`.
+- Exceções públicas intencionais: login, cadastro de cliente, `/health` e catálogo/horários de leitura pública.
 - Edição de perfil nunca permite alterar e-mail.
 - Usuário comum só pode editar o próprio cadastro.
 

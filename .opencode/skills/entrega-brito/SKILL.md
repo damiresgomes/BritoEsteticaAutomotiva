@@ -32,7 +32,7 @@ Frontend, dentro de `frontend/`:
 
 Raiz:
 
-- `docker compose config`
+- `docker compose config --quiet`
 - `docker compose up -d --build`
 - `docker compose ps`
 - `docker compose logs -f <serviço>`
@@ -41,5 +41,5 @@ Raiz:
 
 - Não existe projeto npm na raiz. Execute `npm` dentro de `backend/` ou `frontend/`.
 - Não invente testes, lint ou CI onde não existem.
-- O `backend/Dockerfile` não compila: rode `npm run build` no backend antes de `docker compose build`.
+- O `backend/Dockerfile` não compila: rode `npm run build` no backend antes de `docker compose build`, e não exclua `dist/` no `backend/.dockerignore`.
 - Não use `docker compose down -v` sem confirmação explícita: isso apaga o volume do MySQL.

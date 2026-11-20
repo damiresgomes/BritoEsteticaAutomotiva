@@ -39,7 +39,8 @@ export async function buscarUsuarioPorIdController(request: Request, response: R
 export async function atualizarUsuarioController(request: Request, response: Response): Promise<Response> {
   const id = validarId(request.params.id, "usuário");
 
-  if (request.usuario?.papel !== "admin" && request.usuario?.id !== id) {
+  const idUsuarioAutenticado = request.usuario?.usuarioId ?? request.usuario?.id;
+  if (idUsuarioAutenticado !== id) {
     throw new AcessoProibidoError("Você só pode editar seu próprio usuário");
   }
 
@@ -52,7 +53,8 @@ export async function atualizarUsuarioController(request: Request, response: Res
 export async function desativarUsuarioController(request: Request, response: Response): Promise<Response> {
   const id = validarId(request.params.id, "usuário");
 
-  if (request.usuario?.id === id) {
+  const idUsuarioAutenticado = request.usuario?.usuarioId ?? request.usuario?.id;
+  if (idUsuarioAutenticado === id) {
     throw new ConflitoError("Você não pode desativar o próprio usuário");
   }
 
