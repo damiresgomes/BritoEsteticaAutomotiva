@@ -1,32 +1,20 @@
 import { RequisicaoInvalidaError } from "../errors/AppError";
 
 export class Servico {
-  private _id: number;
-  private _nome: string;
-  private _descricao: string;
-  private _preco: number;
-  private _duracaoHoras: number;
-  private _idCategoria: number;
-
   constructor(
-    id: number,
-    nome: string,
-    descricao: string,
-    preco: number,
-    duracaoHoras: number,
-    idCategoria: number
+    private _id: number,
+    private _nome: string,
+    private _descricao: string,
+    private _preco: number,
+    private _duracaoHoras: number,
+    private _idCategoria: number
   ) {
-    this.validarNome(nome);
-    this.validarPreco(preco);
-    this.validarDuracao(duracaoHoras);
-    this.validarCategoria(idCategoria);
-
-    this._id = id;
-    this._nome = nome.trim();
-    this._descricao = descricao ? descricao.trim() : "";
-    this._preco = preco;
-    this._duracaoHoras = duracaoHoras;
-    this._idCategoria = idCategoria;
+    this.validarNome(_nome);
+    this.validarPreco(_preco);
+    this.validarDuracao(_duracaoHoras);
+    this.validarCategoria(_idCategoria);
+    this._nome = _nome.trim();
+    this._descricao = _descricao ? _descricao.trim() : "";
   }
 
   private validarNome(nome: string): void {
@@ -53,29 +41,12 @@ export class Servico {
     }
   }
 
-  get id(): number {
-    return this._id;
-  }
-
-  get nome(): string {
-    return this._nome;
-  }
-
-  get descricao(): string {
-    return this._descricao;
-  }
-
-  get preco(): number {
-    return this._preco;
-  }
-
-  get duracaoHoras(): number {
-    return this._duracaoHoras;
-  }
-
-  get idCategoria(): number {
-    return this._idCategoria;
-  }
+  get id(): number { return this._id; }
+  get nome(): string { return this._nome; }
+  get descricao(): string { return this._descricao; }
+  get preco(): number { return this._preco; }
+  get duracaoHoras(): number { return this._duracaoHoras; }
+  get idCategoria(): number { return this._idCategoria; }
 
   public atualizarDados(dados: {
     nome: string;

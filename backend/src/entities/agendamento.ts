@@ -23,59 +23,23 @@ const TRANSICOES_VALIDAS: Record<StatusAgendamento, StatusAgendamento[]> = {
 };
 
 export class Agendamento {
-  private _id: number;
-  private _dataHora: string;
-  private _status: StatusAgendamento;
-  private _idCliente: number;
-  private _carro: Carro;
-  private _nomeCliente?: string;
-  private _servicos: ServicoItemAgendado[];
-
   constructor(
-    id: number,
-    dataHora: string,
-    status: StatusAgendamento,
-    idCliente: number,
-    carro: Carro,
-    servicos: ServicoItemAgendado[] = [],
-    nomeCliente?: string
-  ) {
-    this._id = id;
-    this._dataHora = dataHora;
-    this._status = status;
-    this._idCliente = idCliente;
-    this._carro = carro;
-    this._servicos = servicos;
-    this._nomeCliente = nomeCliente;
-  }
+    private _id: number,
+    private _dataHora: string,
+    private _status: StatusAgendamento,
+    private _idCliente: number,
+    private _carro: Carro,
+    private _servicos: ServicoItemAgendado[] = [],
+    private _nomeCliente?: string
+  ) {}
 
-  get id(): number {
-    return this._id;
-  }
-
-  get dataHora(): string {
-    return this._dataHora;
-  }
-
-  get status(): StatusAgendamento {
-    return this._status;
-  }
-
-  get idCliente(): number {
-    return this._idCliente;
-  }
-
-  get carro(): Carro {
-    return this._carro;
-  }
-
-  get nomeCliente(): string | undefined {
-    return this._nomeCliente;
-  }
-
-  get servicos(): ServicoItemAgendado[] {
-    return this._servicos;
-  }
+  get id(): number { return this._id; }
+  get dataHora(): string { return this._dataHora; }
+  get status(): StatusAgendamento { return this._status; }
+  get idCliente(): number { return this._idCliente; }
+  get carro(): Carro { return this._carro; }
+  get nomeCliente(): string | undefined { return this._nomeCliente; }
+  get servicos(): ServicoItemAgendado[] { return this._servicos; }
 
   public definirServicos(servicos: ServicoItemAgendado[]): void {
     this._servicos = servicos;
@@ -91,21 +55,10 @@ export class Agendamento {
     this._status = novoStatus;
   }
 
-  public confirmar(): void {
-    this.transitarPara("Confirmado");
-  }
-
-  public iniciarAtendimento(): void {
-    this.transitarPara("Em atendimento");
-  }
-
-  public concluir(): void {
-    this.transitarPara("Concluído");
-  }
-
-  public cancelar(): void {
-    this.transitarPara("Cancelado");
-  }
+  public confirmar(): void { this.transitarPara("Confirmado"); }
+  public iniciarAtendimento(): void { this.transitarPara("Em atendimento"); }
+  public concluir(): void { this.transitarPara("Concluído"); }
+  public cancelar(): void { this.transitarPara("Cancelado"); }
 
   public garantirModificavel(): void {
     if (this._status !== "Pendente" && this._status !== "Confirmado") {

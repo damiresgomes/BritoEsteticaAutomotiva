@@ -9,31 +9,20 @@ export enum StatusAtivo {
 export type PapelUsuario = "admin" | "usuario";
 
 export class Usuario extends Pessoa {
-  private _cpf: string;
-  private _salario: number;
-  private _dataDeNascimento: string;
-  private _senhaHash: string;
-  private _papel: PapelUsuario;
-
   constructor(
     id: number,
     nome: string,
     email: string,
     telefone: string,
-    cpf: string,
-    salario: number,
-    dataDeNascimento: string,
-    senhaHash: string,
+    private _cpf: string,
+    private _salario: number,
+    private _dataDeNascimento: string,
+    private _senhaHash: string,
     ativo: boolean = true,
-    papel: PapelUsuario = "usuario"
+    private _papel: PapelUsuario = "usuario"
   ) {
     super(id, nome, email, telefone, ativo);
-    this.validarSalario(salario);
-    this._cpf = cpf;
-    this._salario = salario;
-    this._dataDeNascimento = dataDeNascimento;
-    this._senhaHash = senhaHash;
-    this._papel = papel;
+    this.validarSalario(_salario);
   }
 
   private validarSalario(salario: number): void {
@@ -42,25 +31,11 @@ export class Usuario extends Pessoa {
     }
   }
 
-  get cpf(): string {
-    return this._cpf;
-  }
-
-  get salario(): number {
-    return this._salario;
-  }
-
-  get dataDeNascimento(): string {
-    return this._dataDeNascimento;
-  }
-
-  get senhaHash(): string {
-    return this._senhaHash;
-  }
-
-  get papel(): PapelUsuario {
-    return this._papel;
-  }
+  get cpf(): string { return this._cpf; }
+  get salario(): number { return this._salario; }
+  get dataDeNascimento(): string { return this._dataDeNascimento; }
+  get senhaHash(): string { return this._senhaHash; }
+  get papel(): PapelUsuario { return this._papel; }
 
   public set salario(novoSalario: number) {
     this.validarSalario(novoSalario);
