@@ -1,4 +1,5 @@
 import api from "./api";
+import type { RespostaListagem } from "./listagem";
 
 export interface Usuario {
   id?: number;
@@ -20,6 +21,13 @@ export const userService = {
   return response.data;
 },
 
+  async listarPaginado(pagina: number, limite: number): Promise<RespostaListagem<Usuario>> {
+    const response = await api.get<RespostaListagem<Usuario>>('/usuarios/listar', {
+      params: { pagina, limite },
+    });
+    return response.data;
+  },
+
   async buscarPorId(id: number): Promise<Usuario> {
     const response = await api.get<Usuario>(`/usuarios/${id}`);
     return response.data;
@@ -31,7 +39,7 @@ export const userService = {
 },
 
   async atualizar(id: number, usuario: AtualizarUsuarioDTO): Promise<Usuario> {
-    const response = await api.put<Usuario>(`/usuarios/listar${id}`, usuario);
+    const response = await api.put<Usuario>(`/usuarios/${id}`, usuario);
     return response.data;
   },
 

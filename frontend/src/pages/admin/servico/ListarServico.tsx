@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import Paginacao from "../../../components/Paginacao";
@@ -9,31 +9,38 @@ import styles from "../../../components/AdminCrud/styles.module.css";
 export default function ListarServico() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const [erro, setErro] = useState("");
   const porPagina = 6;
 
+  async function carregar(paginaAtual: number) {
+    try {
+      const resposta = await servicoService.listarPaginado(paginaAtual, porPagina);
+      setServicos(resposta.dados);
+      setTotalPaginas(resposta.paginacao.totalPaginas);
+      setErro("");
+    } catch (erroApi) {
+      setErro(obterMensagemErro(erroApi));
+    }
+  }
+
   useEffect(() => {
     servicoService
-      .listarTodos()
-      .then(setServicos)
+      .listarPaginado(pagina, porPagina)
+      .then((resposta) => {
+        setServicos(resposta.dados);
+        setTotalPaginas(resposta.paginacao.totalPaginas);
+        setErro("");
+      })
       .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));
-  }, []);
-
-  const totalPaginas = Math.max(1, Math.ceil(servicos.length / porPagina));
-  const servicosVisiveis = useMemo(
-    () => servicos.slice((pagina - 1) * porPagina, pagina * porPagina),
-    [servicos, pagina]
-  );
+  }, [pagina]);
 
   async function excluir(id: number) {
     if (!window.confirm("Deseja excluir este serviço?")) return;
     try {
       await servicoService.excluir(id);
-      const atualizados = await servicoService.listarTodos();
-      setServicos(atualizados);
-      setPagina((atual) =>
-        Math.min(atual, Math.max(1, Math.ceil(atualizados.length / porPagina)))
-      );
+      setPagina(1);
+      await carregar(1);
     } catch (erroApi) {
       setErro(obterMensagemErro(erroApi));
     }
@@ -53,7 +60,7 @@ export default function ListarServico() {
         <table className={styles.tabela}>
           <thead><tr><th>Serviço</th><th>Preço</th><th>Categoria</th><th>Ações</th></tr></thead>
           <tbody>
-            {servicosVisiveis.map((servico) => (
+            {servicos.map((servico) => (
               <tr key={servico.id_servico}>
                 <td>{servico.nome_servico}</td>
                 <td>{servico.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>

@@ -7,12 +7,14 @@ export class Cliente extends Pessoa {
     email: string,
     telefone: string,
     ativo: boolean = true,
-    private _senhaHash?: string
+    private _senhaHash?: string,
+    private _cpf?: string
   ) {
     super(id, nome, email, telefone, ativo);
   }
 
   get senhaHash(): string | undefined { return this._senhaHash; }
+  get cpf(): string | undefined { return this._cpf; }
 
   public atualizarCadastro(nome: string, telefone: string, senhaHash?: string): void {
     this._nome = nome.trim();
@@ -30,6 +32,7 @@ export class Cliente extends Pessoa {
       nome: this._nome,
       email: this._email,
       telefone: this._telefone,
+      cpf: this._cpf ?? null,
       ativo: this._ativo ? "Sim" : "Não",
     };
   }

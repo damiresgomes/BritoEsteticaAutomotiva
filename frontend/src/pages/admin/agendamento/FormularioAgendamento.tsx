@@ -6,7 +6,7 @@ import { clienteService, type ClienteAdmin } from "../../../services/clients";
 import { agendamentoService, type StatusAgendamento } from "../../../services/agendamentos";
 import { servicoService, type Servico } from "../../../services/services";
 import { obterMensagemErro } from "../../../utils/erros";
-import { dataLocalAtual } from "../../../utils/datas";
+import { dataEhDomingo, dataLocalAtual } from "../../../utils/datas";
 
 type Props = { id?: number };
 
@@ -99,6 +99,11 @@ export default function FormularioAgendamento({ id }: Props) {
   }, [id]);
 
   function atualizarCampo(campo: keyof Formulario, valor: string | number[]) {
+    if (campo === "data" && typeof valor === "string" && dataEhDomingo(valor)) {
+      setErro("A empresa não abre aos domingos. Escolha outra data.");
+      return;
+    }
+    if (campo === "data") setErro("");
     setForm((atual) => ({ ...atual, [campo]: valor }));
   }
 
@@ -114,6 +119,12 @@ export default function FormularioAgendamento({ id }: Props) {
   async function salvar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErro("");
+
+    if (dataEhDomingo(form.data)) {
+      setErro("A empresa não abre aos domingos. Escolha outra data.");
+      return;
+    }
+
     setSalvando(true);
 
     const dados = {
@@ -275,7 +286,12 @@ export default function FormularioAgendamento({ id }: Props) {
             >
               <option value="Pendente">Pendente</option>
               <option value="Confirmado">Confirmado</option>
-              <option value="Cancelado">Cancelado</option>
+              <option
+                value="Cancelado"
+                disabled={form.status !== "Pendente" && form.status !== "Cancelado"}
+              >
+                Cancelado
+              </option>
             </select>
             {form.status === "Cancelado" && (
               <small>Agendamentos cancelados não podem ser reativados.</small>

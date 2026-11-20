@@ -43,8 +43,6 @@ services:
     build: ./frontend
     container_name: frontend_react
     restart: always
-    ports:
-      - "3000:3000"
     networks:
       - rede-externa
 

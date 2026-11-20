@@ -7,6 +7,12 @@ export function dataLocalAtual(): string {
   return `${ano}-${mes}-${dia}`;
 }
 
+export function dataEhDomingo(data: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
+  const [ano, mes, dia] = data.split("-").map(Number);
+  return new Date(ano, mes - 1, dia).getDay() === 0;
+}
+
 export function dataNaoEstaNoPassado(data: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
   const [ano, mes, dia] = data.split("-").map(Number);

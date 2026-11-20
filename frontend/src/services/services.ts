@@ -1,4 +1,5 @@
 import api from "./api";
+import type { RespostaListagem } from "./listagem";
 
 export interface Servico {
   id_servico: number;
@@ -13,6 +14,16 @@ export const servicoService = {
   async listarTodos(): Promise<Servico[]> {
     const response = await api.get<Servico[]>("/servicos/listar");
 
+    return response.data;
+  },
+
+  async listarPaginado(
+    pagina: number,
+    limite: number
+  ): Promise<RespostaListagem<Servico>> {
+    const response = await api.get<RespostaListagem<Servico>>("/servicos/listar", {
+      params: { pagina, limite },
+    });
     return response.data;
   },
 

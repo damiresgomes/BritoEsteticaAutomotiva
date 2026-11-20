@@ -96,6 +96,16 @@
   color: white;
 }
 
+.successMessage {
+  margin: 0 0 28px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+  padding: 14px 24px;
+  font-size: 0.9rem;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -244,10 +254,44 @@
   border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
+.statusInProgress {
+  background: rgba(139, 92, 246, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.statusDone {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
 .statusCancelled {
   background: rgba(239, 68, 68, 0.12);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.statusButton {
+  cursor: pointer;
+  font: inherit;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.statusButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
+}
+
+.statusButton:focus-visible {
+  outline: 2px solid #5cb3ff;
+  outline-offset: 2px;
+}
+
+.statusButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .emptyState {

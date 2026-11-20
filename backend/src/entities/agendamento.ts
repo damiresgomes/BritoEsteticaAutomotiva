@@ -12,11 +12,12 @@ export interface ServicoItemAgendado {
   id_servico: number;
   nome_servico: string;
   preco: number;
+  id_categoria: number;
 }
 
 const TRANSICOES_VALIDAS: Record<StatusAgendamento, StatusAgendamento[]> = {
   Pendente: ["Confirmado", "Cancelado"],
-  Confirmado: ["Em atendimento", "Cancelado"],
+  Confirmado: ["Em atendimento"],
   "Em atendimento": ["Concluído"],
   Concluído: [],
   Cancelado: [],
@@ -46,6 +47,10 @@ export class Agendamento {
   }
 
   public transitarPara(novoStatus: StatusAgendamento): void {
+    if (novoStatus === "Cancelado" && this._status !== "Pendente") {
+      throw new ConflitoError("Só é possível cancelar agendamentos com status pendente.");
+    }
+
     const permitidas = TRANSICOES_VALIDAS[this._status];
     if (!permitidas.includes(novoStatus)) {
       throw new ConflitoError(
@@ -61,10 +66,8 @@ export class Agendamento {
   public cancelar(): void { this.transitarPara("Cancelado"); }
 
   public garantirModificavel(): void {
-    if (this._status !== "Pendente" && this._status !== "Confirmado") {
-      throw new ConflitoError(
-        `Não é possível alterar um agendamento com status "${this._status}".`
-      );
+    if (this._status !== "Pendente") {
+      throw new ConflitoError("Só é possível editar agendamentos com status pendente.");
     }
   }
 

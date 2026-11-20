@@ -52,10 +52,6 @@ export function errorHandler(
     return response.status(status).json({ message });
   }
 
-  if (error instanceof Error) {
-    return response.status(400).json({ message: error.message });
-  }
-
   console.error("Erro não tratado:", error);
   return response.status(500).json({ message: "Erro interno do servidor" });
 }

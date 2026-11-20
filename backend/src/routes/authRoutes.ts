@@ -6,6 +6,7 @@ import {
   logout,
   perfil,
   atualizarPerfilAdmin,
+  atualizarMeuUsuario,
   teste,
 } from "../controllers/authController";
 import {
@@ -28,6 +29,7 @@ export function authRoutes(): Router {
   router.post("/logout", authMiddleware, logout);
   router.get("/me", authMiddleware, perfil);
   router.put("/perfil-admin", authMiddleware, exigirPapel("admin"), atualizarPerfilAdmin);
+  router.put("/perfil-usuario", authMiddleware, atualizarMeuUsuario);
   router.get("/teste", authMiddleware, teste);
 
   router.post("/cliente/cadastro", cadastrarClienteController);

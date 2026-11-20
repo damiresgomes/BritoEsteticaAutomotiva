@@ -12,10 +12,14 @@ api.interceptors.request.use((config) => {
   const url = config.url ?? "";
   const rotaPublica =
     url.startsWith("/auth/login") ||
+    url.startsWith("/auth/admin/login") ||
+    url.startsWith("/auth/cliente/login") ||
     url.startsWith("/admin/login") ||
     url.startsWith("/auth/cadastro-cliente") ||
     url.startsWith("/servicos/listar");
   const tokenCliente =
+    url.startsWith("/auth/cliente/") ||
+    url.startsWith("/agendamentos/cliente/") ||
     url.startsWith("/agendamentos/horarios") ||
     url.startsWith("/agendamentos/cadastro");
   const token = rotaPublica ? null : lerToken(tokenCliente ? "cliente" : "admin");

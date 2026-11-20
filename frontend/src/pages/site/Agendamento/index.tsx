@@ -1,13 +1,19 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
+import { useUsuario } from "../../../contexts/useUsuario";
 import { authService } from "../../../services/auth";
 import { agendamentoService } from "../../../services/agendamentos";
-import type { AgendamentoCriado } from "../../../services/agendamentos";
 import { servicoService } from "../../../services/services";
 import type { Servico } from "../../../services/services";
-import FormAgendamento from "../../../components/FormAgendamento";
-import { dataLocalAtual, dataNaoEstaNoPassado } from "../../../utils/datas";
+import FormAgendamento, {
+  type ResumoAgendamento,
+} from "../../../components/FormAgendamento";
+import {
+  dataEhDomingo,
+  dataLocalAtual,
+  dataNaoEstaNoPassado,
+} from "../../../utils/datas";
 import { mascararPlaca, validarPlaca } from "../../../utils/placa";
 import { obterMensagemErro } from "../../../utils/erros";
 
@@ -15,6 +21,15 @@ import styles from "./styles.module.css";
 
 const CATEGORIA_PRINCIPAL = 1;
 const CATEGORIA_EXTRA = 2;
+
+const DADOS_INICIAIS_DO_FORMULARIO = {
+  placa: "",
+  veiculo: "",
+  servico: "",
+  data: "",
+  horario: "",
+  observacoes: "",
+};
 
 function mensagemErroDeAgendamento(erro: unknown): string {
   if (axios.isAxiosError(erro)) {
@@ -32,6 +47,7 @@ function mensagemErroDeAgendamento(erro: unknown): string {
 
 export default function BookingForm() {
   const location = useLocation();
+  const { cliente } = useUsuario();
   const servicoSolicitado = Number(
     new URLSearchParams(location.search).get("servicoId")
   );
@@ -48,16 +64,12 @@ export default function BookingForm() {
   const [erroHorarios, setErroHorarios] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erroEnvio, setErroEnvio] = useState("");
-  const [agendamentoCriado, setAgendamentoCriado] =
-    useState<AgendamentoCriado | null>(null);
-  const [dadosDoFormulario, setDadosDoFormulario] = useState({
-    placa: "",
-    veiculo: "",
-    servico: "",
-    data: "",
-    horario: "",
-    observacoes: "",
-  });
+  const [resumoCriado, setResumoCriado] = useState<ResumoAgendamento | null>(
+    null
+  );
+  const [dadosDoFormulario, setDadosDoFormulario] = useState(
+    DADOS_INICIAIS_DO_FORMULARIO
+  );
 
   const [acrescimosMarcados, setAcrescimosMarcados] = useState<number[]>([]);
   const servicoSelecionado = servicos.find(
@@ -139,6 +151,13 @@ export default function BookingForm() {
     const { name, value } = evento.target;
     if (name === "data") {
       setHorarios([]);
+      setErroEnvio("");
+      setResumoCriado(null);
+      if (dataEhDomingo(value)) {
+        setErroHorarios("A empresa não abre aos domingos. Escolha outra data.");
+        setCarregandoHorarios(false);
+        return;
+      }
       setErroHorarios("");
       setCarregandoHorarios(Boolean(autenticado && value));
     }
@@ -148,7 +167,7 @@ export default function BookingForm() {
       ...(name === "data" ? { horario: "" } : {}),
     });
     setErroEnvio("");
-    setAgendamentoCriado(null);
+    setResumoCriado(null);
   };
 
   const marcarOuDesmarcarAcrescimo = (idDoAcrescimo: number) => {
@@ -159,6 +178,13 @@ export default function BookingForm() {
     } else {
       setAcrescimosMarcados([...acrescimosMarcados, idDoAcrescimo]);
     }
+  };
+
+  const limparFormulario = () => {
+    setDadosDoFormulario(DADOS_INICIAIS_DO_FORMULARIO);
+    setAcrescimosMarcados([]);
+    setHorarios([]);
+    setErroHorarios("");
   };
 
   const aoEnviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
@@ -174,6 +200,11 @@ export default function BookingForm() {
       return;
     }
 
+    if (dataEhDomingo(dadosDoFormulario.data)) {
+      setErroEnvio("A empresa não abre aos domingos. Escolha outra data.");
+      return;
+    }
+
     if (!validarPlaca(dadosDoFormulario.placa)) {
       setErroEnvio("Informe uma placa válida (ex.: ABC-1234 ou ABC-1D23).");
       return;
@@ -181,7 +212,7 @@ export default function BookingForm() {
 
     setEnviando(true);
     setErroEnvio("");
-    setAgendamentoCriado(null);
+    setResumoCriado(null);
 
     try {
       const resultado = await agendamentoService.criar({
@@ -194,7 +225,19 @@ export default function BookingForm() {
         extras: acrescimosMarcados,
       });
 
-      setAgendamentoCriado(resultado);
+      setResumoCriado({
+        id: resultado.id,
+        total: resultado.total,
+        nomeCliente: cliente?.nome ?? "",
+        placa: dadosDoFormulario.placa,
+        veiculo: dadosDoFormulario.veiculo,
+        servicoPrincipal: servicoSelecionado?.nome_servico ?? "Serviço selecionado",
+        servicosExtras: acrescimosSelecionados.map((acrescimo) => acrescimo.nome_servico),
+        data: dadosDoFormulario.data,
+        horario: dadosDoFormulario.horario,
+        observacoes: dadosDoFormulario.observacoes,
+      });
+      limparFormulario();
     } catch (erro: unknown) {
       setErroEnvio(obterMensagemErro(erro));
 
@@ -247,7 +290,7 @@ export default function BookingForm() {
         erroCatalogo={erroCatalogo}
         erroHorarios={erroHorarios}
         erroEnvio={erroEnvio}
-        agendamentoCriado={agendamentoCriado}
+        resumoCriado={resumoCriado}
         temServicoSelecionado={Boolean(servicoSelecionado)}
         totalEstimado={totalEstimado}
         dataMinima={dataLocalAtual()}

@@ -52,10 +52,14 @@ export async function cadastrarAgendamentoController(
 }
 
 export async function listarAgendamentosAdminController(
-  _request: Request,
+  request: Request,
   response: Response
 ): Promise<Response> {
-  return response.status(200).json(await listarAgendamentosAdministrativos());
+  const { pagina, limite } = paginacaoQuerySchema.parse(request.query);
+  const { agendamentos, total } = await listarAgendamentosAdministrativos(pagina, limite);
+
+  response.setHeader("X-Total-Count", total.toString());
+  return response.status(200).json(formatarRespostaListagem(agendamentos, total, pagina, limite));
 }
 
 export async function cadastrarAgendamentoAdminController(

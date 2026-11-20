@@ -2,8 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AppError } from "../errors/AppError";
-import { buscarContaPorId, PapelConta } from "../repositories/contaAcessoRepository";
-import { buscarPorId } from "../repositories/usuarioRepository";
+import {
+  buscarContaPorEmail,
+  buscarContaPorId,
+  PapelConta,
+} from "../repositories/contaAcessoRepository";
+import {
+  buscarPorEmail as buscarUsuarioPorEmail,
+  buscarPorId,
+} from "../repositories/usuarioRepository";
 import { tokenExpirado } from "../services/revogacaoService";
 
 export interface Token {
@@ -71,12 +78,12 @@ export async function authMiddleware(
     throw new AppError(401, "Sessão encerrada. Faça login novamente.");
   }
 
-  const conta = await buscarContaPorId(payload.id);
+  const conta =
+    payload.tipo === "usuario"
+      ? null
+      : (await buscarContaPorId(payload.id)) ?? (await buscarContaPorEmail(payload.email));
 
-  if (conta) {
-    if (conta.email !== payload.email) {
-      throw new AppError(401, "Sessão inválida. Faça login novamente.");
-    }
+  if (conta && conta.email === payload.email) {
     if (conta.ativo !== "Sim" || conta.usuarioAtivo === "Não") {
       throw new AppError(403, "Conta inativa");
     }
@@ -90,7 +97,8 @@ export async function authMiddleware(
       usuarioId: conta.usuarioId,
     };
   } else {
-    const usuario = await buscarPorId(payload.id);
+    const usuario =
+      (await buscarPorId(payload.id)) ?? (await buscarUsuarioPorEmail(payload.email));
     if (!usuario || usuario.email !== payload.email) {
       throw new AppError(401, "Sessão inválida. Faça login novamente.");
     }
@@ -100,7 +108,7 @@ export async function authMiddleware(
     request.usuario = {
       id: usuario.id,
       email: usuario.email,
-      papel: usuario.papel === "admin" ? "admin" : "cliente",
+      papel: String(usuario.papel).toLowerCase() === "admin" ? "admin" : "cliente",
       jti: payload.jti,
       exp: payload.exp,
       usuarioId: usuario.id,

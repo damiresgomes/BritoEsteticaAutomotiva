@@ -121,6 +121,29 @@
   border-radius: 2px;
 }
 
+.perfilLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cor-destaque);
+}
+
+.perfilLink::after {
+  transform: scaleX(1);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: 1px solid var(--cor-destaque);
+  border-radius: 50%;
+  font-size: 0.7rem;
+  letter-spacing: 0;
+}
+
 .toggle {
   display: none;
   flex-direction: column;

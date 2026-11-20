@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import styles from "./styles.module.css";
 import { useUsuario } from "../../contexts/useUsuario";
 import { authService } from "../../services/auth";
@@ -21,13 +21,8 @@ function getIniciais(nome?: string) {
 
 export default function AdminNavBar() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { usuario } = useUsuario();
   const [menuAberto, setMenuAberto] = useState(false);
-
-  useEffect(() => {
-    setMenuAberto(false);
-  }, [location.pathname]);
 
   function handleLogout() {
     authService.logout("admin");
@@ -63,6 +58,7 @@ export default function AdminNavBar() {
                 key={to}
                 to={to}
                 end={end}
+                onClick={() => setMenuAberto(false)}
                 className={({ isActive }) =>
                   `${styles.item} ${isActive ? styles.ativo : ""}`
                 }
@@ -75,6 +71,7 @@ export default function AdminNavBar() {
           <div className={styles.conta}>
             <NavLink
               to="/admin/perfil"
+              onClick={() => setMenuAberto(false)}
               className={({ isActive }) =>
                 `${styles.perfil} ${isActive ? styles.perfilAtivo : ""}`
               }

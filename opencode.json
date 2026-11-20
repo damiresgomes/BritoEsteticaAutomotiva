@@ -1,7 +1,21 @@
 {
 	"$schema": "https://opencode.ai/config.json",
+	"instructions": [
+		"AGENTS.md"
+	],
+	"skills": {
+		"paths": [
+			".opencode/skills"
+		]
+	},
 	"permission": {
 		"read": {
+			"*": "allow",
+			"*.env": "deny",
+			"*.env.*": "deny",
+			"*.env.example": "allow"
+		},
+		"edit": {
 			"*": "allow",
 			"*.env": "deny",
 			"*.env.*": "deny",
@@ -12,7 +26,11 @@
 			"npm *": "allow",
 			"npx tsc *": "allow",
 			"git status": "allow",
-			"git diff *": "allow"
+			"git diff *": "allow",
+			"git commit*": "deny",
+			"git push*": "deny",
+			"docker compose down -v*": "deny",
+			"rm -rf *": "deny"
 		}
 	}
 }

@@ -18,13 +18,15 @@ const telefoneSchema = z
   }, "Telefone inválido")
   .transform(formatarTelefone);
 
+const cpfSchema = z
+  .string({ error: "CPF é obrigatório" })
+  .refine(cpfValido, "CPF inválido")
+  .transform(normalizarCpf);
+
 const dadosClienteSchema = z.object({
   nome: z.string().trim().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
   email: loginSchema.shape.email,
-  cpf: z.string({ error: "CPF é obrigatório" })
-    .refine(cpfValido, "CPF inválido")
-    .transform(normalizarCpf)
-    .optional(),
+  cpf: cpfSchema,
   telefone: telefoneSchema,
 });
 
@@ -51,12 +53,14 @@ const senhaForteClienteSchema = z
 export const cadastroClienteSchema = z.object({
   nome: z.string().trim().min(2).max(100),
   email: emailClienteSchema,
+  cpf: cpfSchema,
   senha: senhaForteClienteSchema,
   telefone: z.string().trim().min(10).max(20),
 });
 
 export const atualizarClienteSchema = cadastroClienteSchema
   .omit({ email: true })
+  .extend({ senha: senhaForteClienteSchema.optional() })
   .strict();
 
 export const atualizarClienteUsuarioSchema = cadastroClienteSchema

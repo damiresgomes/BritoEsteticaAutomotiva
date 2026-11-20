@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom'
 import PublicNavBar from '../../components/PublicNavBar'
+import { TELEFONE_CONTATO, TELEFONE_CONTATO_LINK } from '../../utils/contato'
 import styles from './styles.module.css'
 
 export default function PublicLayout () {
@@ -26,7 +27,7 @@ export default function PublicLayout () {
 
                         <div className={styles.blocoDireito}>
                             <a href="mailto:contato@britoestetica.com.br" className={styles.itemContato}>contato@britoestetica.com.br</a>
-                            <a href="tel:19981339017" className={styles.itemContato}>(19) 98133-9017</a>
+                            <a href={`tel:${TELEFONE_CONTATO_LINK}`} className={styles.itemContato}>{TELEFONE_CONTATO}</a>
                             <a href="/admin/login" className={styles.itemAdmin}>admin</a>
                         </div>
                     </div>

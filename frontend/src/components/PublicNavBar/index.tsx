@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useUsuario } from "../../contexts/useUsuario";
+import { authService } from "../../services/auth";
 import styles from "./styles.module.css";
 
 const links = [
@@ -7,13 +9,20 @@ const links = [
   { to: "/servico", label: "Serviços" },
   { to: "/sobre", label: "Sobre" },
   { to: "/agendamento", label: "Agendamento" },
-  { to: "/autenticacao/login", label: "Login" },
 ];
 
+function getIniciais(nome?: string) {
+  if (!nome) return "?";
+  const partes = nome.trim().split(/\s+/);
+  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
+}
+
 export default function PublicNavBar() {
+  const { cliente } = useUsuario();
   const [aberto, setAberto] = useState(false);
 
   const fechar = () => setAberto(false);
+  const clienteLogado = Boolean(cliente) || authService.isAuthenticated("cliente");
 
   // Fecha o menu com a tecla Esc
   useEffect(() => {
@@ -64,6 +73,27 @@ export default function PublicNavBar() {
               {label}
             </NavLink>
           ))}
+
+          {clienteLogado ? (
+            <Link
+              to="/minha-conta"
+              onClick={fechar}
+              className={`${styles.itemLink} ${styles.perfilLink}`}
+            >
+              <span className={styles.avatar}>{getIniciais(cliente?.nome)}</span>
+              <span>{cliente?.nome ?? "Meu perfil"}</span>
+            </Link>
+          ) : (
+            <NavLink
+              to="/autenticacao/login"
+              onClick={fechar}
+              className={({ isActive }) =>
+                isActive ? `${styles.itemLink} ${styles.ativo}` : styles.itemLink
+              }
+            >
+              Login
+            </NavLink>
+          )}
         </nav>
       </div>
     </header>

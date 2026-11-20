@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import Paginacao from "../../../components/Paginacao";
@@ -9,31 +9,38 @@ import styles from "../../../components/AdminCrud/styles.module.css";
 export default function ListarCategoria() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const [erro, setErro] = useState("");
   const porPagina = 6;
 
+  async function carregar(paginaAtual: number) {
+    try {
+      const resposta = await categoriaService.listarPaginado(paginaAtual, porPagina);
+      setCategorias(resposta.dados);
+      setTotalPaginas(resposta.paginacao.totalPaginas);
+      setErro("");
+    } catch (erroApi) {
+      setErro(obterMensagemErro(erroApi));
+    }
+  }
+
   useEffect(() => {
     categoriaService
-      .listar()
-      .then(setCategorias)
+      .listarPaginado(pagina, porPagina)
+      .then((resposta) => {
+        setCategorias(resposta.dados);
+        setTotalPaginas(resposta.paginacao.totalPaginas);
+        setErro("");
+      })
       .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));
-  }, []);
-
-  const totalPaginas = Math.max(1, Math.ceil(categorias.length / porPagina));
-  const categoriasVisiveis = useMemo(
-    () => categorias.slice((pagina - 1) * porPagina, pagina * porPagina),
-    [categorias, pagina]
-  );
+  }, [pagina]);
 
   async function excluir(id: number) {
     if (!window.confirm("Deseja excluir esta categoria?")) return;
     try {
       await categoriaService.excluir(id);
-      const atualizadas = await categoriaService.listar();
-      setCategorias(atualizadas);
-      setPagina((atual) =>
-        Math.min(atual, Math.max(1, Math.ceil(atualizadas.length / porPagina)))
-      );
+      setPagina(1);
+      await carregar(1);
     } catch (erroApi) {
       setErro(obterMensagemErro(erroApi));
     }
@@ -57,9 +64,9 @@ export default function ListarCategoria() {
               <th>Ações</th>
             </tr>
           </thead>
-          
+
           <tbody>
-            {categoriasVisiveis.map((categoria) => (
+            {categorias.map((categoria) => (
               <tr key={categoria.id_categoria}>
                 <td>{categoria.nome_categoria}</td>
                 <td>

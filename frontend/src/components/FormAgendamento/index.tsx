@@ -1,13 +1,26 @@
-import type { ChangeEvent, FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, type Location } from "react-router-dom";
-import type { AgendamentoCriado } from "../../services/agendamentos";
 import type { Servico } from "../../services/services";
+import { urlWhatsapp } from "../../utils/contato";
 import styles from "../../pages/site/Agendamento/styles.module.css";
 
 type DadosAgendamento = {
   placa: string;
   veiculo: string;
   servico: string;
+  data: string;
+  horario: string;
+  observacoes: string;
+};
+
+export type ResumoAgendamento = {
+  id: number;
+  total: number;
+  nomeCliente: string;
+  placa: string;
+  veiculo: string;
+  servicoPrincipal: string;
+  servicosExtras: string[];
   data: string;
   horario: string;
   observacoes: string;
@@ -27,7 +40,7 @@ type FormAgendamentoProps = {
   erroCatalogo: string;
   erroHorarios: string;
   erroEnvio: string;
-  agendamentoCriado: AgendamentoCriado | null;
+  resumoCriado: ResumoAgendamento | null;
   temServicoSelecionado: boolean;
   totalEstimado: number | null;
   dataMinima: string;
@@ -48,6 +61,36 @@ function formatarPreco(valor: number): string {
   }).format(valor);
 }
 
+function formatarData(data: string): string {
+  const [ano, mes, dia] = data.split("-");
+  return ano && mes && dia ? `${dia}/${mes}/${ano}` : data;
+}
+
+function mensagemConfirmacao(dados: ResumoAgendamento): string {
+  const nome = dados.nomeCliente.trim() || "cliente";
+  const adicionais = dados.servicosExtras.length
+    ? dados.servicosExtras.map((servico) => `- ${servico}`).join("\n")
+    : "- Nenhum serviço adicional";
+  const observacoes = dados.observacoes.trim() || "Nenhuma observação informada.";
+
+  return `Olá, equipe Brito! Tudo bem?
+
+Eu sou ${nome} e acabei de agendar um horário pelo site. Segue o resumo certinho para vocês confirmarem:
+
+Agendamento: #${dados.id}
+Serviço principal: ${dados.servicoPrincipal}
+Serviços adicionais:
+${adicionais}
+Data e horário: ${formatarData(dados.data)} às ${dados.horario}
+Veículo: ${dados.veiculo}
+Placa: ${dados.placa}
+Observações: ${observacoes}
+Total previsto: ${formatarPreco(dados.total)}
+
+Fico no aguardo da confirmação. Muito obrigado!
+`;
+}
+
 export default function FormAgendamento({
   autenticado,
   mostrarAviso,
@@ -62,7 +105,7 @@ export default function FormAgendamento({
   erroCatalogo,
   erroHorarios,
   erroEnvio,
-  agendamentoCriado,
+  resumoCriado,
   temServicoSelecionado,
   totalEstimado,
   dataMinima,
@@ -71,7 +114,16 @@ export default function FormAgendamento({
   onToggleAcrescimo,
   onSubmit,
 }: FormAgendamentoProps) {
-  
+  const [mensagemEditada, setMensagemEditada] = useState<{
+    id: number;
+    texto: string;
+  } | null>(null);
+  const mensagemWhatsapp = resumoCriado
+    ? mensagemEditada?.id === resumoCriado.id
+      ? mensagemEditada.texto
+      : mensagemConfirmacao(resumoCriado)
+    : "";
+
   return (
     <form
       className={styles.cartao}
@@ -186,6 +238,9 @@ export default function FormAgendamento({
             onChange={onChange}
             required
           />
+          <span className={styles.notaTotal}>
+            A empresa não abre aos domingos.
+          </span>
         </label>
 
         <label className={styles.campo}>
@@ -249,11 +304,40 @@ export default function FormAgendamento({
           {erroEnvio}
         </p>
       )}
-      {agendamentoCriado && (
-        <p className={styles.mensagemSucesso} role="status">
-          Agendamento #{agendamentoCriado.id} realizado com sucesso. Total:{" "}
-          {formatarPreco(agendamentoCriado.total)}.
-        </p>
+      {resumoCriado && (
+        <>
+          <p className={styles.mensagemSucesso} role="status">
+            Agendamento #{resumoCriado.id} realizado com sucesso. Total:{" "}
+            {formatarPreco(resumoCriado.total)}.
+          </p>
+          <section className={styles.confirmacaoWhatsapp}>
+            <h2>Mensagem pronta para o WhatsApp</h2>
+            <p>
+              Confira ou ajuste o texto antes de enviar. Assim a equipe já recebe
+              todos os detalhes do seu agendamento.
+            </p>
+            <textarea
+              className={styles.mensagemWhatsapp}
+              aria-label="Mensagem pronta para o WhatsApp"
+              rows={11}
+              value={mensagemWhatsapp}
+              onChange={(evento) =>
+                setMensagemEditada({
+                  id: resumoCriado.id,
+                  texto: evento.target.value,
+                })
+              }
+            />
+            <a
+              className={`${styles.botaoEnviar} ${styles.botaoWhatsapp}`}
+              href={urlWhatsapp(mensagemWhatsapp)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir WhatsApp com a mensagem
+            </a>
+          </section>
+        </>
       )}
 
       <div className={styles.rodape}>
