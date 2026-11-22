@@ -24,9 +24,9 @@ export default function AdminNavBar() {
   const { usuario } = useUsuario();
   const [menuAberto, setMenuAberto] = useState(false);
 
-  function handleLogout() {
-    authService.logout("admin");
-    navigate("/admin/login", { replace: true });
+  async function handleLogout() {
+    await authService.logoutAdmin();
+    navigate("/autenticacao/LoginAdministrativo", { replace: true });
   }
 
   return (

@@ -23,8 +23,10 @@ import { limiteLoginMiddleware } from "../middlewares/limiteLoginMiddleware";
 export function authRoutes(): Router {
   const router = Router();
 
-  router.post("/cadastro-cliente", cadastroCliente);
+  router.post("/cadastro-cliente", limiteLoginMiddleware, cadastroCliente);
+  router.post("/CadastrarCliente", limiteLoginMiddleware, cadastroCliente);
   router.post("/admin/login", limiteLoginMiddleware, loginAdmin);
+  router.post("/LoginAdministrativo", limiteLoginMiddleware, loginAdmin);
   router.post("/login", limiteLoginMiddleware, login);
   router.post("/logout", authMiddleware, logout);
   router.get("/me", authMiddleware, perfil);
@@ -32,8 +34,10 @@ export function authRoutes(): Router {
   router.put("/perfil-usuario", authMiddleware, atualizarMeuUsuario);
   router.get("/teste", authMiddleware, teste);
 
-  router.post("/cliente/cadastro", cadastrarClienteController);
-  router.post("/cliente/login", loginClienteController);
+  router.post("/cliente/cadastro", limiteLoginMiddleware, cadastrarClienteController);
+  router.post("/cliente/CadastrarCliente", limiteLoginMiddleware, cadastrarClienteController);
+  router.post("/cliente/login", limiteLoginMiddleware, loginClienteController);
+  router.post("/LoginCliente", limiteLoginMiddleware, loginClienteController);
   router.post("/cliente/logout", clienteAuthMiddleware, logoutClienteController);
   router.get("/cliente/me", clienteAuthMiddleware, perfilClienteController);
   router.put("/cliente/me", clienteAuthMiddleware, atualizarMeuCadastroClienteController);

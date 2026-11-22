@@ -169,7 +169,7 @@ export default function FormCliente({
 
       <p className={styles.loginLink}>
         Já tem uma conta?{" "}
-        <Link to="/auth/login" state={{ from }}>
+        <Link to="/autenticacao/LoginCliente" state={{ from }}>
           Acesse o login
         </Link>
       </p>

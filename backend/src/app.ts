@@ -50,7 +50,7 @@ export function buildApp() {
 
   app.use(["/health", "/api/health"], healthRoutes());
 
-  app.use(["/api/auth", "/auth"], authRoutes());
+  app.use(["/api/auth", "/auth", "/api/autenticacao", "/autenticacao"], authRoutes());
 
   app.use(["/api/usuarios", "/usuarios"], authMiddleware, usuarioRoutes());
   app.use(["/api/categorias", "/categorias"], authMiddleware, exigirPapel("admin"), categoriaRoutes());

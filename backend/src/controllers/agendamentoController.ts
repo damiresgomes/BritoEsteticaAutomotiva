@@ -81,7 +81,8 @@ export async function atualizarAgendamentoAdminController(
 ): Promise<Response> {
   const dados = atualizarAgendamentoAdminSchema.parse(request.body);
   const { clienteId, ...agendamento } = dados;
-  await atualizarAgendamentoAdministrativo(Number(request.params.id), {
+  const id = validarId(request.params.id, "agendamento");
+  await atualizarAgendamentoAdministrativo(id, {
     ...agendamento,
     clienteId,
   });
@@ -92,7 +93,8 @@ export async function cancelarAgendamentoAdminController(
   request: Request,
   response: Response
 ): Promise<Response> {
-  await cancelarAgendamentoAdministrativo(Number(request.params.id));
+  const id = validarId(request.params.id, "agendamento");
+  await cancelarAgendamentoAdministrativo(id);
   return response.status(200).json({ message: "Agendamento cancelado com sucesso." });
 }
 

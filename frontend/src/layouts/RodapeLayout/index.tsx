@@ -28,7 +28,7 @@ export default function PublicLayout () {
                         <div className={styles.blocoDireito}>
                             <a href="mailto:contato@britoestetica.com.br" className={styles.itemContato}>contato@britoestetica.com.br</a>
                             <a href={`tel:${TELEFONE_CONTATO_LINK}`} className={styles.itemContato}>{TELEFONE_CONTATO}</a>
-                            <a href="/admin/login" className={styles.itemAdmin}>admin</a>
+                            <a href="/autenticacao/LoginAdministrativo" className={styles.itemAdmin}>admin</a>
                         </div>
                     </div>
                 </div>

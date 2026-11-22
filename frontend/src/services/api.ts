@@ -19,6 +19,9 @@ api.interceptors.request.use((config) => {
     url.startsWith("/auth/admin/login") ||
     url.startsWith("/auth/cliente/login") ||
     url.startsWith("/admin/login") ||
+    url.startsWith("/autenticacao/LoginAdministrativo") ||
+    url.startsWith("/autenticacao/LoginCliente") ||
+    url.startsWith("/autenticacao/CadastrarCliente") ||
     url.startsWith("/auth/cadastro-cliente") ||
     url.startsWith("/servicos/listar");
   const tokenCliente =

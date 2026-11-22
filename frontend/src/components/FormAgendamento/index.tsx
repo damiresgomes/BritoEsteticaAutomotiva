@@ -280,7 +280,7 @@ export default function FormAgendamento({
       )}
       {!autenticado && dados.data && (
         <p className={styles.notaTotal}>
-          <Link to="/autenticacao/login" state={{ from }}>
+          <Link to="/autenticacao/LoginCliente" state={{ from }}>
             Entre com uma conta de cliente
           </Link>{" "}
           para consultar horários disponíveis.

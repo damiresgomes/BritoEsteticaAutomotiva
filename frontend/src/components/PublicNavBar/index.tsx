@@ -23,8 +23,6 @@ export default function PublicNavBar() {
 
   const fechar = () => setAberto(false);
   const clienteLogado = Boolean(cliente) || authService.isAuthenticated("cliente");
-
-  // Fecha o menu com a tecla Esc
   useEffect(() => {
     if (!aberto) return;
 
@@ -85,7 +83,7 @@ export default function PublicNavBar() {
             </Link>
           ) : (
             <NavLink
-              to="/autenticacao/login"
+              to="/autenticacao/LoginCliente"
               onClick={fechar}
               className={({ isActive }) =>
                 isActive ? `${styles.itemLink} ${styles.ativo}` : styles.itemLink

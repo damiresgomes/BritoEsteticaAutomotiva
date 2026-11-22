@@ -325,14 +325,14 @@ export default function BookingForm() {
             <div className={styles.acoesAviso}>
               <Link
                 className={styles.botaoCadastro}
-                to="/autenticacao/cadastro"
+                to="/autenticacao/CadastrarCliente"
                 state={{ from: location }}
               >
                 Criar cadastro
               </Link>
               <Link
                 className={styles.linkLogin}
-                to="/autenticacao/login"
+                to="/autenticacao/LoginCliente"
                 state={{ from: location }}
               >
                 Já tenho cadastro — Entrar

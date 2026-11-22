@@ -449,8 +449,6 @@ export async function buscarStatusAgendamento(
   );
   return (linhas[0]?.status as "Pendente" | "Confirmado" | "Cancelado") ?? null;
 }
-
-// Horários (ex: "09:00") que já têm agendamento ativo na data
 export async function listarHorariosOcupados(
   data: string,
   ignorarAgendamentoId?: number
@@ -468,9 +466,6 @@ export async function listarHorariosOcupados(
 
   return linhas.map((linha) => linha.horario as string);
 }
-
-// Cria o agendamento e seus serviços para o cliente autenticado numa transação.
-// Retorna o id criado, ou null se o horário foi ocupado nesse meio tempo.
 export async function criarAgendamentoCompleto(
   dados: NovoAgendamentoCompleto
 ): Promise<number | null> {
@@ -478,8 +473,6 @@ export async function criarAgendamentoCompleto(
 
   try {
     await conexao.beginTransaction();
-
-    // Confere de novo dentro da transação, para duas pessoas não pegarem o mesmo horário
     const [ocupados] = await conexao.execute<RowDataPacket[]>(
       `SELECT id_agendamento FROM agendamentos
         WHERE data_hora = ? AND status <> 'Cancelado' FOR UPDATE`,

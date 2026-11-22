@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   agendamentoService,
   type AgendamentoDashboard,
+  type StatusAgendamentoCompleto,
 } from "../../../services/agendamentos";
 import { dataLocalAtual } from "../../../utils/datas";
 import CardAdmin from "../../../components/CardAdmin";
@@ -10,9 +11,16 @@ import {
   classeStatus,
   formatarData,
   mensagemErroAgendamentos,
-  proximoStatus,
 } from "./validators";
 import styles from "./styles.module.css";
+
+const OPCOES_STATUS: StatusAgendamentoCompleto[] = [
+  "Pendente",
+  "Confirmado",
+  "Em atendimento",
+  "Concluído",
+  "Cancelado",
+];
 
 export default function Dashboard() {
   const [agendamentos, setAgendamentos] = useState<AgendamentoDashboard[]>([]);
@@ -26,7 +34,7 @@ export default function Dashboard() {
     setErro(null);
 
     try {
-      setAgendamentos(await agendamentoService.listarAdminDashboard());
+      setAgendamentos(await agendamentoService.listarAdmin());
     } catch (erroRequisicao) {
       setErro(mensagemErroAgendamentos(erroRequisicao));
     } finally {
@@ -34,17 +42,19 @@ export default function Dashboard() {
     }
   }
 
-  async function alterarStatus(agendamento: AgendamentoDashboard) {
-    const proximo = proximoStatus(agendamento.status);
-    if (!proximo) return;
+  async function alterarStatus(
+    agendamento: AgendamentoDashboard,
+    novoStatus: StatusAgendamentoCompleto
+  ) {
+    if (novoStatus === agendamento.status) return;
 
     setAlterandoStatusId(agendamento.id);
     setErro(null);
     setMensagemSucesso("");
 
     try {
-      await agendamentoService.atualizarStatus(agendamento.id, proximo);
-      setMensagemSucesso(`Status alterado para ${proximo}.`);
+      await agendamentoService.atualizarStatus(agendamento.id, novoStatus);
+      setMensagemSucesso(`Status alterado para ${novoStatus}.`);
       await carregarAgendamentos();
     } catch (erroRequisicao) {
       setErro(mensagemErroAgendamentos(erroRequisicao));
@@ -52,7 +62,6 @@ export default function Dashboard() {
       setAlterandoStatusId(null);
     }
   }
-
   useEffect(() => {
     let ativo = true;
 
@@ -192,22 +201,26 @@ export default function Dashboard() {
                     <td>{formatarData(agendamento.data)}</td>
                     <td>{agendamento.horario}</td>
                     <td>
-                      {proximoStatus(agendamento.status) ? (
-                        <button
-                          type="button"
-                          className={`${styles.status} ${styles.statusButton} ${classeStatus(agendamento.status)}`}
-                          onClick={() => void alterarStatus(agendamento)}
-                          disabled={alterandoStatusId === agendamento.id || carregando}
-                          title={`Alterar status para ${proximoStatus(agendamento.status)}`}
-                        >
-                          {agendamento.status}
-                        </button>
-                      ) : (
-                        <span className={`${styles.status} ${classeStatus(agendamento.status)}`}>
-                          {agendamento.status}
-                        </span>
-                      )}
+                      <select
+                        className={`${styles.status} ${styles.statusSelect} ${classeStatus(agendamento.status)}`}
+                        value={agendamento.status}
+                        onChange={(evento) =>
+                          void alterarStatus(
+                            agendamento,
+                            evento.target.value as StatusAgendamentoCompleto
+                          )
+                        }
+                        disabled={alterandoStatusId === agendamento.id || carregando}
+                        aria-label={`Status do agendamento de ${agendamento.cliente}`}
+                      >
+                        {OPCOES_STATUS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

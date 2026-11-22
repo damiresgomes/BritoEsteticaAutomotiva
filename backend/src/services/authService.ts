@@ -102,8 +102,6 @@ export async function loginAuthService(
       },
     };
   }
-
-  // Fallback para login direto na tabela usuario
   const usuario = await buscarUsuarioPorEmail(email);
   if (!usuario) {
     await bcrypt.compare(senha, HASH_FICTICIO);

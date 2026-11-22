@@ -40,11 +40,9 @@ export function errorHandler(
   }
 
   const codigoErro = (error as { code?: string; sqlMessage?: string })?.code;
-  // MySQL SIGNAL disparado por triggers (ER_SIGNAL_EXCEPTION = código 1644)
   if (codigoErro === "ER_SIGNAL_EXCEPTION") {
-    const sqlMessage = (error as { sqlMessage?: string }).sqlMessage;
     return response.status(400).json({
-      message: sqlMessage ?? "Operação inválida: dados violam regra de integridade",
+      message: "Opera��ǜo invǭlida: dados violam regra de integridade",
     });
   }
   if (codigoErro && ERROS_MYSQL[codigoErro]) {

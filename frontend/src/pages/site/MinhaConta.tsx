@@ -95,7 +95,7 @@ export default function MinhaConta() {
   async function sair() {
     setSaindo(true);
     await authService.logoutCliente();
-    navigate("/autenticacao/login", { replace: true });
+    navigate("/autenticacao/LoginCliente", { replace: true });
   }
 
   async function cancelar(id: number) {
@@ -135,7 +135,7 @@ export default function MinhaConta() {
             {erro || "Entre na sua conta para acompanhar seus agendamentos."}
           </p>
           <div className={styles.actions}>
-            <Link to="/autenticacao/login">Entrar</Link>
+            <Link to="/autenticacao/LoginCliente">Entrar</Link>
             <Link to="/">Voltar para o site</Link>
           </div>
         </section>

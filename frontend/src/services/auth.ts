@@ -85,7 +85,7 @@ export const authService = {
     credentials: LoginCredentials,
     papelEsperado: "cliente" | "admin"
   ): Promise<AuthResponse> {
-    const rota = papelEsperado === "admin" ? "/auth/admin/login" : "/auth/cliente/login";
+    const rota = papelEsperado === "admin" ? "/autenticacao/LoginAdministrativo" : "/autenticacao/LoginCliente";
     const response = await api.post<AuthResponse>(rota, credentials);
 
     if (!response.data.token) {
@@ -111,7 +111,7 @@ export const authService = {
 
   async cadastrarCliente(dados: CadastroCliente): Promise<{ message: string; id: number }> {
     const response = await api.post<{ message: string; id: number }>(
-      "/auth/cadastro-cliente",
+      "/autenticacao/CadastrarCliente",
       dados
     );
     return response.data;
@@ -139,6 +139,11 @@ export const authService = {
     if (papel) limparToken(papel);
     else limparTokens();
     window.dispatchEvent(new Event("brito:sessao"));
+  },
+
+  async logoutAdmin(): Promise<void> {
+    await api.post("/auth/logout").catch(() => undefined);
+    this.logout("admin");
   },
 
   async logoutCliente(): Promise<void> {
