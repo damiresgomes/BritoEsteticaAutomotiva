@@ -1,7 +1,26 @@
+:root {
+  --cor-fundo: #030712;
+  --cor-superficie: #0b0f19;
+  --cor-destaque: #5cb3ff;
+  --cor-texto: #ffffff;
+  --cor-texto-suave: #9ca3af;
+  --cor-texto-apagado: #6b7280;
+  --cor-borda: rgba(255, 255, 255, 0.08);
+  --raio: 12px;
+}
+
 .sobre {
+  position: relative;
   width: 100%;
-  background-color: #040913;
-  color: #ffffff;
+  background-color: var(--cor-fundo);
+  background-image: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(92, 179, 255, 0.09),
+    transparent 55%
+  );
+  color: var(--cor-texto);
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
 }
 
 .sobre .container {
@@ -11,13 +30,13 @@
 }
 
 .sobre .hero {
-  padding: 80px 20px;
+  padding: 100px 24px 80px;
 }
 
 .sobre .hero .container {
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 72px;
 }
 
 .sobre .contentCol {
@@ -26,40 +45,50 @@
 }
 
 .sobre .tagSobre {
-  color: #5CB3FF;
-  font-weight: 300;
-  font-size: 13px;
-  letter-spacing: 2px;
-  display: inline-block;
-  margin-bottom: 24px;
-  margin-top: 80px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 80px; 
+  margin-bottom: 28px;
+  color: var(--cor-destaque);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.sobre .tagSobre::before {
+  content: "";
+  width: 40px;
+  height: 2px;
+  background: var(--cor-destaque);
 }
 
 .sobre .titulo {
-  font-size: 65px;
+  margin: 0 0 36px;
+  color: var(--cor-texto);
+  font-size: clamp(2.6rem, 6vw, 4.5rem);
   font-weight: 900;
-  line-height: 1.05;
-  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
-  margin-bottom: 36px;
-  letter-spacing: -1px;
 }
 
 .sobre .titulo .azul {
-  color: #5CB3FF;
+  color: var(--cor-destaque);
   font-family: 'Montserrat', sans-serif;
   font-style: italic;
-  font-weight: 400 !important;
+  font-weight: 300 !important;
   font-synthesis: none;
 }
 
 .sobre .descricao p {
-  color: #8a9bb2;
   max-width: 580px;
-  font-size: 18px;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+  color: var(--cor-texto-suave);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
   font-weight: 400;
+  line-height: 1.75;
 }
 
 .sobre .descricao p:last-child {
@@ -77,9 +106,28 @@
   position: relative;
   width: 100%;
   max-width: 560px;
-  border-radius: 4px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 30px 60px -20px rgba(0, 0, 0, 0.7),
+    0 0 80px -30px rgba(92, 179, 255, 0.25);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.sobre .imageWrapper::after {
+  content: "";
+  position: absolute;
+  inset: 55% 0 0;
+  background: linear-gradient(transparent, rgba(3, 7, 18, 0.7));
+  pointer-events: none;
+}
+
+.sobre .imageWrapper:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 40px 70px -20px rgba(0, 0, 0, 0.75),
+    0 0 90px -25px rgba(92, 179, 255, 0.35);
 }
 
 .sobre .imageWrapper img {
@@ -87,14 +135,20 @@
   height: auto;
   display: block;
   object-fit: cover;
+  transition: transform 0.6s ease;
 }
 
+.sobre .imageWrapper:hover img {
+  transform: scale(1.04);
+}
+
+
 .statsSection {
-  padding: 40px 20px 80px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
+  padding: 40px 24px 100px;
 }
 
 .statsContainer {
@@ -102,18 +156,43 @@
   grid-template-columns: repeat(4, 1fr);
   max-width: 1200px;
   width: 100%;
-  border: 1px solid #101c2e;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: linear-gradient(160deg, #0f1524 0%, var(--cor-superficie) 100%);
+  overflow: hidden;
 }
 
 .statCard {
-  background-color: #060c18;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 35px 20px;
-  border-right: 1px solid #101c2e;
+  padding: 44px 20px;
+  border-right: 1px solid var(--cor-borda);
   text-align: center;
+  transition: background-color 0.35s ease;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cor-destaque), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.statCard:hover {
+  background-color: rgba(92, 179, 255, 0.04);
+}
+
+.statCard:hover::before {
+  transform: scaleX(1);
 }
 
 .statCard:last-child {
@@ -121,36 +200,40 @@
 }
 
 .statValue {
-  color: #ffffff;
-  font-size: 2.2rem;
+  margin-bottom: 10px;
+  color: var(--cor-texto);
+  font-size: clamp(1.9rem, 3.5vw, 2.6rem);
   font-weight: 900;
-  letter-spacing: -1px;
-  margin-bottom: 8px;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
+  transition: color 0.35s ease;
+}
+
+.statCard:hover .statValue {
+  color: var(--cor-destaque);
 }
 
 .statLabel {
-  color: #6d7f99;
+  color: var(--cor-texto-apagado);
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
 }
 
-
 .sobre .valoresSection {
-  padding: 100px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 120px 24px;
+  border-top: 1px solid var(--cor-borda);
+  border-bottom: 1px solid var(--cor-borda);
 }
 
 .sobre .valoresContainer {
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 72px;
   max-width: 1200px;
   width: 100%;
 }
@@ -160,21 +243,31 @@
 }
 
 .sobre .tag {
-  color: #3b82f6;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  color: var(--cor-destaque);
   font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 2px;
-  display: inline-block;
-  margin-bottom: 20px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.sobre .tag::before {
+  content: "";
+  width: 40px;
+  height: 2px;
+  background: var(--cor-destaque);
 }
 
 .sobre .tituloValores {
-  font-size: 48px;
+  margin: 0 0 48px;
+  color: var(--cor-texto);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
   font-weight: 900;
   line-height: 1.05;
-  color: #ffffff;
-  letter-spacing: -1px;
-  margin-bottom: 45px;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
@@ -191,31 +284,40 @@
 }
 
 .iconBox {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  background-color: #08101e;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  background: linear-gradient(160deg, #0f1524 0%, var(--cor-superficie) 100%);
+  color: var(--cor-destaque);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+}
+
+.sobre .valorItem:hover .iconBox {
+  transform: translateY(-3px);
+  border-color: rgba(92, 179, 255, 0.4);
+  box-shadow: 0 12px 28px -12px rgba(92, 179, 255, 0.4);
 }
 
 .sobre .valorInfo h3 {
-  color: #ffffff;
+  margin: 0 0 8px;
+  color: var(--cor-texto);
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
   text-transform: uppercase;
 }
 
 .sobre .valorInfo p {
-  color: #6d7f99;
-  font-size: 16px;
-  line-height: 1.5;
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.95rem;
   font-weight: 400;
+  line-height: 1.65;
 }
 
 .sobre .valoresImage {
@@ -229,7 +331,7 @@
   .sobre .valoresContainer {
     flex-direction: column;
     align-items: stretch;
-    gap: 40px;
+    gap: 48px;
   }
 
   .sobre .imageCol,
@@ -246,26 +348,32 @@
   .statsContainer {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .statCard:nth-child(2) {
     border-right: none;
   }
-  
+
   .statCard:nth-child(1),
   .statCard:nth-child(2) {
-    border-bottom: 1px solid #101c2e;
-  }
-
-  .sobre .titulo {
-    font-size: 42px;
-  }
-
-  .sobre .tituloValores {
-    font-size: 36px;
+    border-bottom: 1px solid var(--cor-borda);
   }
 
   .sobre .tituloChamada {
     font-size: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .sobre .hero {
+    padding: 80px 20px 60px;
+  }
+
+  .sobre .valoresSection {
+    padding: 80px 20px;
+  }
+
+  .statsSection {
+    padding: 24px 20px 72px;
   }
 }
 
@@ -276,10 +384,27 @@
 
   .statCard {
     border-right: none;
-    border-bottom: 1px solid #101c2e;
+    border-bottom: 1px solid var(--cor-borda);
   }
 
   .statCard:last-child {
     border-bottom: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sobre .imageWrapper,
+  .sobre .imageWrapper img,
+  .statCard,
+  .statCard::before,
+  .statValue,
+  .iconBox {
+    transition: none;
+  }
+
+  .sobre .imageWrapper:hover,
+  .sobre .imageWrapper:hover img,
+  .sobre .valorItem:hover .iconBox {
+    transform: none;
   }
 }

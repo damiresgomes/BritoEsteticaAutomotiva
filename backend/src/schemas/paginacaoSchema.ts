@@ -41,8 +41,6 @@ export function formatarRespostaListagem<T>(
       },
     };
   }
-
-  // Se o frontend não pediu paginação explicita, devolve o array puro (zero quebra de front)
   return itens;
 }
 

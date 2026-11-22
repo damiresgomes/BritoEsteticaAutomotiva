@@ -1,13 +1,12 @@
 import { RequisicaoInvalidaError } from "../errors/AppError";
 
 export class Categoria {
-  private _id: number;
-  private _nome: string;
-
-  constructor(id: number, nome: string) {
-    this.validarNome(nome);
-    this._id = id;
-    this._nome = nome.trim();
+  constructor(
+    private _id: number,
+    private _nome: string
+  ) {
+    this.validarNome(_nome);
+    this._nome = _nome.trim();
   }
 
   private validarNome(nome: string): void {
@@ -19,13 +18,8 @@ export class Categoria {
     }
   }
 
-  get id(): number {
-    return this._id;
-  }
-
-  get nome(): string {
-    return this._nome;
-  }
+  get id(): number { return this._id; }
+  get nome(): string { return this._nome; }
 
   public atualizarNome(novoNome: string): void {
     this.validarNome(novoNome);

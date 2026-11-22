@@ -73,7 +73,7 @@ export default function Login() {
       const destinoSolicitado =
         caminho?.startsWith("/") &&
         !caminho.startsWith("//") &&
-        !["/autenticacao/login", "/autenticacao/cadastro", "/admin/login"].includes(caminho)
+        !["/autenticacao/LoginCliente", "/autenticacao/CadastrarCliente", "/autenticacao/LoginAdministrativo", "/autenticacao/login", "/autenticacao/cadastro", "/admin/login"].includes(caminho)
           ? `${caminho}${estado?.from?.search ?? ""}${estado?.from?.hash ?? ""}`
           : undefined;
       const destinoPadrao = "/minha-conta";
@@ -167,7 +167,7 @@ export default function Login() {
 
         <p className={styles.cadastroLink}>
           Cadastrar uma conta?{" "}
-          <Link to="/autenticacao/cadastro" state={{ from: estado?.from }}>
+          <Link to="/autenticacao/CadastrarCliente" state={{ from: estado?.from }}>
             Acesse o cadastro
           </Link>
         </p>

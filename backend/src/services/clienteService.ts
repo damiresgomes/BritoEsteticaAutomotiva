@@ -5,8 +5,8 @@ import {
   atualizarCliente as atualizarClienteRepositorio,
   atualizarClienteAdmin,
   buscarClienteAdmin,
-  buscarClientes,
   buscarContaClientePorId,
+  contarClientesAdmin,
   buscarPorId,
   criarCliente,
   criarClienteAdmin,
@@ -14,6 +14,7 @@ import {
   desativarClienteAdmin,
   listarClientesAdmin,
   reativarClienteAdmin,
+  atualizarSenhaContaCliente,
   type DadosClienteAdmin,
 } from "../repositories/clienteRepository";
 import type { z } from "zod";
@@ -26,6 +27,7 @@ import {
   CadastroClienteInput,
 } from "../schemas/clienteSchema";
 import { Cliente } from "../entities/cliente";
+import { normalizarCpf } from "../validators/cpf";
 
 interface ErroDeBanco {
   code?: string;
@@ -38,11 +40,12 @@ function emailDuplicado(erro: unknown): boolean {
 }
 
 export async function listarClientes(pagina?: number, limite?: number) {
-  if (pagina !== undefined || limite !== undefined) {
-    const offset = pagina !== undefined && limite !== undefined ? (pagina - 1) * limite : undefined;
-    return buscarClientes(limite, offset);
-  }
-  return listarClientesAdmin();
+  const offset = pagina !== undefined && limite !== undefined ? (pagina - 1) * limite : undefined;
+  const [clientes, total] = await Promise.all([
+    listarClientesAdmin(limite, offset),
+    contarClientesAdmin(),
+  ]);
+  return { clientes, total };
 }
 
 export async function buscarCliente(id: number) {
@@ -68,10 +71,11 @@ export async function buscarPerfilCliente(id: number): Promise<Cliente> {
 }
 
 export async function cadastrarCliente(dados: CadastroClienteInput): Promise<{ id: number }> {
+  const cpf = normalizarCpf(dados.cpf);
   new Cliente(0, dados.nome, dados.email, dados.telefone, true);
   const senhaHash = await bcrypt.hash(dados.senha, 10);
   try {
-    const id = await criarCliente({ ...dados, senhaHash });
+    const id = await criarCliente({ ...dados, cpf, senhaHash });
     return { id };
   } catch (erro) {
     if ((erro as { code?: string })?.code === "ER_DUP_ENTRY") {
@@ -101,17 +105,22 @@ export async function atualizarMeuCadastroCliente(id: number, dados: AtualizarCl
     throw new RecursoNaoEncontradoError("Cliente não encontrado.");
   }
 
-  const senhaHash = await bcrypt.hash(dados.senha, 10);
+  const senhaHash = dados.senha ? await bcrypt.hash(dados.senha, 10) : undefined;
   cliente.atualizarCadastro(dados.nome, dados.telefone, senhaHash);
 
   const atualizado = await atualizarCadastroCliente(id, {
     nome: cliente.nome,
     senhaHash,
     telefone: cliente.telefone,
+    cpf: normalizarCpf(dados.cpf),
   });
 
   if (atualizado === 0) {
     throw new RecursoNaoEncontradoError("Cliente não encontrado para atualização.");
+  }
+
+  if (senhaHash) {
+    await atualizarSenhaContaCliente(id, senhaHash);
   }
 }
 
@@ -172,7 +181,11 @@ export async function excluirCliente(id: number): Promise<string | number> {
     return resultado;
   } catch (erro) {
     if (erro instanceof AppError) throw erro;
-    return desativarCliente(id);
+    const linhasAfetadas = await desativarCliente(id);
+    if (linhasAfetadas === 0) {
+      throw new RecursoNaoEncontradoError("Cliente não encontrado.");
+    }
+    return linhasAfetadas;
   }
 }
 

@@ -8,6 +8,7 @@ import {
   buscarAgendamentoCliente,
   buscarAgendamentoPorId,
   buscarStatusAgendamento,
+  contarAgendamentosAdmin,
   criarAgendamento,
   criarAgendamentoCompleto,
   existeConflitoHorario,
@@ -30,6 +31,12 @@ const HORARIOS_FUNCIONAMENTO = [
 function agora() {
   const texto = new Date().toLocaleString("sv-SE", { timeZone: "America/Sao_Paulo" });
   return { data: texto.slice(0, 10), hora: texto.slice(11, 16) };
+}
+
+function garantirCancelamentoPendente(statusAtual: string): void {
+  if (statusAtual !== "Pendente") {
+    throw new ConflitoError("Só é possível cancelar agendamentos com status pendente.");
+  }
 }
 
 export async function listarHorariosDisponiveis(data: string): Promise<string[]> {
@@ -89,6 +96,8 @@ export async function atualizarMeuAgendamento(
     throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
   }
 
+  await validarServicosDoCliente(dados.servicos);
+
   const novoCarro = new Carro(dados.placa_veiculo, dados.modelo_veiculo);
   agendamento.atualizarDados(dados.data_hora, novoCarro);
 
@@ -109,6 +118,7 @@ export async function cancelarMeuAgendamento(
     throw new RecursoNaoEncontradoError("Agendamento não encontrado.");
   }
 
+  garantirCancelamentoPendente(agendamento.status);
   agendamento.cancelar();
 
   const linhasAfetadas = await atualizarStatusAgendamento(id_agendamento, "Cancelado");
@@ -186,14 +196,29 @@ async function validarServicosSelecionados(dados: CadastroAgendamentoInput) {
   };
 }
 
+async function validarServicosDoCliente(idsServicos: number[]): Promise<void> {
+  const servicos = await buscarServicosPorIds(idsServicos);
+  const principais = servicos.filter((servico) => servico.idCategoria === CATEGORIA_PRINCIPAL);
+  const extras = servicos.filter((servico) => servico.idCategoria === CATEGORIA_EXTRA);
+
+  if (principais.length !== 1 || extras.length !== idsServicos.length - 1) {
+    throw new AppError(400, "Selecione um serviço principal e, opcionalmente, serviços extras.");
+  }
+}
+
 function validarHorarioFuncionamento(horario: string): void {
   if (!HORARIOS_FUNCIONAMENTO.includes(horario)) {
     throw new AppError(400, "Horário fora do funcionamento da empresa.");
   }
 }
 
-export async function listarAgendamentosAdministrativos() {
-  return listarAgendamentosAdmin();
+export async function listarAgendamentosAdministrativos(pagina?: number, limite?: number) {
+  const offset = pagina !== undefined && limite !== undefined ? (pagina - 1) * limite : undefined;
+  const [agendamentos, total] = await Promise.all([
+    listarAgendamentosAdmin(limite, offset),
+    contarAgendamentosAdmin(),
+  ]);
+  return { agendamentos, total };
 }
 
 export async function atualizarAgendamentoAdministrativo(
@@ -208,6 +233,9 @@ export async function atualizarAgendamentoAdministrativo(
   if (!statusAtual) throw new AppError(404, "Agendamento não encontrado.");
   if (statusAtual === "Cancelado" && dados.status !== "Cancelado") {
     throw new AppError(409, "Agendamento cancelado não pode ser reativado.");
+  }
+  if (dados.status === "Cancelado") {
+    garantirCancelamentoPendente(statusAtual);
   }
 
   const { idsServicos } = await validarServicosSelecionados(dados);
@@ -251,7 +279,13 @@ export async function atualizarStatusAdministrativo(
   if (statusAtual === "Cancelado" && status !== "Cancelado") {
     throw new AppError(409, "Agendamento cancelado não pode ser reativado.");
   }
-  await atualizarStatusAgendamento(id, status);
+  if (status === "Cancelado") {
+    garantirCancelamentoPendente(statusAtual);
+  }
+  const linhasAfetadas = await atualizarStatusAgendamento(id, status);
+  if (linhasAfetadas === 0) {
+    throw new RecursoNaoEncontradoError("Agendamento não encontrado para atualização de status.");
+  }
 }
 
 export async function cancelarAgendamentoAdministrativo(id: number): Promise<void> {

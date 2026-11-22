@@ -52,10 +52,14 @@ export async function cadastrarAgendamentoController(
 }
 
 export async function listarAgendamentosAdminController(
-  _request: Request,
+  request: Request,
   response: Response
 ): Promise<Response> {
-  return response.status(200).json(await listarAgendamentosAdministrativos());
+  const { pagina, limite } = paginacaoQuerySchema.parse(request.query);
+  const { agendamentos, total } = await listarAgendamentosAdministrativos(pagina, limite);
+
+  response.setHeader("X-Total-Count", total.toString());
+  return response.status(200).json(formatarRespostaListagem(agendamentos, total, pagina, limite));
 }
 
 export async function cadastrarAgendamentoAdminController(
@@ -77,7 +81,8 @@ export async function atualizarAgendamentoAdminController(
 ): Promise<Response> {
   const dados = atualizarAgendamentoAdminSchema.parse(request.body);
   const { clienteId, ...agendamento } = dados;
-  await atualizarAgendamentoAdministrativo(Number(request.params.id), {
+  const id = validarId(request.params.id, "agendamento");
+  await atualizarAgendamentoAdministrativo(id, {
     ...agendamento,
     clienteId,
   });
@@ -88,7 +93,8 @@ export async function cancelarAgendamentoAdminController(
   request: Request,
   response: Response
 ): Promise<Response> {
-  await cancelarAgendamentoAdministrativo(Number(request.params.id));
+  const id = validarId(request.params.id, "agendamento");
+  await cancelarAgendamentoAdministrativo(id);
   return response.status(200).json({ message: "Agendamento cancelado com sucesso." });
 }
 

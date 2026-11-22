@@ -3,8 +3,11 @@ import { cadastroClienteSchema, loginSchema } from "../schemas/authSchema";
 import { buscarPerfilConta, cadastrarCliente, loginAuthService } from "../services/authService";
 import { expirarToken } from "../services/revogacaoService";
 import { AppError } from "../errors/AppError";
-import { perfilAdminSchema } from "../schemas/usuarioSchema";
-import { atualizarPerfilAdministrador } from "../services/usuarioService";
+import { atualizacaoUsuarioSchema, perfilAdminSchema } from "../schemas/usuarioSchema";
+import {
+  atualizarPerfilAdministrador,
+  atualizar as atualizarUsuario,
+} from "../services/usuarioService";
 
 export async function login(request: Request, response: Response): Promise<Response> {
   const dados = loginSchema.parse(request.body);
@@ -55,7 +58,7 @@ export async function perfil(request: Request, response: Response): Promise<Resp
     throw new AppError(401, "Token não informado");
   }
 
-  const usuario = await buscarPerfilConta(sessao.id);
+  const usuario = await buscarPerfilConta(sessao.id, sessao.usuarioId);
 
   return response.status(200).json(usuario);
 }
@@ -71,6 +74,20 @@ export async function atualizarPerfilAdmin(
 
   const dados = perfilAdminSchema.parse(request.body);
   await atualizarPerfilAdministrador(sessao.usuarioId, dados);
+  return response.status(200).json({ message: "Perfil atualizado com sucesso." });
+}
+
+export async function atualizarMeuUsuario(
+  request: Request,
+  response: Response
+): Promise<Response> {
+  const sessao = request.usuario;
+  if (!sessao?.usuarioId) {
+    throw new AppError(403, "Usuário não encontrado para edição.");
+  }
+
+  const dados = atualizacaoUsuarioSchema.parse(request.body);
+  await atualizarUsuario(sessao.usuarioId, dados);
   return response.status(200).json({ message: "Perfil atualizado com sucesso." });
 }
 

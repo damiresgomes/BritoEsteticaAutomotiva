@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { formatarRespostaListagem, paginacaoQuerySchema } from "../schemas/paginacaoSchema";
 import {
   atualizacaoClienteAdminSchema,
   cadastroClienteAdminSchema,
@@ -14,10 +15,14 @@ import {
 } from "../services/clienteService";
 
 export async function listarClientesController(
-  _request: Request,
+  request: Request,
   response: Response
 ): Promise<Response> {
-  return response.status(200).json(await listarClientes());
+  const { pagina, limite } = paginacaoQuerySchema.parse(request.query);
+  const { clientes, total } = await listarClientes(pagina, limite);
+
+  response.setHeader("X-Total-Count", total.toString());
+  return response.status(200).json(formatarRespostaListagem(clientes, total, pagina, limite));
 }
 
 export async function buscarClienteController(

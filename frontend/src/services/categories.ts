@@ -1,4 +1,5 @@
 import api from "./api";
+import type { RespostaListagem } from "./listagem";
 
 export interface Categoria {
   id_categoria: number;
@@ -8,6 +9,16 @@ export interface Categoria {
 export const categoriaService = {
   async listar(): Promise<Categoria[]> {
     const response = await api.get<Categoria[]>("/categorias/listar");
+    return response.data;
+  },
+
+  async listarPaginado(
+    pagina: number,
+    limite: number
+  ): Promise<RespostaListagem<Categoria>> {
+    const response = await api.get<RespostaListagem<Categoria>>("/categorias/listar", {
+      params: { pagina, limite },
+    });
     return response.data;
   },
 

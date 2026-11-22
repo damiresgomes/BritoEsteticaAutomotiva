@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { agendamentoService, type AgendamentoAdministrativo } from "../../../services/agendamentos";
+import {
+  agendamentoService,
+  type AgendamentoDashboard,
+  type StatusAgendamentoCompleto,
+} from "../../../services/agendamentos";
 import { dataLocalAtual } from "../../../utils/datas";
 import CardAdmin from "../../../components/CardAdmin";
 import {
@@ -10,10 +14,20 @@ import {
 } from "./validators";
 import styles from "./styles.module.css";
 
+const OPCOES_STATUS: StatusAgendamentoCompleto[] = [
+  "Pendente",
+  "Confirmado",
+  "Em atendimento",
+  "Concluído",
+  "Cancelado",
+];
+
 export default function Dashboard() {
-  const [agendamentos, setAgendamentos] = useState<AgendamentoAdministrativo[]>([]);
+  const [agendamentos, setAgendamentos] = useState<AgendamentoDashboard[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [mensagemSucesso, setMensagemSucesso] = useState("");
+  const [alterandoStatusId, setAlterandoStatusId] = useState<number | null>(null);
 
   async function carregarAgendamentos() {
     setCarregando(true);
@@ -28,11 +42,31 @@ export default function Dashboard() {
     }
   }
 
+  async function alterarStatus(
+    agendamento: AgendamentoDashboard,
+    novoStatus: StatusAgendamentoCompleto
+  ) {
+    if (novoStatus === agendamento.status) return;
+
+    setAlterandoStatusId(agendamento.id);
+    setErro(null);
+    setMensagemSucesso("");
+
+    try {
+      await agendamentoService.atualizarStatus(agendamento.id, novoStatus);
+      setMensagemSucesso(`Status alterado para ${novoStatus}.`);
+      await carregarAgendamentos();
+    } catch (erroRequisicao) {
+      setErro(mensagemErroAgendamentos(erroRequisicao));
+    } finally {
+      setAlterandoStatusId(null);
+    }
+  }
   useEffect(() => {
     let ativo = true;
 
     agendamentoService
-      .listarAdmin()
+      .listarAdminDashboard()
       .then((dados) => {
         if (ativo) setAgendamentos(dados);
       })
@@ -104,6 +138,12 @@ export default function Dashboard() {
         </div>
       )}
 
+      {mensagemSucesso && (
+        <p className={styles.successMessage} role="status">
+          {mensagemSucesso}
+        </p>
+      )}
+
       <div className={styles.metrics} aria-label="Resumo de agendamentos">
         <CardAdmin
           titulo="Agendamentos hoje"
@@ -161,10 +201,26 @@ export default function Dashboard() {
                     <td>{formatarData(agendamento.data)}</td>
                     <td>{agendamento.horario}</td>
                     <td>
-                      <span className={`${styles.status} ${classeStatus(agendamento.status)}`}>
-                        {agendamento.status}
-                      </span>
+                      <select
+                        className={`${styles.status} ${styles.statusSelect} ${classeStatus(agendamento.status)}`}
+                        value={agendamento.status}
+                        onChange={(evento) =>
+                          void alterarStatus(
+                            agendamento,
+                            evento.target.value as StatusAgendamentoCompleto
+                          )
+                        }
+                        disabled={alterandoStatusId === agendamento.id || carregando}
+                        aria-label={`Status do agendamento de ${agendamento.cliente}`}
+                      >
+                        {OPCOES_STATUS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
                     </td>
+
                   </tr>
                 ))}
               </tbody>

@@ -1,23 +1,20 @@
 import { Pessoa } from "./pessoa";
 
 export class Cliente extends Pessoa {
-  private _senhaHash?: string;
-
   constructor(
     id: number,
     nome: string,
     email: string,
     telefone: string,
     ativo: boolean = true,
-    senhaHash?: string
+    private _senhaHash?: string,
+    private _cpf?: string
   ) {
     super(id, nome, email, telefone, ativo);
-    this._senhaHash = senhaHash;
   }
 
-  get senhaHash(): string | undefined {
-    return this._senhaHash;
-  }
+  get senhaHash(): string | undefined { return this._senhaHash; }
+  get cpf(): string | undefined { return this._cpf; }
 
   public atualizarCadastro(nome: string, telefone: string, senhaHash?: string): void {
     this._nome = nome.trim();
@@ -27,9 +24,7 @@ export class Cliente extends Pessoa {
     }
   }
 
-  public override obterPapel(): string {
-    return "cliente";
-  }
+  public override obterPapel(): string { return "cliente"; }
 
   public override toJSON() {
     return {
@@ -37,6 +32,7 @@ export class Cliente extends Pessoa {
       nome: this._nome,
       email: this._email,
       telefone: this._telefone,
+      cpf: this._cpf ?? null,
       ativo: this._ativo ? "Sim" : "Não",
     };
   }

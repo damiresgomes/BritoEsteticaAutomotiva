@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { lerToken } from "./authStorage";
 
+const baseURL = (import.meta.env.VITE_API_URL || "http://localhost:3333/api")
+    .replace(":3000", ":3333")
+    .replace(/\/$/, "");
+
 const api = axios.create({
-    baseURL: (import.meta.env.VITE_API_URL || "http://localhost:3333").replace(":3000", ":3333"),
+    baseURL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -13,9 +17,16 @@ api.interceptors.request.use((config) => {
   const rotaPublica =
     url.startsWith("/auth/login") ||
     url.startsWith("/auth/admin/login") ||
+    url.startsWith("/auth/cliente/login") ||
+    url.startsWith("/admin/login") ||
+    url.startsWith("/autenticacao/LoginAdministrativo") ||
+    url.startsWith("/autenticacao/LoginCliente") ||
+    url.startsWith("/autenticacao/CadastrarCliente") ||
     url.startsWith("/auth/cadastro-cliente") ||
     url.startsWith("/servicos/listar");
   const tokenCliente =
+    url.startsWith("/auth/cliente/") ||
+    url.startsWith("/agendamentos/cliente/") ||
     url.startsWith("/agendamentos/horarios") ||
     url.startsWith("/agendamentos/cadastro");
   const token = rotaPublica ? null : lerToken(tokenCliente ? "cliente" : "admin");

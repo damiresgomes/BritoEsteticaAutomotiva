@@ -1,4 +1,5 @@
 import api from "./api";
+import type { RespostaListagem } from "./listagem";
 
 export type StatusCliente = "Ativo" | "Inativo" | "Sem conta";
 
@@ -23,6 +24,16 @@ export interface DadosCliente {
 export const clienteService = {
   async listar(): Promise<ClienteAdmin[]> {
     const response = await api.get<ClienteAdmin[]>("/clientes/listar");
+    return response.data;
+  },
+
+  async listarPaginado(
+    pagina: number,
+    limite: number
+  ): Promise<RespostaListagem<ClienteAdmin>> {
+    const response = await api.get<RespostaListagem<ClienteAdmin>>("/clientes/listar", {
+      params: { pagina, limite },
+    });
     return response.data;
   },
 

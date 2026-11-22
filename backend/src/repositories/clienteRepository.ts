@@ -7,6 +7,7 @@ export interface NovoCliente {
   email: string | null;
   senhaHash: string;
   telefone: string;
+  cpf: string;
 }
 
 export interface ContaCliente {
@@ -15,25 +16,34 @@ export interface ContaCliente {
   email: string | null;
   telefone: string | null;
   senha_hash: string | null;
+  cpf?: string | null;
   ativo: string;
 }
 
 interface ClienteRow extends RowDataPacket, ContaCliente {}
 
+const SELECT_CLIENTE_COM_CONTA = `
+  SELECT c.id_cliente, c.nome, c.telefone, c.senha_hash, c.cpf, c.ativo,
+         ca.email AS email
+  FROM clientes c
+  LEFT JOIN contas_acesso ca ON ca.id_cliente = c.id_cliente AND ca.papel = 'cliente'
+`;
+
 function mapearCliente(row: ClienteRow): Cliente {
   return new Cliente(
     row.id_cliente,
     row.nome,
-    row.email ?? "",
+    row.email ?? "sem-email",
     row.telefone ?? "",
     row.ativo === "Sim",
-    row.senha_hash ?? undefined
+    row.senha_hash ?? undefined,
+    row.cpf ?? undefined
   );
 }
 
 export async function buscarContaClientePorEmail(email: string): Promise<Cliente | null> {
   const [rows] = await pool.execute<ClienteRow[]>(
-    "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE email = ? LIMIT 1",
+    "SELECT id_cliente, nome, email, telefone, senha_hash, cpf, ativo FROM clientes WHERE email = ? LIMIT 1",
     [email]
   );
   if (rows.length === 0) return null;
@@ -42,7 +52,7 @@ export async function buscarContaClientePorEmail(email: string): Promise<Cliente
 
 export async function buscarContaClientePorId(id: number): Promise<Cliente | null> {
   const [rows] = await pool.execute<ClienteRow[]>(
-    "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE id_cliente = ? LIMIT 1",
+    `${SELECT_CLIENTE_COM_CONTA} WHERE c.id_cliente = ? LIMIT 1`,
     [id]
   );
   if (rows.length === 0) return null;
@@ -51,15 +61,15 @@ export async function buscarContaClientePorId(id: number): Promise<Cliente | nul
 
 export async function criarCliente(cliente: NovoCliente): Promise<number> {
   const [resultado] = await pool.execute<ResultSetHeader>(
-    "INSERT INTO clientes (nome, email, senha_hash, telefone, ativo) VALUES (?, ?, ?, ?, 'Sim')",
-    [cliente.nome, cliente.email, cliente.senhaHash, cliente.telefone]
+    "INSERT INTO clientes (nome, email, senha_hash, telefone, cpf, ativo) VALUES (?, ?, ?, ?, ?, 'Sim')",
+    [cliente.nome, cliente.email, cliente.senhaHash, cliente.telefone, cliente.cpf]
   );
   return resultado.insertId;
 }
 
 export async function buscarPorId(id_cliente: number): Promise<Cliente | null> {
   const [rows] = await pool.execute<ClienteRow[]>(
-    "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes WHERE id_cliente = ? LIMIT 1",
+    `${SELECT_CLIENTE_COM_CONTA} WHERE c.id_cliente = ? LIMIT 1`,
     [id_cliente]
   );
   if (rows.length === 0) return null;
@@ -75,7 +85,7 @@ export async function buscarClientes(
   );
   const total = Number(totalRow?.total || 0);
 
-  let query = "SELECT id_cliente, nome, email, telefone, senha_hash, ativo FROM clientes ORDER BY nome";
+  let query = "SELECT id_cliente, nome, email, telefone, senha_hash, cpf, ativo FROM clientes ORDER BY nome";
   const params: number[] = [];
 
   if (limite !== undefined && offset !== undefined) {
@@ -102,11 +112,27 @@ export async function atualizarCliente(
 
 export async function atualizarCadastroCliente(
   id_cliente: number,
-  cliente: { nome: string; senhaHash: string; telefone: string }
+  cliente: { nome: string; senhaHash?: string; telefone: string; cpf: string }
+): Promise<number> {
+  const alterarSenha = Boolean(cliente.senhaHash);
+  const query = alterarSenha
+    ? "UPDATE clientes SET nome = ?, senha_hash = ?, telefone = ?, cpf = ? WHERE id_cliente = ?"
+    : "UPDATE clientes SET nome = ?, telefone = ?, cpf = ? WHERE id_cliente = ?";
+  const valores: (string | number)[] = alterarSenha
+    ? [cliente.nome, cliente.senhaHash ?? "", cliente.telefone, cliente.cpf, id_cliente]
+    : [cliente.nome, cliente.telefone, cliente.cpf, id_cliente];
+
+  const [resultado] = await pool.execute<ResultSetHeader>(query, valores);
+  return resultado.affectedRows;
+}
+
+export async function atualizarSenhaContaCliente(
+  id_cliente: number,
+  senhaHash: string
 ): Promise<number> {
   const [resultado] = await pool.execute<ResultSetHeader>(
-    "UPDATE clientes SET nome = ?, senha_hash = ?, telefone = ? WHERE id_cliente = ?",
-    [cliente.nome, cliente.senhaHash, cliente.telefone, id_cliente]
+    "UPDATE contas_acesso SET senha = ? WHERE id_cliente = ? AND papel = 'cliente'",
+    [senhaHash, id_cliente]
   );
   return resultado.affectedRows;
 }
@@ -160,11 +186,27 @@ const SELECT_CLIENTES = `
       ON ca.id_cliente = c.id_cliente AND ca.papel = 'cliente'
 `;
 
-export async function listarClientesAdmin(): Promise<ClienteAdmin[]> {
-  const [clientes] = await pool.execute<ClienteAdmin[]>(
-    `${SELECT_CLIENTES} ORDER BY c.nome, c.id_cliente`
-  );
+export async function listarClientesAdmin(
+  limite?: number,
+  offset?: number
+): Promise<ClienteAdmin[]> {
+  let query = `${SELECT_CLIENTES} ORDER BY c.nome, c.id_cliente`;
+  const params: number[] = [];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
+  }
+
+  const [clientes] = await pool.execute<ClienteAdmin[]>(query, params);
   return clientes;
+}
+
+export async function contarClientesAdmin(): Promise<number> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM clientes"
+  );
+  return Number(totalRow?.total || 0);
 }
 
 export async function buscarClienteAdmin(id: number): Promise<ClienteAdmin | null> {

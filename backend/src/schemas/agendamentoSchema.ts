@@ -21,10 +21,16 @@ function dataExiste(valor: string): boolean {
   );
 }
 
+function naoEhDomingo(valor: string): boolean {
+  const [ano, mes, dia] = valor.split("-").map(Number);
+  return new Date(Date.UTC(ano, mes - 1, dia)).getUTCDay() !== 0;
+}
+
 const dataSchema = z
   .string({ error: "Data é obrigatória" })
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida")
-  .refine(dataExiste, "Data inválida");
+  .refine(dataExiste, "Data inválida")
+  .refine(naoEhDomingo, "Não é possível realizar agendamentos aos domingos.");
 
 export const cadastroAgendamentoSchema = z.object({
   placa: z
@@ -69,11 +75,22 @@ export const atualizarAgendamentoAdminSchema = cadastroAgendamentoSchema.extend(
 }).strict();
 
 export const criarAgendamentoSchema = z.object({
-  data_hora: z.string().datetime({ offset: true }).refine(
-    (valor) => new Date(valor).getTime() > Date.now(),
-    "O agendamento precisa ser em uma data futura."
-  ),
-  placa_veiculo: z.string().trim().min(5).max(10),
+  data_hora: z
+    .string()
+    .datetime({ offset: true })
+    .refine(
+      (valor) => new Date(valor).getTime() > Date.now(),
+      "O agendamento precisa ser em uma data futura."
+    )
+    .refine(
+      (valor) => naoEhDomingo(valor.slice(0, 10)),
+      "Não é possível realizar agendamentos aos domingos."
+    ),
+  placa_veiculo: z
+    .string({ error: "Placa é obrigatória" })
+    .trim()
+    .refine((valor) => PLACA_VALIDA.test(limparPlaca(valor)), "Placa inválida")
+    .transform(normalizarPlaca),
   modelo_veiculo: z.string().trim().min(2).max(50),
   servicos: z.array(z.number().int().positive()).min(1).max(10)
     .refine((ids) => new Set(ids).size === ids.length, "Não repita serviços no mesmo agendamento."),

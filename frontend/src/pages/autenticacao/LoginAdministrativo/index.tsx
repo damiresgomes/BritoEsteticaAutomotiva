@@ -67,7 +67,7 @@ export default function LoginAdmin() {
       const destinoSolicitado =
         caminho?.startsWith("/") &&
         !caminho.startsWith("//") &&
-        caminho !== "/admin/login"
+        caminho !== "/autenticacao/LoginAdministrativo" && caminho !== "/admin/login"
           ? `${caminho}${estado?.from?.search ?? ""}${estado?.from?.hash ?? ""}`
           : undefined;
 

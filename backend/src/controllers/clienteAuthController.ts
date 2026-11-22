@@ -21,7 +21,9 @@ export async function loginClienteController(request: Request, response: Respons
 export async function logoutClienteController(request: Request, response: Response): Promise<Response> {
   const sessao = request.cliente;
   if (!sessao) throw new AppError(401, "Token não informado.");
-  expirarToken(sessao.jti, sessao.exp ?? 3600);
+  const agora = Math.floor(Date.now() / 1000);
+  const segundosRestantes = Math.max((sessao.exp ?? agora + 3600) - agora, 1);
+  expirarToken(sessao.jti, segundosRestantes);
   return response.status(200).json({ message: "Sessão encerrada com sucesso." });
 }
 

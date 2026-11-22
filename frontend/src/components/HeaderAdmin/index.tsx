@@ -12,11 +12,8 @@ type HeaderAdminProps = {
   breadcrumb?: string;
 };
 
-export default function HeaderAdmin({
-  titulo,
-  links,
-  breadcrumb = "// CADASTROS",
-}: HeaderAdminProps) {
+export default function HeaderAdmin({ titulo, links, breadcrumb = "// CADASTROS" }: HeaderAdminProps) {
+  
   return (
     <header className={styles.headerSection}>
       <span className={styles.breadcrumb}>{breadcrumb}</span>

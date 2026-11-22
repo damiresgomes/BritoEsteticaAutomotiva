@@ -12,7 +12,6 @@ import { CadastroCategoriaInput } from "../schemas/categoriaSchema";
 import { Categoria } from "../entities/categoria";
 
 export async function cadastrarCategoria(dados: CadastroCategoriaInput): Promise<{ id: number }> {
-  // Cria temporariamente a entidade para disparar validação de regras de domínio encapsuladas
   new Categoria(0, dados.nome_categoria);
 
   if (await buscarCategoriaPorNomeExato(dados.nome_categoria)) {
@@ -40,8 +39,6 @@ export async function buscarCategoria(id_categoria: number): Promise<Categoria> 
 
 export async function atualizarCategoria(id_categoria: number, dados: CadastroCategoriaInput): Promise<void> {
   const categoria = await buscarCategoria(id_categoria);
-
-  // Executa validação de domínio através da classe de entidade
   categoria.atualizarNome(dados.nome_categoria);
 
   const categoriaComMesmoNome = await buscarCategoriaPorNomeExato(dados.nome_categoria);

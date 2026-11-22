@@ -12,76 +12,45 @@ export interface ServicoItemAgendado {
   id_servico: number;
   nome_servico: string;
   preco: number;
+  id_categoria: number;
 }
 
 const TRANSICOES_VALIDAS: Record<StatusAgendamento, StatusAgendamento[]> = {
   Pendente: ["Confirmado", "Cancelado"],
-  Confirmado: ["Em atendimento", "Cancelado"],
+  Confirmado: ["Em atendimento"],
   "Em atendimento": ["Concluído"],
   Concluído: [],
   Cancelado: [],
 };
 
 export class Agendamento {
-  private _id: number;
-  private _dataHora: string;
-  private _status: StatusAgendamento;
-  private _idCliente: number;
-  private _carro: Carro;
-  private _nomeCliente?: string;
-  private _servicos: ServicoItemAgendado[];
-
   constructor(
-    id: number,
-    dataHora: string,
-    status: StatusAgendamento,
-    idCliente: number,
-    carro: Carro,
-    servicos: ServicoItemAgendado[] = [],
-    nomeCliente?: string
-  ) {
-    this._id = id;
-    this._dataHora = dataHora;
-    this._status = status;
-    this._idCliente = idCliente;
-    this._carro = carro;
-    this._servicos = servicos;
-    this._nomeCliente = nomeCliente;
-  }
+    private _id: number,
+    private _dataHora: string,
+    private _status: StatusAgendamento,
+    private _idCliente: number,
+    private _carro: Carro,
+    private _servicos: ServicoItemAgendado[] = [],
+    private _nomeCliente?: string
+  ) {}
 
-  get id(): number {
-    return this._id;
-  }
-
-  get dataHora(): string {
-    return this._dataHora;
-  }
-
-  get status(): StatusAgendamento {
-    return this._status;
-  }
-
-  get idCliente(): number {
-    return this._idCliente;
-  }
-
-  get carro(): Carro {
-    return this._carro;
-  }
-
-  get nomeCliente(): string | undefined {
-    return this._nomeCliente;
-  }
-
-  get servicos(): ServicoItemAgendado[] {
-    return this._servicos;
-  }
+  get id(): number { return this._id; }
+  get dataHora(): string { return this._dataHora; }
+  get status(): StatusAgendamento { return this._status; }
+  get idCliente(): number { return this._idCliente; }
+  get carro(): Carro { return this._carro; }
+  get nomeCliente(): string | undefined { return this._nomeCliente; }
+  get servicos(): ServicoItemAgendado[] { return this._servicos; }
 
   public definirServicos(servicos: ServicoItemAgendado[]): void {
     this._servicos = servicos;
   }
 
   public transitarPara(novoStatus: StatusAgendamento): void {
+    if (novoStatus === "Cancelado" && this._status !== "Pendente") {
+      throw new ConflitoError("Só é possível cancelar agendamentos com status pendente.");
+    }
+
     const permitidas = TRANSICOES_VALIDAS[this._status];
     if (!permitidas.includes(novoStatus)) {
       throw new ConflitoError(
@@ -91,27 +60,14 @@ export class Agendamento {
     this._status = novoStatus;
   }
 
-  public confirmar(): void {
-    this.transitarPara("Confirmado");
-  }
-
-  public iniciarAtendimento(): void {
-    this.transitarPara("Em atendimento");
-  }
-
-  public concluir(): void {
-    this.transitarPara("Concluído");
-  }
-
-  public cancelar(): void {
-    this.transitarPara("Cancelado");
-  }
+  public confirmar(): void { this.transitarPara("Confirmado"); }
+  public iniciarAtendimento(): void { this.transitarPara("Em atendimento"); }
+  public concluir(): void { this.transitarPara("Concluído"); }
+  public cancelar(): void { this.transitarPara("Cancelado"); }
 
   public garantirModificavel(): void {
-    if (this._status !== "Pendente" && this._status !== "Confirmado") {
-      throw new ConflitoError(
-        `Não é possível alterar um agendamento com status "${this._status}".`
-      );
+    if (this._status !== "Pendente") {
+      throw new ConflitoError("Só é possível editar agendamentos com status pendente.");
     }
   }
 

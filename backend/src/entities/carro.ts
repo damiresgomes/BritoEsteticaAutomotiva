@@ -1,13 +1,13 @@
 import { RequisicaoInvalidaError } from "../errors/AppError";
 
 export class Carro {
-  private _placa: string;
-  private _modelo: string;
-
-  constructor(placa: string, modelo: string) {
-    this.validarCampos(placa, modelo);
-    this._placa = placa.trim().toUpperCase();
-    this._modelo = modelo.trim();
+  constructor(
+    private _placa: string,
+    private _modelo: string
+  ) {
+    this.validarCampos(_placa, _modelo);
+    this._placa = _placa.trim().toUpperCase();
+    this._modelo = _modelo.trim();
   }
 
   private validarCampos(placa: string, modelo: string): void {
@@ -19,13 +19,8 @@ export class Carro {
     }
   }
 
-  get placa(): string {
-    return this._placa;
-  }
-
-  get modelo(): string {
-    return this._modelo;
-  }
+  get placa(): string { return this._placa; }
+  get modelo(): string { return this._modelo; }
 
   public atualizarPlaca(novaPlaca: string): void {
     if (!novaPlaca || novaPlaca.trim().length === 0) {
