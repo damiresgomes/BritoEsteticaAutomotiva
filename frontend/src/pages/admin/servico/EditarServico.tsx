@@ -1,7 +1,13 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import FormularioServico from "./FormularioServico";
 
-export default function EditarServico () {
+export default function EditarServico() {
   const { id } = useParams();
-  return <FormularioServico id={Number(id)} />;
+  const servicoId = Number(id);
+
+  if (!Number.isInteger(servicoId) || servicoId <= 0) {
+    return <Navigate to="/admin/servico" replace />;
+  }
+
+  return <FormularioServico id={servicoId} />;
 }

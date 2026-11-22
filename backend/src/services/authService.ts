@@ -102,8 +102,6 @@ export async function loginAuthService(
       },
     };
   }
-
-  // Fallback para login direto na tabela usuario
   const usuario = await buscarUsuarioPorEmail(email);
   if (!usuario) {
     await bcrypt.compare(senha, HASH_FICTICIO);
@@ -119,7 +117,7 @@ export async function loginAuthService(
     throw new AppError(403, "Conta inativa");
   }
 
-  const papelConta: "cliente" | "admin" = usuario.papel === "admin" ? "admin" : "cliente";
+  const papelConta: "cliente" | "admin" = String(usuario.papel).toLowerCase() === "admin" ? "admin" : "cliente";
 
   if (papelEsperado && papelConta !== papelEsperado) {
     throw new AppError(
@@ -135,7 +133,7 @@ export async function loginAuthService(
       id: usuario.id,
       email: usuario.email,
       tipo: "usuario",
-      papel: usuario.papel,
+      papel: papelConta,
       jti: randomUUID(),
     },
     env.JWT_SECRET,
@@ -153,7 +151,10 @@ export async function loginAuthService(
   };
 }
 
-export async function buscarPerfilConta(id: number): Promise<{
+export async function buscarPerfilConta(
+  id: number,
+  usuarioId?: number | null
+): Promise<{
   id: number;
   usuarioId: number | null;
   nome: string;
@@ -163,6 +164,24 @@ export async function buscarPerfilConta(id: number): Promise<{
   salario: number | null;
   datanascimento: string | null;
 }> {
+  if (usuarioId) {
+    const usuarioDaSessao = await buscarUsuarioRepoPorId(usuarioId);
+    if (!usuarioDaSessao) {
+      throw new AppError(404, "Conta não encontrada");
+    }
+
+    return {
+      id: usuarioDaSessao.id,
+      usuarioId: usuarioDaSessao.id,
+      nome: usuarioDaSessao.nome,
+      email: usuarioDaSessao.email,
+      cpf: usuarioDaSessao.cpf,
+      papel: String(usuarioDaSessao.papel).toLowerCase() === "admin" ? "admin" : "cliente",
+      salario: usuarioDaSessao.salario,
+      datanascimento: usuarioDaSessao.dataDeNascimento,
+    };
+  }
+
   const conta = await buscarContaPorId(id);
 
   if (conta) {
@@ -189,7 +208,7 @@ export async function buscarPerfilConta(id: number): Promise<{
     nome: usuario.nome,
     email: usuario.email,
     cpf: usuario.cpf,
-    papel: usuario.papel === "admin" ? "admin" : "cliente",
+    papel: String(usuario.papel).toLowerCase() === "admin" ? "admin" : "cliente",
     salario: usuario.salario,
     datanascimento: usuario.dataDeNascimento,
   };

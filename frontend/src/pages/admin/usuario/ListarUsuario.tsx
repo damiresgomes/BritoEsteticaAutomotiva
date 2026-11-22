@@ -1,30 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import HeaderAdmin from "../../../components/HeaderAdmin";
 import Paginacao from "../../../components/Paginacao";
 import styles from "../../../components/AdminCrud/styles.module.css";
+import { useUsuario } from "../../../contexts/useUsuario";
 import { userService, type Usuario } from "../../../services/users";
 import { obterMensagemErro } from "../../../utils/erros";
 
+const POR_PAGINA = 6;
+
 export default function ListarUsuario() {
+  const { usuario: usuarioAutenticado } = useUsuario();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const [erro, setErro] = useState("");
-  const porPagina = 6;
 
   useEffect(() => {
-    userService.listar()
-      .then(setUsuarios)
+    userService
+      .listarPaginado(pagina, POR_PAGINA)
+      .then((resposta) => {
+        setUsuarios(resposta.dados);
+        setTotalPaginas(resposta.paginacao.totalPaginas);
+        setErro("");
+      })
       .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));
-  }, []);
-
-  const totalPaginas = Math.max(1, Math.ceil(usuarios.length / porPagina));
-  const usuariosVisiveis = useMemo(
-    () => usuarios.slice((pagina - 1) * porPagina, pagina * porPagina),
-    [usuarios, pagina]
-  );
+  }, [pagina]);
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin
         titulo="USUÁRIOS"
         links={[
@@ -32,18 +36,32 @@ export default function ListarUsuario() {
           { to: "/admin/usuario/cadastrar", label: "+ CADASTRAR USUÁRIO" },
         ]}
       />
-      {erro && <p className={styles.message} role="alert">{erro}</p>}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead><tr><th>Nome</th><th>Email</th></tr></thead>
+      {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
+      <div className={styles.divTabela}>
+        <table className={styles.tabela}>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
           <tbody>
-            {usuariosVisiveis.map((usuario) => (
-              <tr key={usuario.id}>
-                <td>{usuario.nome}</td>
-                <td>{usuario.email}</td>
+            {usuarios.map((item) => (
+              <tr key={item.id}>
+                <td>{item.nome}</td>
+                <td>{item.email}</td>
+                <td>
+                  {usuarioAutenticado?.usuarioId === item.id ? (
+                    <Link to={`/admin/usuario/editar/${item.id}`}>Editar</Link>
+                  ) : (
+                    "—"
+                  )}
+                </td>
               </tr>
             ))}
-            {!usuarios.length && <tr><td colSpan={2}>Nenhum usuário cadastrado.</td></tr>}
+            {!usuarios.length && <tr><td colSpan={3}>Nenhum usuário cadastrado.</td></tr>}
           </tbody>
         </table>
       </div>

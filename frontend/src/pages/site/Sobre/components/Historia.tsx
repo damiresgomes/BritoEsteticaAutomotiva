@@ -1,4 +1,5 @@
 import styles from '../styles.module.css';
+
 export default function Historia() {
   return (
     <section className={styles.hero}>

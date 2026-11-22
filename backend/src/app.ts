@@ -39,7 +39,7 @@ export function buildApp() {
         ) {
           return callback(null, true);
         }
-        return callback(new Error("CORS origin not allowed: " + origin));
+        return callback(new Error("Origem não permitida pelo CORS: " + origin));
       },
       credentials: true,
     })
@@ -48,11 +48,11 @@ export function buildApp() {
   app.use(morgan("dev"));
   app.use(express.json());
 
-  app.use("/health", healthRoutes());
+  app.use(["/health", "/api/health"], healthRoutes());
 
-  app.use(["/api/auth", "/auth"], authRoutes());
+  app.use(["/api/auth", "/auth", "/api/autenticacao", "/autenticacao"], authRoutes());
 
-  app.use(["/api/usuarios", "/usuarios"], authMiddleware, exigirPapel("admin"), usuarioRoutes());
+  app.use(["/api/usuarios", "/usuarios"], authMiddleware, usuarioRoutes());
   app.use(["/api/categorias", "/categorias"], authMiddleware, exigirPapel("admin"), categoriaRoutes());
   app.use(["/api/clientes", "/clientes"], authMiddleware, exigirPapel("admin"), clienteRoutes());
 

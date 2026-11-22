@@ -7,10 +7,10 @@ import HomeSite from "./pages/site/Home";
 import SobreSite from "./pages/site/Sobre"
 import ServicosSite from "./pages/site/Servicos";
 import AgendamentoSite from "./pages/site/Agendamento";
-import CadastroUsuario from "./pages/auth/Cadastro";
-import Login from "./pages/auth/Login";
+import CadastroUsuario from "./pages/autenticacao/CadastrarCliente";
+import Login from "./pages/autenticacao/LoginCliente";
 
-import LoginAdmin from "./pages/admin/Login";
+import LoginAdmin from "./pages/autenticacao/LoginAdministrativo";
 import Dashboard from "./pages/admin/Dashboard";
 import ListarCategoria from "./pages/admin/Categoria/Listarcategoria";
 import CadastrarCategoria from "./pages/admin/Categoria/CadastrarCategoria";
@@ -28,6 +28,7 @@ import ListarCliente from "./pages/admin/Cliente/ListarCliente";
 import CadastrarCliente from "./pages/admin/Cliente/CadastrarCliente";
 import EditarCliente from "./pages/admin/Cliente/EditarCliente";
 import MinhaConta from "./pages/site/MinhaConta";
+import EditarUsuario from "./pages/admin/Usuario/EditarUsuario";
 
 export default function App() {
   return (
@@ -38,14 +39,17 @@ export default function App() {
           <Route path="servico" element={<ServicosSite />} />
           <Route path="sobre" element={<SobreSite />} />
           <Route path="agendamento" element={<AgendamentoSite />} />
-          <Route path="autenticacao/login" element={<Login />} />
-          <Route path="autenticacao/cadastro" element={<CadastroUsuario />} />
+          <Route path="autenticacao/LoginCliente" element={<Login />} />
+          <Route path="autenticacao/login" element={<Navigate to="/autenticacao/LoginCliente" replace />} />
+          <Route path="autenticacao/CadastrarCliente" element={<CadastroUsuario />} />
+          <Route path="autenticacao/cadastro" element={<Navigate to="/autenticacao/CadastrarCliente" replace />} />
           <Route element={<ProtectedRoute papel="cliente" />}>
-            <Route path="minha-conta" element={<MinhaConta />} />
+          <Route path="minha-conta" element={<MinhaConta />} />
           </Route>
         </Route>
 
-        <Route path="admin/login" element={<LoginAdmin />} />
+        <Route path="/autenticacao/LoginAdministrativo" element={<LoginAdmin />} />
+        <Route path="/admin/login" element={<Navigate to="/autenticacao/LoginAdministrativo" replace />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="admin" element={<AdminLayout />}>
@@ -63,6 +67,7 @@ export default function App() {
             <Route path="cliente/cadastrar" element={<CadastrarCliente />} />
             <Route path="cliente/editar/:id" element={<EditarCliente />} />
             <Route path="usuario" element={<ListarUsuario />} />
+            <Route path="usuario/editar/:id" element={<EditarUsuario />} />
             <Route path="usuario/cadastrar" element={<CadastrarUsuario />} />
             <Route path="perfil" element={<PerfilAdmin />} />
           </Route>

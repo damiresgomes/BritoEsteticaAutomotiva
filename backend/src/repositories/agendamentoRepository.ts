@@ -20,6 +20,7 @@ interface AgendamentoServicoRow extends RowDataPacket {
   id_servico: number;
   nome_servico: string;
   preco: number;
+  id_categoria: number;
 }
 
 function converterDataHora(valor: string): string {
@@ -38,7 +39,7 @@ async function carregarServicos(
 
   const placeholders = idsAgendamento.map(() => "?").join(",");
   const [rows] = await connection.execute<AgendamentoServicoRow[]>(
-    `SELECT ags.id_agendamento, s.id_servico, s.nome_servico, s.preco
+    `SELECT ags.id_agendamento, s.id_servico, s.nome_servico, s.preco, s.id_categoria
        FROM agendamento_servico ags
        JOIN servicos s ON s.id_servico = ags.id_servico
       WHERE ags.id_agendamento IN (${placeholders})
@@ -52,6 +53,7 @@ async function carregarServicos(
       id_servico: row.id_servico,
       nome_servico: row.nome_servico,
       preco: Number(row.preco),
+      id_categoria: Number(row.id_categoria),
     });
     agrupados.set(row.id_agendamento, lista);
   }
@@ -311,9 +313,11 @@ interface AgendamentoAdminDbRow extends RowDataPacket {
   status: "Pendente" | "Confirmado" | "Cancelado";
 }
 
-export async function listarAgendamentosAdmin(): Promise<AgendamentoAdminRow[]> {
-  const [linhas] = await pool.execute<AgendamentoAdminDbRow[]>(
-    `SELECT a.id_agendamento AS id,
+export async function listarAgendamentosAdmin(
+  limite?: number,
+  offset?: number
+): Promise<AgendamentoAdminRow[]> {
+  let query = `SELECT a.id_agendamento AS id,
             c.id_cliente AS clienteId,
             c.nome AS cliente,
             GROUP_CONCAT(s.nome_servico ORDER BY s.nome_servico SEPARATOR ', ') AS servico,
@@ -334,8 +338,15 @@ export async function listarAgendamentosAdmin(): Promise<AgendamentoAdminRow[]> 
        LEFT JOIN servicos s ON s.id_servico = ags.id_servico
       GROUP BY a.id_agendamento, c.id_cliente, c.nome, a.data_hora,
                a.placa_veiculo, a.modelo_veiculo, a.observacoes, a.status
-      ORDER BY a.data_hora DESC`
-  );
+      ORDER BY a.data_hora DESC`;
+  const params: number[] = [];
+
+  if (limite !== undefined && offset !== undefined) {
+    query += " LIMIT ? OFFSET ?";
+    params.push(limite, offset);
+  }
+
+  const [linhas] = await pool.execute<AgendamentoAdminDbRow[]>(query, params);
   return linhas.map((linha) => ({
     ...linha,
     servicoId: linha.servicoId ?? 0,
@@ -343,6 +354,13 @@ export async function listarAgendamentosAdmin(): Promise<AgendamentoAdminRow[]> 
       ? linha.extrasIds.split(",").map(Number).filter(Number.isInteger)
       : [],
   }));
+}
+
+export async function contarAgendamentosAdmin(): Promise<number> {
+  const [[totalRow]] = await pool.execute<RowDataPacket[]>(
+    "SELECT COUNT(*) AS total FROM agendamentos"
+  );
+  return Number(totalRow?.total || 0);
 }
 
 export async function atualizarAgendamentoCompleto(
@@ -431,8 +449,6 @@ export async function buscarStatusAgendamento(
   );
   return (linhas[0]?.status as "Pendente" | "Confirmado" | "Cancelado") ?? null;
 }
-
-// Horários (ex: "09:00") que já têm agendamento ativo na data
 export async function listarHorariosOcupados(
   data: string,
   ignorarAgendamentoId?: number
@@ -450,9 +466,6 @@ export async function listarHorariosOcupados(
 
   return linhas.map((linha) => linha.horario as string);
 }
-
-// Cria o agendamento e seus serviços para o cliente autenticado numa transação.
-// Retorna o id criado, ou null se o horário foi ocupado nesse meio tempo.
 export async function criarAgendamentoCompleto(
   dados: NovoAgendamentoCompleto
 ): Promise<number | null> {
@@ -460,8 +473,6 @@ export async function criarAgendamentoCompleto(
 
   try {
     await conexao.beginTransaction();
-
-    // Confere de novo dentro da transação, para duas pessoas não pegarem o mesmo horário
     const [ocupados] = await conexao.execute<RowDataPacket[]>(
       `SELECT id_agendamento FROM agendamentos
         WHERE data_hora = ? AND status <> 'Cancelado' FOR UPDATE`,

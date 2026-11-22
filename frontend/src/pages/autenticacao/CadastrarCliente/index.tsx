@@ -68,7 +68,7 @@ export default function CadastroUsuario() {
         telefone: form.telefone,
       });
 
-      navigate("/autenticacao/login", {
+      navigate("/autenticacao/LoginCliente", {
         replace: true,
         state: { registrado: true, from: estado?.from },
       });

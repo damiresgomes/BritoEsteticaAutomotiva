@@ -1,23 +1,23 @@
-.form {
+.formulario {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.field {
+.campo {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-.field label {
+.campo label {
   color: #9ca3af;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-.field input {
+.campo input {
   width: 100%;
   padding: 12px 14px;
   color: #fff;
@@ -27,21 +27,21 @@
   font: inherit;
 }
 
-.field input:focus {
+.campo input:focus {
   border-color: #5cb3ff;
   outline: 2px solid rgba(92, 179, 255, 0.2);
 }
 
-.field input[aria-invalid="true"] {
+.campo input[aria-invalid="true"] {
   border-color: #ef4444;
 }
 
-.fieldError {
+.campoErro {
   color: #fca5a5;
   font-size: 0.8rem;
 }
 
-.apiError {
+.apiErro {
   margin: 0;
   padding: 12px;
   color: #fecaca;
@@ -51,7 +51,7 @@
   font-size: 0.875rem;
 }
 
-.submitButton {
+.botaoEnvio {
   margin-top: 4px;
   padding: 12px;
   color: #fff;
@@ -63,11 +63,11 @@
   cursor: pointer;
 }
 
-.submitButton:hover:not(:disabled) {
+.botaoEnvio:hover:not(:disabled) {
   background: #1d4ed8;
 }
 
-.submitButton:disabled {
+.botaoEnvio:disabled {
   cursor: wait;
   opacity: 0.65;
 }

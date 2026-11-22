@@ -13,7 +13,6 @@ import { CadastroServicoInput } from "../schemas/servicoSchema";
 import { Servico } from "../entities/servico";
 
 export async function cadastrarServico(dados: CadastroServicoInput): Promise<{ id: number }> {
-  // Dispara validações de domínio no construtor da entidade
   new Servico(0, dados.nome_servico, dados.descricao, dados.preco, dados.duracao_horas, dados.id_categoria);
 
   const categoriaExiste = await buscarCategoriaPorId(dados.id_categoria);
@@ -74,8 +73,6 @@ export async function atualizarServico(id_servico: number, dados: CadastroServic
   if (!categoriaExiste) {
     throw new RecursoNaoEncontradoError("Categoria vinculada ao serviço não existe.");
   }
-
-  // Executa validações de domínio da entidade
   servico.atualizarDados({
     nome: dados.nome_servico,
     descricao: dados.descricao,

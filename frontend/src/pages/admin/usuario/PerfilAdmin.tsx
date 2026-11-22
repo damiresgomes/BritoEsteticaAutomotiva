@@ -76,18 +76,18 @@ function FormularioPerfil({ usuario }: { usuario: PerfilAdmin }) {
   }
 
   return (
-    <section className={styles.page}>
+    <section className={styles.pagina}>
       <HeaderAdmin titulo="MEU PERFIL" links={[]} />
-      <form className={styles.form} onSubmit={salvar}>
-        <label className={styles.field}>
+      <form className={styles.formulario} onSubmit={salvar}>
+        <label className={styles.campo}>
           Nome
           <input required maxLength={100} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Email (não pode ser alterado)
           <input value={usuario.email} readOnly />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           CPF
           <input
             required
@@ -99,23 +99,23 @@ function FormularioPerfil({ usuario }: { usuario: PerfilAdmin }) {
             onChange={(e) => setForm({ ...form, cpf: mascararCPF(e.target.value) })}
           />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Salário
           <input required type="number" min="0" step="0.01" value={form.salario} onChange={(e) => setForm({ ...form, salario: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Data de nascimento
           <input required type="date" value={form.datanascimento} onChange={(e) => setForm({ ...form, datanascimento: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Nova senha (opcional)
           <input type="password" autoComplete="new-password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
         </label>
-        <label className={styles.field}>
+        <label className={styles.campo}>
           Confirme a nova senha
           <input type="password" autoComplete="new-password" value={form.confirmarSenha} onChange={(e) => setForm({ ...form, confirmarSenha: e.target.value })} />
         </label>
-        {erro && <p className={styles.message} role="alert">{erro}</p>}
+        {erro && <p className={styles.mensagem} role="alert">{erro}</p>}
         {sucesso && <p role="status">{sucesso}</p>}
         <button type="submit">Salvar perfil</button>
       </form>

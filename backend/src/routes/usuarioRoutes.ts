@@ -6,15 +6,16 @@ import {
   desativarUsuarioController,
   listarUsuariosController,
 } from "../controllers/usuarioController";
+import { exigirPapel } from "../middlewares/authMiddleware";
 
 export function usuarioRoutes(): Router {
   const router = Router();
 
-  router.post(["/", "/cadastro"], cadastrarUsuarioController);
-  router.get(["/", "/listar"], listarUsuariosController);
-  router.get("/:id", buscarUsuarioPorIdController);
+  router.post(["/", "/cadastro"], exigirPapel("admin"), cadastrarUsuarioController);
+  router.get(["/", "/listar"], exigirPapel("admin"), listarUsuariosController);
+  router.get("/:id", exigirPapel("admin"), buscarUsuarioPorIdController);
   router.put(["/:id", "/atualizar/:id"], atualizarUsuarioController);
-  router.delete(["/:id", "/desativar/:id"], desativarUsuarioController);
+  router.delete(["/:id", "/desativar/:id"], exigirPapel("admin"), desativarUsuarioController);
 
   return router;
 }

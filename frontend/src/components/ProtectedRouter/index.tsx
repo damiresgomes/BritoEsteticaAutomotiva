@@ -10,7 +10,7 @@ export default function ProtectedRoute({ papel = "admin" }: Props) {
   const temSessao = authService.isAuthenticated(papel);
 
   if (!temSessao) {
-    const rotaLogin = papel === "admin" ? "/admin/login" : "/autenticacao/login";
+    const rotaLogin = papel === "admin" ? "/autenticacao/LoginAdministrativo" : "/autenticacao/LoginCliente";
     return <Navigate to={rotaLogin} replace state={{ from: location }} />;
   }
 

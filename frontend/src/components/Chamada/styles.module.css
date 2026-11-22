@@ -1,12 +1,40 @@
+:root {
+  --cor-fundo: #030712;
+  --cor-superficie: #0b0f19;
+  --cor-destaque: #5cb3ff;
+  --cor-texto: #ffffff;
+  --cor-texto-suave: #9ca3af;
+  --cor-texto-apagado: #6b7280;
+  --cor-borda: rgba(255, 255, 255, 0.08);
+}
+
 .chamada {
-  background: linear-gradient(180deg, #030712 0%, #0b0f19 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 80px 20px;
+  position: relative;
+  padding: 120px 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(92, 179, 255, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--cor-fundo) 0%, var(--cor-superficie) 100%);
+  border-top: 1px solid var(--cor-borda);
+  border-bottom: 1px solid var(--cor-borda);
+  font-family: 'Montserrat', sans-serif;
   text-align: center;
+  overflow: hidden;
+}
+
+.chamada::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 200px;
+  height: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, var(--cor-destaque), transparent);
 }
 
 .container {
+  position: relative;
+  z-index: 1;
   max-width: 800px;
   margin: 0 auto;
   display: flex;
@@ -16,23 +44,28 @@
 }
 
 .titulo {
-  color: #ffffff;
-  font-size: 45px;
+  margin: 40px 0 0;
+  color: var(--cor-texto);
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -1.5px;
-  margin-top: 40px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
 }
 
 .titulo span {
-  color: #5CB3FF;
+  display: block;
+  color: var(--cor-destaque);
+  font-weight: 300;
+  font-style: italic;
 }
 
 .descricao {
-  color: #9ca3af;
-  font-size: 1rem;
   max-width: 600px;
-  line-height: 1.6;
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  line-height: 1.7;
 }
 
 .botoes {
@@ -40,16 +73,32 @@
   gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 16px;
 }
 
 .rodape {
-  color: #6b7280;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 8px;
+  color: var(--cor-texto-apagado);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.rodape span {
+  color: var(--cor-destaque);
+}
+
+@media (max-width: 600px) {
+  .chamada {
+    padding: 80px 20px;
+  }
+
+  .botoes {
+    flex-direction: column;
+    width: 100%;
+  }
 }

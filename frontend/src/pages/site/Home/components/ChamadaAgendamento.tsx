@@ -1,7 +1,6 @@
 import Chamada from "../../../../components/Chamada";
 import Botao from "../../../../components/Botao";
-
-const WHATSAPP_URL = "https://wa.me/5519981339017";
+import { WHATSAPP_URL } from "../../../../utils/contato";
 
 export default function ChamadaAgendamento () {
     return (
