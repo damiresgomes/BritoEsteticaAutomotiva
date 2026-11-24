@@ -18,3 +18,8 @@ export default function DeferencialCard ({numero, titulo, texto}: DiferencialCar
         </div>
     )
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Home/components/DiferencialCard.tsx) responsável por renderizar UI e orquestrar interações do usuário.

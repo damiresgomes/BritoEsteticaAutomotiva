@@ -28,10 +28,15 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="nome">Nome</label>
         <input
+          // Atribuição: id="nome".
           id="nome"
+          // Atribuição: name="nome".
           name="nome"
+          // Atribuição: autoComplete="name".
           autoComplete="name"
+          // Atribuição: value={form.nome}.
           value={form.nome}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.nome)}
           aria-describedby={erros.nome ? "nome-erro" : undefined}
@@ -47,13 +52,21 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="cpf">CPF</label>
         <input
+          // Atribuição: id="cpf".
           id="cpf"
+          // Atribuição: name="cpf".
           name="cpf"
+          // Atribuição: inputMode="numeric".
           inputMode="numeric"
+          // Atribuição: autoComplete="tax-id".
           autoComplete="tax-id"
+          // Atribuição: maxLength={14}.
           maxLength={14}
+          // Atribuição: placeholder="000.000.000-00".
           placeholder="000.000.000-00"
+          // Atribuição: value={form.cpf}.
           value={form.cpf}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.cpf)}
           aria-describedby={erros.cpf ? "cpf-erro" : undefined}
@@ -69,11 +82,17 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="email">Email</label>
         <input
+          // Atribuição: id="email".
           id="email"
+          // Atribuição: name="email".
           name="email"
+          // Atribuição: type="email".
           type="email"
+          // Atribuição: autoComplete="email".
           autoComplete="email"
+          // Atribuição: value={form.email}.
           value={form.email}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.email)}
           aria-describedby={erros.email ? "email-erro" : undefined}
@@ -89,14 +108,23 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="telefone">Telefone</label>
         <input
+          // Atribuição: id="telefone".
           id="telefone"
+          // Atribuição: name="telefone".
           name="telefone"
+          // Atribuição: type="tel".
           type="tel"
+          // Atribuição: inputMode="tel".
           inputMode="tel"
+          // Atribuição: autoComplete="tel".
           autoComplete="tel"
+          // Atribuição: maxLength={16}.
           maxLength={16}
+          // Atribuição: placeholder="(19) 98765-4321".
           placeholder="(19) 98765-4321"
+          // Atribuição: value={form.telefone}.
           value={form.telefone}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.telefone)}
           aria-describedby={erros.telefone ? "telefone-erro" : undefined}
@@ -112,12 +140,19 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="senha">Senha</label>
         <input
+          // Atribuição: id="senha".
           id="senha"
+          // Atribuição: name="senha".
           name="senha"
+          // Atribuição: type="password".
           type="password"
+          // Atribuição: autoComplete="new-password".
           autoComplete="new-password"
+          // Atribuição: maxLength={72}.
           maxLength={72}
+          // Atribuição: value={form.senha}.
           value={form.senha}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.senha)}
           aria-describedby={erros.senha ? "senha-erro" : undefined}
@@ -133,11 +168,17 @@ export default function FormCliente({
         <div className={styles.campo}>
         <label htmlFor="confirmarSenha">Confirme sua senha</label>
         <input
+          // Atribuição: id="confirmarSenha".
           id="confirmarSenha"
+          // Atribuição: name="confirmarSenha".
           name="confirmarSenha"
+          // Atribuição: type="password".
           type="password"
+          // Atribuição: autoComplete="new-password".
           autoComplete="new-password"
+          // Atribuição: value={form.confirmarSenha}.
           value={form.confirmarSenha}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
           aria-invalid={Boolean(erros.confirmarSenha)}
           aria-describedby={
@@ -159,8 +200,11 @@ export default function FormCliente({
         )}
 
         <button
+          // Atribuição: className={styles.botaoEnvio}.
           className={styles.botaoEnvio}
+          // Atribuição: type="submit".
           type="submit"
+          // Atribuição: disabled={carregando}.
           disabled={carregando}
         >
           {carregando ? "CADASTRANDO..." : "CADASTRAR"}
@@ -176,3 +220,8 @@ export default function FormCliente({
     </>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/FormCliente/index.tsx) com sua lógica de apresentação.

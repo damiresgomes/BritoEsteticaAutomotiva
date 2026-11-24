@@ -13,6 +13,7 @@ type DadosAgendamento = {
   observacoes: string;
 };
 
+// Define e exporta o tipo 'ResumoAgendamento'.
 export type ResumoAgendamento = {
   id: number;
   total: number;
@@ -63,14 +64,18 @@ function formatarPreco(valor: number): string {
 
 function formatarData(data: string): string {
   const [ano, mes, dia] = data.split("-");
+  // Retorna ano && mes && dia ? `${dia}/${mes}/${ano}` : data.
   return ano && mes && dia ? `${dia}/${mes}/${ano}` : data;
 }
 
 function mensagemConfirmacao(dados: ResumoAgendamento): string {
+  // Declara constante 'nome'.
   const nome = dados.nomeCliente.trim() || "cliente";
+  // Declara constante 'adicionais'.
   const adicionais = dados.servicosExtras.length
     ? dados.servicosExtras.map((servico) => `- ${servico}`).join("\n")
     : "- Nenhum serviço adicional";
+  // Declara constante 'observacoes'.
   const observacoes = dados.observacoes.trim() || "Nenhuma observação informada.";
 
   return `Olá, equipe Brito! Tudo bem?
@@ -114,10 +119,12 @@ export default function FormAgendamento({
   onToggleAcrescimo,
   onSubmit,
 }: FormAgendamentoProps) {
+  // Estado React: [mensagemEditada, setMensagemEditada] criado com useState; atualizar o setter causa re-render do componente.
   const [mensagemEditada, setMensagemEditada] = useState<{
     id: number;
     texto: string;
   } | null>(null);
+  // Declara constante 'mensagemWhatsapp'.
   const mensagemWhatsapp = resumoCriado
     ? mensagemEditada?.id === resumoCriado.id
       ? mensagemEditada.texto
@@ -126,8 +133,11 @@ export default function FormAgendamento({
 
   return (
     <form
+      // Atribuição: className={styles.cartao}.
       className={styles.cartao}
+      // Atribuição: onSubmit={onSubmit}.
       onSubmit={onSubmit}
+      // Atribuição: inert={!autenticado && mostrarAviso}.
       inert={!autenticado && mostrarAviso}
       aria-hidden={!autenticado && mostrarAviso}
     >
@@ -135,14 +145,22 @@ export default function FormAgendamento({
         <label className={styles.campo}>
           <span className={styles.rotulo}>Placa</span>
           <input
+            // Atribuição: className={styles.entrada}.
             className={styles.entrada}
+            // Atribuição: type="text".
             type="text"
+            // Atribuição: name="placa".
             name="placa"
+            // Atribuição: placeholder="ABC-1234".
             placeholder="ABC-1234"
+            // Atribuição: maxLength={8}.
             maxLength={8}
+            // Atribuição: autoComplete="off".
             autoComplete="off"
             aria-label="Placa do veículo"
+            // Atribuição: value={dados.placa}.
             value={dados.placa}
+            // Atribuição: onChange={onChange}.
             onChange={onChange}
             required
           />
@@ -151,12 +169,19 @@ export default function FormAgendamento({
         <label className={styles.campo}>
           <span className={styles.rotulo}>Veículo</span>
           <input
+            // Atribuição: className={styles.entrada}.
             className={styles.entrada}
+            // Atribuição: type="text".
             type="text"
+            // Atribuição: name="veiculo".
             name="veiculo"
+            // Atribuição: placeholder="VW Golf".
             placeholder="VW Golf"
+            // Atribuição: maxLength={50}.
             maxLength={50}
+            // Atribuição: value={dados.veiculo}.
             value={dados.veiculo}
+            // Atribuição: onChange={onChange}.
             onChange={onChange}
             required
           />
@@ -166,10 +191,15 @@ export default function FormAgendamento({
       <label className={styles.campo}>
         <span className={styles.rotulo}>Serviço</span>
         <select
+          // Atribuição: className={`${styles.entrada} ${styles.listaSuspensa}`}.
           className={`${styles.entrada} ${styles.listaSuspensa}`}
+          // Atribuição: name="servico".
           name="servico"
+          // Atribuição: value={dados.servico}.
           value={dados.servico}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
+          // Atribuição: disabled={carregandoCatalogo || servicos.length === 0}.
           disabled={carregandoCatalogo || servicos.length === 0}
           required
         >
@@ -202,17 +232,23 @@ export default function FormAgendamento({
           ) : acrescimos.length === 0 ? (
             <p>Nenhum acréscimo disponível.</p>
           ) : (
+            // Chamada: acrescimos.map((acrescimo) => {.
             acrescimos.map((acrescimo) => {
+              // Declara constante 'estaMarcado'.
               const estaMarcado = acrescimosMarcados.includes(
                 acrescimo.id_servico
               );
 
               return (
                 <button
+                  // Atribuição: key={acrescimo.id_servico}.
                   key={acrescimo.id_servico}
+                  // Atribuição: type="button".
                   type="button"
+                  // Atribuição: className={`${styles.botaoAcrescimo} ${estaMarcado ? styles.marcado : ""}`}.
                   className={`${styles.botaoAcrescimo} ${estaMarcado ? styles.marcado : ""}`}
                   aria-pressed={estaMarcado}
+                  // Atribuição: onClick={() => onToggleAcrescimo(acrescimo.id_servico)}.
                   onClick={() => onToggleAcrescimo(acrescimo.id_servico)}
                 >
                   <span>{acrescimo.nome_servico}</span>
@@ -230,11 +266,17 @@ export default function FormAgendamento({
         <label className={styles.campo}>
           <span className={styles.rotulo}>Data</span>
           <input
+            // Atribuição: className={styles.entrada}.
             className={styles.entrada}
+            // Atribuição: type="date".
             type="date"
+            // Atribuição: name="data".
             name="data"
+            // Atribuição: min={dataMinima}.
             min={dataMinima}
+            // Atribuição: value={dados.data}.
             value={dados.data}
+            // Atribuição: onChange={onChange}.
             onChange={onChange}
             required
           />
@@ -246,10 +288,15 @@ export default function FormAgendamento({
         <label className={styles.campo}>
           <span className={styles.rotulo}>Horário</span>
           <select
+            // Atribuição: className={`${styles.entrada} ${styles.listaSuspensa}`}.
             className={`${styles.entrada} ${styles.listaSuspensa}`}
+            // Atribuição: name="horario".
             name="horario"
+            // Atribuição: value={dados.horario}.
             value={dados.horario}
+            // Atribuição: onChange={onChange}.
             onChange={onChange}
+            // Atribuição: disabled={.
             disabled={
               !dados.data || carregandoHorarios || !horarios.length
             }
@@ -290,11 +337,17 @@ export default function FormAgendamento({
       <label className={styles.campo}>
         <span className={styles.rotulo}>Observações (opcional)</span>
         <textarea
+          // Atribuição: className={`${styles.entrada} ${styles.areaDeTexto}`}.
           className={`${styles.entrada} ${styles.areaDeTexto}`}
+          // Atribuição: name="observacoes".
           name="observacoes"
+          // Atribuição: rows={3}.
           rows={3}
+          // Atribuição: placeholder="Algum detalhe sobre o veículo ou serviço...".
           placeholder="Algum detalhe sobre o veículo ou serviço..."
+          // Atribuição: value={dados.observacoes}.
           value={dados.observacoes}
+          // Atribuição: onChange={onChange}.
           onChange={onChange}
         />
       </label>
@@ -317,11 +370,16 @@ export default function FormAgendamento({
               todos os detalhes do seu agendamento.
             </p>
             <textarea
+              // Atribuição: className={styles.mensagemWhatsapp}.
               className={styles.mensagemWhatsapp}
               aria-label="Mensagem pronta para o WhatsApp"
+              // Atribuição: rows={11}.
               rows={11}
+              // Atribuição: value={mensagemWhatsapp}.
               value={mensagemWhatsapp}
+              // Atribuição: onChange={(evento) =>.
               onChange={(evento) =>
+                // Chamada: setMensagemEditada({.
                 setMensagemEditada({
                   id: resumoCriado.id,
                   texto: evento.target.value,
@@ -329,9 +387,13 @@ export default function FormAgendamento({
               }
             />
             <a
+              // Atribuição: className={`${styles.botaoEnviar} ${styles.botaoWhatsapp}`}.
               className={`${styles.botaoEnviar} ${styles.botaoWhatsapp}`}
+              // Atribuição: href={urlWhatsapp(mensagemWhatsapp)}.
               href={urlWhatsapp(mensagemWhatsapp)}
+              // Atribuição: target="_blank".
               target="_blank"
+              // Atribuição: rel="noopener noreferrer".
               rel="noopener noreferrer"
             >
               Abrir WhatsApp com a mensagem
@@ -347,8 +409,11 @@ export default function FormAgendamento({
           </div>
         )}
         <button
+          // Atribuição: className={styles.botaoEnviar}.
           className={styles.botaoEnviar}
+          // Atribuição: type="submit".
           type="submit"
+          // Atribuição: disabled={enviando || carregandoCatalogo || !servicos.length}.
           disabled={enviando || carregandoCatalogo || !servicos.length}
         >
           {enviando ? "Enviando..." : "Agendar horário"}
@@ -357,3 +422,8 @@ export default function FormAgendamento({
     </form>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/FormAgendamento/index.tsx) com sua lógica de apresentação.

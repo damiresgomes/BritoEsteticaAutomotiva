@@ -17,3 +17,8 @@ export default function CardAdmin({ titulo, valor, descricao }: CardAdminProps) 
     </article>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/CardAdmin/index.tsx) com sua lógica de apresentação.

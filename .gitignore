@@ -1,3 +1,8 @@
 .env
 .env.*
 !.env.example
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Arquivo do projeto (.gitignore) que participa do funcionamento da aplicação.

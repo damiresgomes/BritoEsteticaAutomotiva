@@ -22,9 +22,12 @@ export default function HeaderAdmin({ titulo, links, breadcrumb = "// CADASTROS"
       <nav className={styles.tabsContainer} aria-label={`Navegação de ${titulo}`}>
         {links.map(({ to, label }) => (
           <NavLink
+            // Atribuição: key={to}.
             key={to}
+            // Atribuição: to={to}.
             to={to}
             end
+            // Atribuição: className={({ isActive }) =>.
             className={({ isActive }) =>
               `${styles.tabItem} ${isActive ? styles.tabActive : ""}`
             }
@@ -36,3 +39,8 @@ export default function HeaderAdmin({ titulo, links, breadcrumb = "// CADASTROS"
     </header>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/HeaderAdmin/index.tsx) com sua lógica de apresentação.

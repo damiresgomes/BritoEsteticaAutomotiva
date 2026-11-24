@@ -21,9 +21,13 @@ export default function Diferencias () {
                 <div className={styles.cardsGrid}>
                     {diferenciais.map((item, index) => (
                         <DiferencialCard
+                            // Atribuição: key={item.titulo}.
                             key={item.titulo}
+                            // Atribuição: numero={String(index + 1).padStart(2, "0")}.
                             numero={String(index + 1).padStart(2, "0")}
+                            // Atribuição: titulo={item.titulo}.
                             titulo={item.titulo}
+                            // Atribuição: texto={item.texto}.
                             texto={item.texto}
                         />
                     ))}
@@ -32,3 +36,8 @@ export default function Diferencias () {
         </section>
     )
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Home/components/Diferenciais.tsx) responsável por renderizar UI e orquestrar interações do usuário.

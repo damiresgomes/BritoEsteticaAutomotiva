@@ -11,3 +11,8 @@ export default function HomeSite() {
     </div>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Home/index.tsx) responsável por renderizar UI e orquestrar interações do usuário.

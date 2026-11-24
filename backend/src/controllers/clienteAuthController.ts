@@ -42,3 +42,8 @@ export async function atualizarMeuCadastroClienteController(request: Request, re
 
   return response.status(200).json({ message: "Cadastro atualizado com sucesso." });
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Controller de autenticação/conta do cliente: cadastro, login, perfil, atualização e logout de clientes.

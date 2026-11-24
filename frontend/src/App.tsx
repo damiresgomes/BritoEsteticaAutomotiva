@@ -30,6 +30,7 @@ import EditarCliente from "./pages/admin/Cliente/EditarCliente";
 import MinhaConta from "./pages/site/MinhaConta";
 import EditarUsuario from "./pages/admin/Usuario/EditarUsuario";
 
+// Define e exporta como padrão a função/componente App.
 export default function App() {
   return (
     <BrowserRouter>
@@ -78,3 +79,8 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Define o roteamento da aplicação com React Router: rotas públicas, cliente, admin e fallbacks.

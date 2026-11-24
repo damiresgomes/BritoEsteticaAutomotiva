@@ -13,8 +13,11 @@ export default function Paginacao({ pagina, totalPaginas, aoMudarPagina }: Pagin
   return (
     <nav className={styles.paginacao} aria-label="Paginação">
       <button
+        // Atribuição: type="button".
         type="button"
+        // Atribuição: onClick={() => aoMudarPagina(pagina - 1)}.
         onClick={() => aoMudarPagina(pagina - 1)}
+        // Atribuição: disabled={pagina === 1}.
         disabled={pagina === 1}
       >
         Anterior
@@ -25,8 +28,11 @@ export default function Paginacao({ pagina, totalPaginas, aoMudarPagina }: Pagin
       </span>
       
       <button
+        // Atribuição: type="button".
         type="button"
+        // Atribuição: onClick={() => aoMudarPagina(pagina + 1)}.
         onClick={() => aoMudarPagina(pagina + 1)}
+        // Atribuição: disabled={pagina === totalPaginas}.
         disabled={pagina === totalPaginas}
       >
         Próxima
@@ -34,3 +40,8 @@ export default function Paginacao({ pagina, totalPaginas, aoMudarPagina }: Pagin
     </nav>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente reutilizável de paginação para listas administrativas.

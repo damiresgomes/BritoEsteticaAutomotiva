@@ -32,7 +32,9 @@ export default function Valores () {
                 <div className={styles.valoresImage}>
                     <div className={styles.imageWrapper}>
                         <img
+                        // Atribuição: src="/sobrePolindo.jpg".
                         src="/sobrePolindo.jpg"
+                        // Atribuição: alt="Polimento automotivo profissional com politriz".
                         alt="Polimento automotivo profissional com politriz"
                         />
                     </div>
@@ -41,3 +43,8 @@ export default function Valores () {
         </section>
     )
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Sobre/components/Valores.tsx) responsável por renderizar UI e orquestrar interações do usuário.

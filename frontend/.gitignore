@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Arquivo do projeto (frontend/.gitignore) que participa do funcionamento da aplicação.

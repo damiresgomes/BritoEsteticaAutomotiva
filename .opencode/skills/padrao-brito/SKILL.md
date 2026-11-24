@@ -2,6 +2,9 @@
 name: padrao-brito
 description: Use sempre que criar ou editar arquivos em backend/ ou frontend/ do Brito Estética Automotiva. Aplica o padrão atual de pastas, camadas, nomes mantidos, CSS Modules e textos em português do Brasil.
 ---
+<!-- Skill OpenCode: instruções carregadas sob demanda quando a tarefa combina com a descrição. -->
+
+# Skill: padrao-brito
 
 # Padrão Brito
 
@@ -27,3 +30,8 @@ Use esta skill antes de escrever ou alterar código do projeto.
 2. Copie a estrutura e a nomenclatura do vizinho.
 3. Se a mudança tocar autenticação, CPF, senha ou `.env`, use também a skill `seguranca-brito`.
 4. Ao terminar, use a skill `entrega-brito` para validar.
+
+<!-- -----------------------------------------------------------------------------
+RESUMO DO ARQUIVO
+Skill com convenções de arquitetura, nomenclatura preservada, CSS Modules e boas práticas do projeto.
+----------------------------------------------------------------------------- -->

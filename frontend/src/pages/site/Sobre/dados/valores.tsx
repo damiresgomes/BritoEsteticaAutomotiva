@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import Icone from "./Icone";
 
+// Define e exporta a interface 'Valor' para tipagem.
 export interface Valor {
     titulo: string;
     texto: string;
     icone: ReactNode;
 }
 
+// Exporta a constante 'valores'.
 export const valores: Valor[] = [
     {
     titulo: "EXCELÊNCIA SEM ATALHOS",
@@ -49,3 +51,8 @@ export const valores: Valor[] = [
     ),
   },
 ];
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Sobre/dados/valores.tsx) responsável por renderizar UI e orquestrar interações do usuário.

@@ -25,3 +25,8 @@ export default function Hero () {
         </section>
     );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Home/components/Hero.tsx) responsável por renderizar UI e orquestrar interações do usuário.

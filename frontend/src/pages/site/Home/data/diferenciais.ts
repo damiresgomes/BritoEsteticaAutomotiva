@@ -1,8 +1,10 @@
+// Define e exporta a interface 'Diferencial' para tipagem.
 export interface Diferencial {
     titulo: string;
     texto: string
 }
 
+// Exporta a constante 'diferenciais'.
 export const diferenciais: Diferencial[] = [
     {
         titulo: "LAVAGEM TÉCNICA",
@@ -21,3 +23,8 @@ export const diferenciais: Diferencial[] = [
         texto: "Não gostou de algum detalhe? Refazemos o serviço sem custo adicional. Compromisso assinado.",
     },
 ];
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Home/data/diferenciais.ts) responsável por renderizar UI e orquestrar interações do usuário.

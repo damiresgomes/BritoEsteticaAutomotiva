@@ -10,9 +10,12 @@ interface BotaoProps {
 }
 
 export default function Botao ({ children, variante = "primario", to, href }: BotaoProps) {
+    // Declara constante 'className'.
     const className = `${styles.botao} ${styles[variante]}`;
 
+    // Condição: to.
     if (to) {
+        // Retorna <Link to={to} className={className}>{children}</Link>.
         return <Link to={to} className={className}>{children}</Link>;
     }
 
@@ -22,3 +25,8 @@ export default function Botao ({ children, variante = "primario", to, href }: Bo
         </a>
     )
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/Botao/index.tsx) com sua lógica de apresentação.

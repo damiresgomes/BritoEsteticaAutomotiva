@@ -11,13 +11,21 @@ type AuthLoginProps = {
 function ShieldIcon() {
   return (
     <svg
+      // Atribuição: width="16".
       width="16"
+      // Atribuição: height="16".
       height="16"
+      // Atribuição: viewBox="0 0 24 24".
       viewBox="0 0 24 24"
+      // Atribuição: fill="none".
       fill="none"
+      // Atribuição: stroke="currentColor".
       stroke="currentColor"
+      // Atribuição: strokeWidth="2".
       strokeWidth="2"
+      // Atribuição: strokeLinecap="round".
       strokeLinecap="round"
+      // Atribuição: strokeLinejoin="round".
       strokeLinejoin="round"
       aria-hidden="true"
     >
@@ -30,13 +38,21 @@ function ShieldIcon() {
 function LockIcon() {
   return (
     <svg
+      // Atribuição: width="20".
       width="20"
+      // Atribuição: height="20".
       height="20"
+      // Atribuição: viewBox="0 0 24 24".
       viewBox="0 0 24 24"
+      // Atribuição: fill="none".
       fill="none"
+      // Atribuição: stroke="currentColor".
       stroke="currentColor"
+      // Atribuição: strokeWidth="2".
       strokeWidth="2"
+      // Atribuição: strokeLinecap="round".
       strokeLinecap="round"
+      // Atribuição: strokeLinejoin="round".
       strokeLinejoin="round"
       aria-hidden="true"
     >
@@ -46,16 +62,25 @@ function LockIcon() {
   );
 }
 
+// Exporta a função/componente 'LoginIcon' para uso em rotas ou outros componentes.
 export function LoginIcon() {
   return (
     <svg
+      // Atribuição: width="18".
       width="18"
+      // Atribuição: height="18".
       height="18"
+      // Atribuição: viewBox="0 0 24 24".
       viewBox="0 0 24 24"
+      // Atribuição: fill="none".
       fill="none"
+      // Atribuição: stroke="currentColor".
       stroke="currentColor"
+      // Atribuição: strokeWidth="2".
       strokeWidth="2"
+      // Atribuição: strokeLinecap="round".
       strokeLinecap="round"
+      // Atribuição: strokeLinejoin="round".
       strokeLinejoin="round"
       aria-hidden="true"
     >
@@ -99,3 +124,8 @@ export default function AuthLogin({ eyebrow, subtitulo, tituloCartao, children }
     </main>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/AuthLogin/index.tsx) com sua lógica de apresentação.

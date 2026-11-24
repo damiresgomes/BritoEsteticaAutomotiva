@@ -7,41 +7,64 @@ import { obterMensagemErro } from "../../../utils/erros";
 import styles from "../../../components/AdminCrud/styles.module.css";
 
 export default function ListarServico() {
+  // Estado React: [servicos, setServicos] criado com useState; atualizar o setter causa re-render do componente.
   const [servicos, setServicos] = useState<Servico[]>([]);
+  // Estado React: [pagina, setPagina] criado com useState; atualizar o setter causa re-render do componente.
   const [pagina, setPagina] = useState(1);
+  // Estado React: [totalPaginas, setTotalPaginas] criado com useState; atualizar o setter causa re-render do componente.
   const [totalPaginas, setTotalPaginas] = useState(1);
+  // Estado React: [erro, setErro] criado com useState; atualizar o setter causa re-render do componente.
   const [erro, setErro] = useState("");
+  // Declara constante 'porPagina'.
   const porPagina = 6;
 
   async function carregar(paginaAtual: number) {
+    // Bloco try: captura erros de chamadas assíncronas/rede/validação.
     try {
+      // Declara constante 'resposta'.
       const resposta = await servicoService.listarPaginado(paginaAtual, porPagina);
+      // Chamada: setServicos(resposta.dados);.
       setServicos(resposta.dados);
+      // Chamada: setTotalPaginas(resposta.paginacao.totalPaginas);.
       setTotalPaginas(resposta.paginacao.totalPaginas);
+      // Chamada: setErro("");.
       setErro("");
     } catch (erroApi) {
+      // Chamada: setErro(obterMensagemErro(erroApi));.
       setErro(obterMensagemErro(erroApi));
     }
   }
 
+  // Efeito React: executa código colateral após render; dependências controlam quando reexecuta.
   useEffect(() => {
     servicoService
+      // Chamada: .listarPaginado(pagina, porPagina).
       .listarPaginado(pagina, porPagina)
+      // Chamada: .then((resposta) => {.
       .then((resposta) => {
+        // Chamada: setServicos(resposta.dados);.
         setServicos(resposta.dados);
+        // Chamada: setTotalPaginas(resposta.paginacao.totalPaginas);.
         setTotalPaginas(resposta.paginacao.totalPaginas);
+        // Chamada: setErro("");.
         setErro("");
       })
+      // Chamada: .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));.
       .catch((erroApi: unknown) => setErro(obterMensagemErro(erroApi)));
   }, [pagina]);
 
   async function excluir(id: number) {
     if (!window.confirm("Deseja excluir este serviço?")) return;
+    // Bloco try: captura erros de chamadas assíncronas/rede/validação.
     try {
+      // Aguarda operação assíncrona: servicoService.excluir(id);.
       await servicoService.excluir(id);
+      // Chamada: setPagina(1);.
       setPagina(1);
+      // Aguarda operação assíncrona: carregar(1);.
       await carregar(1);
     } catch (erroApi) {
+      // Chamada: setErro(obterMensagemErro(erroApi));.
       setErro(obterMensagemErro(erroApi));
     }
   }
@@ -49,7 +72,9 @@ export default function ListarServico() {
   return (
     <section className={styles.pagina}>
       <HeaderAdmin
+        // Atribuição: titulo="SERVIÇOS".
         titulo="SERVIÇOS"
+        // Atribuição: links={[.
         links={[
           { to: "/admin/servico", label: "☰ LISTAR SERVIÇOS" },
           { to: "/admin/servico/cadastrar", label: "+ CADASTRAR SERVIÇO" },
@@ -79,3 +104,8 @@ export default function ListarServico() {
     </section>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/admin/Servico/ListarServico.tsx) responsável por renderizar UI e orquestrar interações do usuário.

@@ -22,3 +22,8 @@ export default function Chamada ({ titulo, descricao, children, rodape }: Chamad
         </section>
     );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/Chamada/index.tsx) com sua lógica de apresentação.

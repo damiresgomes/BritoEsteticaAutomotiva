@@ -1,6 +1,10 @@
+// Importa Link, Outlet de 'react-router-dom'.
 import { Link, Outlet } from 'react-router-dom'
+// Importa PublicNavBar de '../../components/PublicNavBar'.
 import PublicNavBar from '../../components/PublicNavBar'
+// Importa TELEFONE_CONTATO, TELEFONE_CONTATO_LINK de '../../utils/contato'.
 import { TELEFONE_CONTATO, TELEFONE_CONTATO_LINK } from '../../utils/contato'
+// Importa styles de './styles.module.css'.
 import styles from './styles.module.css'
 
 export default function PublicLayout () {
@@ -36,3 +40,8 @@ export default function PublicLayout () {
         </div>
     )
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Layout React (frontend/src/layouts/RodapeLayout/index.tsx) que organiza estrutura visual compartilhada.

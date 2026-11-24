@@ -5,3 +5,8 @@ RUN npm install
 COPY . .
 EXPOSE 3000
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Arquivo do projeto (frontend/Dockerfile) que participa do funcionamento da aplicação.

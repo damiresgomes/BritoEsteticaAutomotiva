@@ -11,3 +11,8 @@ COPY . .
 EXPOSE 3333
 
 CMD [ "npm", "start" ]
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Arquivo do projeto (backend/Dockerfile) que participa do funcionamento da aplicação.

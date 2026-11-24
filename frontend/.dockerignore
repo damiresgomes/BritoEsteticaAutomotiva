@@ -6,3 +6,8 @@ dist
 !.env.example
 *.log
 coverage
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Arquivo do projeto (frontend/.dockerignore) que participa do funcionamento da aplicação.

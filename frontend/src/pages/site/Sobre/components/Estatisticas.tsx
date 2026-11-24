@@ -15,3 +15,8 @@ export default function Estatisticas () {
         </section>
     );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Sobre/components/Estatisticas.tsx) responsável por renderizar UI e orquestrar interações do usuário.

@@ -4,6 +4,7 @@ import styles from "./styles.module.css";
 import { useUsuario } from "../../contexts/useUsuario";
 import { authService } from "../../services/auth";
 
+// Declara constante 'links'.
 const links = [
   { to: "/admin", label: "Dashboard", end: true },
   { to: "/admin/categoria", label: "Categorias" },
@@ -15,17 +16,23 @@ const links = [
 
 function getIniciais(nome?: string) {
   if (!nome) return "?";
+  // Declara constante 'partes'.
   const partes = nome.trim().split(/\s+/);
+  // Retorna ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase().
   return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
 }
 
 export default function AdminNavBar() {
+  // Hook de navegação: 'navigate' permite redirecionar programaticamente.
   const navigate = useNavigate();
   const { usuario } = useUsuario();
+  // Estado React: [menuAberto, setMenuAberto] criado com useState; atualizar o setter causa re-render do componente.
   const [menuAberto, setMenuAberto] = useState(false);
 
   async function handleLogout() {
+    // Aguarda operação assíncrona: authService.logoutAdmin();.
     await authService.logoutAdmin();
+    // Chamada: navigate("/autenticacao/LoginAdministrativo", { replace: true });.
     navigate("/autenticacao/LoginAdministrativo", { replace: true });
   }
 
@@ -41,11 +48,14 @@ export default function AdminNavBar() {
         </Link>
 
         <button
+          // Atribuição: type="button".
           type="button"
+          // Atribuição: className={styles.alternador}.
           className={styles.alternador}
           aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuAberto}
           aria-controls="admin-menu"
+          // Atribuição: onClick={() => setMenuAberto((aberto) => !aberto)}.
           onClick={() => setMenuAberto((aberto) => !aberto)}
         >
           <span className={`${styles.hamburguer} ${menuAberto ? styles.hamburguerAberto : ""}`} />
@@ -55,10 +65,15 @@ export default function AdminNavBar() {
           <nav className={styles.navegacao} aria-label="Navegação principal">
             {links.map(({ to, label, end }) => (
               <NavLink
+                // Atribuição: key={to}.
                 key={to}
+                // Atribuição: to={to}.
                 to={to}
+                // Atribuição: end={end}.
                 end={end}
+                // Atribuição: onClick={() => setMenuAberto(false)}.
                 onClick={() => setMenuAberto(false)}
+                // Atribuição: className={({ isActive }) =>.
                 className={({ isActive }) =>
                   `${styles.item} ${isActive ? styles.ativo : ""}`
                 }
@@ -70,8 +85,11 @@ export default function AdminNavBar() {
 
           <div className={styles.conta}>
             <NavLink
+              // Atribuição: to="/admin/perfil".
               to="/admin/perfil"
+              // Atribuição: onClick={() => setMenuAberto(false)}.
               onClick={() => setMenuAberto(false)}
+              // Atribuição: className={({ isActive }) =>.
               className={({ isActive }) =>
                 `${styles.perfil} ${isActive ? styles.perfilAtivo : ""}`
               }
@@ -89,3 +107,8 @@ export default function AdminNavBar() {
     </header>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Componente React reutilizável (frontend/src/components/AdminNavBar/index.tsx) com sua lógica de apresentação.

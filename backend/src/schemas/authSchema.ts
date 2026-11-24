@@ -43,3 +43,8 @@ export const cadastroClienteSchema = z.object({
 }).strict();
 
 export type CadastroClienteInput = z.infer<typeof cadastroClienteSchema>;
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Schemas Zod para autenticação/cadastro/perfil, validando formatos e regras de entrada.

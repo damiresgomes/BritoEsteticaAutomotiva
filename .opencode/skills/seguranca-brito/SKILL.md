@@ -2,6 +2,9 @@
 name: seguranca-brito
 description: Use quando a tarefa envolver login, cadastro ou edição de usuário/cliente, CPF, senha, JWT, tokens no localStorage, rotas protegidas ou variáveis de ambiente no Brito Estética Automotiva.
 ---
+<!-- Skill de segurança: evita exposição de segredos e reforça regras de autenticação/autorização. -->
+
+# Skill: seguranca-brito
 
 # Segurança Brito
 
@@ -36,3 +39,8 @@ Use esta skill sempre que o trabalho tocar autenticação ou credenciais.
 ## Se encontrar uma credencial
 
 Pare e avise o usuário. Não tente corrigir sozinho nem inclua o valor em nenhum arquivo.
+
+<!-- -----------------------------------------------------------------------------
+RESUMO DO ARQUIVO
+Skill de segurança para autenticação, senha, CPF, JWT, tokens e proteção de .env.
+----------------------------------------------------------------------------- -->

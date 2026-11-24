@@ -1,83 +1,153 @@
+﻿# Define a versão/estrutura do arquivo Docker Compose.
 services:
+  # Serviço do banco de dados MySQL.
   mysql:
+    # Imagem oficial do MySQL versão 8.0.
     image: mysql:8.0
+    # Nome fixo do container para facilitar identificação.
     container_name: brito-mysql
+    # Reinicia automaticamente, exceto se parado manualmente.
     restart: unless-stopped
+    # Permite criação de funções/triggers sem exigir privilégios adicionais específicos em alguns cenários.
     command: --log-bin-trust-function-creators=1
+    # Variáveis de ambiente usadas na inicialização do MySQL.
     environment:
+      # Senha do usuário root, vinda do .env da raiz.
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      # Nome do banco que será criado automaticamente.
       MYSQL_DATABASE: ${DB_NAME}
+      # Usuário da aplicação que será criado.
       MYSQL_USER: ${DB_USER}
+      # Senha do usuário da aplicação.
       MYSQL_PASSWORD: ${DB_PASS}
+    # Volumes persistem dados e montam script de inicialização.
     volumes:
+      # Volume nomeado para persistir os dados do MySQL.
       - mysql_data:/var/lib/mysql
+      # Script SQL executado apenas na primeira criação do volume.
       - ./backend/docker/init/brito_estetica.sql:/docker-entrypoint-initdb.d/brito_estetica.sql
+    # Conecta o MySQL somente à rede interna.
     networks:
       - rede-interna
+    # Healthcheck verifica se o MySQL está pronto para receber conexões.
     healthcheck:
+      # Comando que testa o ping do MySQL local no container.
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      # Intervalo entre verificações.
       interval: 10s
+      # Tempo máximo de cada verificação.
       timeout: 5s
+      # Quantidade de tentativas antes de marcar como unhealthy.
       retries: 10
+      # Tempo inicial de tolerância para o banco subir.
       start_period: 30s
 
+  # Serviço da API backend em Node/Express.
   backend:
+    # Constrói a imagem usando o Dockerfile da pasta backend.
     build: ./backend
+    # Nome fixo do container do backend.
     container_name: backend_node
+    # Reinicia automaticamente em falhas, exceto parada manual.
     restart: unless-stopped
+    # Variáveis de ambiente que o backend lê via env.ts.
     environment:
+      # Porta interna onde o Express escuta.
       PORT: 3333
+      # Host do banco: nome do serviço MySQL na rede Docker.
       DB_HOST: mysql
+      # Porta interna do MySQL.
       DB_PORT: 3306
+      # Usuário do banco vindo do .env da raiz.
       DB_USER: ${DB_USER}
+      # Senha do banco vindo do .env da raiz.
       DB_PASS: ${DB_PASS}
+      # Nome do banco vindo do .env da raiz.
       DB_NAME: ${DB_NAME}
+      # Segredo usado para assinar/verificar JWT.
       JWT_SECRET: ${JWT_SECRET}
+      # Origens permitidas pelo CORS no backend.
       CORS_ORIGINS: http://localhost:3000,http://localhost
+      # Indica que o app está atrás de proxy (Nginx).
       TRUST_PROXY: 1
+    # Garante que o backend só inicia após MySQL ficar saudável.
     depends_on:
       mysql:
         condition: service_healthy
+    # Backend fica apenas na rede interna; Nginx faz o acesso externo.
     networks:
       - rede-interna
+    # Healthcheck chama o endpoint /health do próprio backend.
     healthcheck:
+      # Usa Node para fazer fetch no health endpoint e retornar código de saída.
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3333/health').then(resposta => process.exit(resposta.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      # Intervalo entre verificações.
       interval: 10s
+      # Timeout da verificação.
       timeout: 5s
+      # Tentativas antes de unhealthy.
       retries: 10
+      # Tempo inicial para aplicação iniciar.
       start_period: 20s
 
+  # Serviço do frontend React/Vite.
   frontend:
+    # Constrói a imagem usando o Dockerfile da pasta frontend.
     build: ./frontend
+    # Nome fixo do container frontend.
     container_name: frontend_react
+    # Reinicia automaticamente.
     restart: unless-stopped
+    # Variáveis de ambiente disponíveis no processo Vite.
     environment:
+      # Faz o frontend chamar a API pelo caminho relativo /api, passando pelo Nginx.
       VITE_API_URL: /api
+    # Frontend fica na rede externa para o Nginx acessar.
     networks:
       - rede-externa
 
+  # Serviço Nginx como proxy reverso/ponto de entrada.
   nginx:
+    # Imagem leve oficial do Nginx.
     image: nginx:alpine
+    # Nome fixo do container Nginx.
     container_name: nginx_proxy
+    # Reinicia automaticamente.
     restart: unless-stopped
+    # Publica a porta 80 do container na porta 80 da máquina host.
     ports:
       - "80:80"
+    # Monta o arquivo de configuração local no caminho esperado pelo Nginx.
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    # Aguarda backend saudável e frontend iniciado antes de subir o proxy.
     depends_on:
       backend:
         condition: service_healthy
       frontend:
         condition: service_started
+    # Nginx participa das duas redes para falar com frontend e backend.
     networks:
       - rede-interna
       - rede-externa
 
+# Declaração das redes Docker usadas pelos serviços.
 networks:
+  # Rede para serviços que precisam ser acessados pelo proxy/externo.
   rede-externa:
+    # Driver bridge cria rede virtual isolada padrão do Docker.
     driver: bridge
+  # Rede interna para comunicação privada entre serviços.
   rede-interna:
+    # Driver bridge padrão.
     driver: bridge
 
+# Declaração de volumes nomeados.
 volumes:
+  # Volume que guarda os dados do MySQL fora do ciclo de vida do container.
   mysql_data:
+
+# -----------------------------------------------------------------------------
+# RESUMO DO ARQUIVO
+# -----------------------------------------------------------------------------
+# Orquestra MySQL, backend, frontend e Nginx; define redes, volume, variáveis e healthchecks.

@@ -23,21 +23,32 @@ const OPCOES_STATUS: StatusAgendamentoCompleto[] = [
 ];
 
 export default function Dashboard() {
+  // Estado React: [agendamentos, setAgendamentos] criado com useState; atualizar o setter causa re-render do componente.
   const [agendamentos, setAgendamentos] = useState<AgendamentoDashboard[]>([]);
+  // Estado React: [carregando, setCarregando] criado com useState; atualizar o setter causa re-render do componente.
   const [carregando, setCarregando] = useState(true);
+  // Estado React: [erro, setErro] criado com useState; atualizar o setter causa re-render do componente.
   const [erro, setErro] = useState<string | null>(null);
+  // Estado React: [mensagemSucesso, setMensagemSucesso] criado com useState; atualizar o setter causa re-render do componente.
   const [mensagemSucesso, setMensagemSucesso] = useState("");
+  // Estado React: [alterandoStatusId, setAlterandoStatusId] criado com useState; atualizar o setter causa re-render do componente.
   const [alterandoStatusId, setAlterandoStatusId] = useState<number | null>(null);
 
   async function carregarAgendamentos() {
+    // Chamada: setCarregando(true);.
     setCarregando(true);
+    // Chamada: setErro(null);.
     setErro(null);
 
+    // Bloco try: captura erros de chamadas assíncronas/rede/validação.
     try {
+      // Chamada: setAgendamentos(await agendamentoService.listarAdmin());.
       setAgendamentos(await agendamentoService.listarAdmin());
     } catch (erroRequisicao) {
+      // Chamada: setErro(mensagemErroAgendamentos(erroRequisicao));.
       setErro(mensagemErroAgendamentos(erroRequisicao));
     } finally {
+      // Chamada: setCarregando(false);.
       setCarregando(false);
     }
   }
@@ -48,61 +59,85 @@ export default function Dashboard() {
   ) {
     if (novoStatus === agendamento.status) return;
 
+    // Chamada: setAlterandoStatusId(agendamento.id);.
     setAlterandoStatusId(agendamento.id);
+    // Chamada: setErro(null);.
     setErro(null);
+    // Chamada: setMensagemSucesso("");.
     setMensagemSucesso("");
 
+    // Bloco try: captura erros de chamadas assíncronas/rede/validação.
     try {
+      // Aguarda operação assíncrona: agendamentoService.atualizarStatus(agendamento.id, novoStatus);.
       await agendamentoService.atualizarStatus(agendamento.id, novoStatus);
+      // Chamada: setMensagemSucesso(`Status alterado para ${novoStatus}.`);.
       setMensagemSucesso(`Status alterado para ${novoStatus}.`);
+      // Aguarda operação assíncrona: carregarAgendamentos();.
       await carregarAgendamentos();
     } catch (erroRequisicao) {
+      // Chamada: setErro(mensagemErroAgendamentos(erroRequisicao));.
       setErro(mensagemErroAgendamentos(erroRequisicao));
     } finally {
+      // Chamada: setAlterandoStatusId(null);.
       setAlterandoStatusId(null);
     }
   }
+  // Efeito React: executa código colateral após render; dependências controlam quando reexecuta.
   useEffect(() => {
     let ativo = true;
 
     agendamentoService
+      // Chamada: .listarAdminDashboard().
       .listarAdminDashboard()
+      // Chamada: .then((dados) => {.
       .then((dados) => {
         if (ativo) setAgendamentos(dados);
       })
+      // Chamada: .catch((erroRequisicao: unknown) => {.
       .catch((erroRequisicao: unknown) => {
         if (ativo) setErro(mensagemErroAgendamentos(erroRequisicao));
       })
+      // Chamada: .finally(() => {.
       .finally(() => {
         if (ativo) setCarregando(false);
       });
 
     return () => {
+      // Atribuição: ativo = false;.
       ativo = false;
     };
   }, []);
 
+  // Declara constante 'hoje'.
   const hoje = dataLocalAtual();
+  // Declara constante 'agendamentosHoje'.
   const agendamentosHoje = agendamentos.filter(
     (agendamento) => agendamento.data.slice(0, 10) === hoje
   ).length;
+  // Declara constante 'pendentes'.
   const pendentes = agendamentos.filter(
     (agendamento) => agendamento.status === "Pendente"
   ).length;
+  // Declara constante 'confirmados'.
   const confirmados = agendamentos.filter(
     (agendamento) => agendamento.status === "Confirmado"
   ).length;
+  // Declara constante 'proximosAgendamentos'.
   const proximosAgendamentos = agendamentos
+    // Chamada: .filter(.
     .filter(
       (agendamento) =>
+        // Chamada: agendamento.data.slice(0, 10) >= hoje &&.
         agendamento.data.slice(0, 10) >= hoje &&
         agendamento.status !== "Cancelado"
     )
+    // Chamada: .sort((a, b) =>.
     .sort((a, b) =>
       `${a.data.slice(0, 10)} ${a.horario}`.localeCompare(
         `${b.data.slice(0, 10)} ${b.horario}`
       )
     )
+    // Chamada: .slice(0, 6);.
     .slice(0, 6);
 
   return (
@@ -116,9 +151,13 @@ export default function Dashboard() {
           </p>
         </div>
         <button
+          // Atribuição: className={styles.refreshButton}.
           className={styles.refreshButton}
+          // Atribuição: type="button".
           type="button"
+          // Atribuição: onClick={() => void carregarAgendamentos()}.
           onClick={() => void carregarAgendamentos()}
+          // Atribuição: disabled={carregando}.
           disabled={carregando}
         >
           {carregando ? "Atualizando..." : "Atualizar"}
@@ -129,8 +168,11 @@ export default function Dashboard() {
         <div className={styles.errorMessage} role="alert">
           <span>{erro}</span>
           <button
+            // Atribuição: type="button".
             type="button"
+            // Atribuição: onClick={() => void carregarAgendamentos()}.
             onClick={() => void carregarAgendamentos()}
+            // Atribuição: disabled={carregando}.
             disabled={carregando}
           >
             Tentar novamente
@@ -146,18 +188,27 @@ export default function Dashboard() {
 
       <div className={styles.metrics} aria-label="Resumo de agendamentos">
         <CardAdmin
+          // Atribuição: titulo="Agendamentos hoje".
           titulo="Agendamentos hoje"
+          // Atribuição: valor={carregando ? "—" : agendamentosHoje}.
           valor={carregando ? "—" : agendamentosHoje}
+          // Atribuição: descricao="Reservas para hoje".
           descricao="Reservas para hoje"
         />
         <CardAdmin
+          // Atribuição: titulo="Pendentes".
           titulo="Pendentes"
+          // Atribuição: valor={carregando ? "—" : pendentes}.
           valor={carregando ? "—" : pendentes}
+          // Atribuição: descricao="Aguardando confirmação".
           descricao="Aguardando confirmação"
         />
         <CardAdmin
+          // Atribuição: titulo="Confirmados".
           titulo="Confirmados"
+          // Atribuição: valor={carregando ? "—" : confirmados}.
           valor={carregando ? "—" : confirmados}
+          // Atribuição: descricao="Agendamentos confirmados".
           descricao="Agendamentos confirmados"
         />
       </div>
@@ -202,14 +253,18 @@ export default function Dashboard() {
                     <td>{agendamento.horario}</td>
                     <td>
                       <select
+                        // Atribuição: className={`${styles.status} ${styles.statusSelect} ${classeStatus(agendamento.status)}`}.
                         className={`${styles.status} ${styles.statusSelect} ${classeStatus(agendamento.status)}`}
+                        // Atribuição: value={agendamento.status}.
                         value={agendamento.status}
+                        // Atribuição: onChange={(evento) =>.
                         onChange={(evento) =>
                           void alterarStatus(
                             agendamento,
                             evento.target.value as StatusAgendamentoCompleto
                           )
                         }
+                        // Atribuição: disabled={alterandoStatusId === agendamento.id || carregando}.
                         disabled={alterandoStatusId === agendamento.id || carregando}
                         aria-label={`Status do agendamento de ${agendamento.cliente}`}
                       >
@@ -231,3 +286,8 @@ export default function Dashboard() {
     </section>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/admin/Dashboard/index.tsx) responsável por renderizar UI e orquestrar interações do usuário.

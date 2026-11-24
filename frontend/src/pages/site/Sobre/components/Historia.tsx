@@ -1,3 +1,4 @@
+// Importa styles de '../styles.module.css'.
 import styles from '../styles.module.css';
 
 export default function Historia() {
@@ -33,8 +34,11 @@ export default function Historia() {
         <div className={styles.imageCol}>
           <div className={styles.imageWrapper}>
             <img 
+              // Atribuição: src="/sobreCarro.jpg".
               src="/sobreCarro.jpg" 
+              // Atribuição: alt="Carro esportivo preto na garagem de estética automotiva".
               alt="Carro esportivo preto na garagem de estética automotiva"
+              // Atribuição: loading="lazy".
               loading="lazy"
             />
           </div>
@@ -43,3 +47,8 @@ export default function Historia() {
     </section>
   );
 }
+
+// -----------------------------------------------------------------------------
+// RESUMO DO ARQUIVO
+// -----------------------------------------------------------------------------
+// Página/componente de tela React (frontend/src/pages/site/Sobre/components/Historia.tsx) responsável por renderizar UI e orquestrar interações do usuário.
